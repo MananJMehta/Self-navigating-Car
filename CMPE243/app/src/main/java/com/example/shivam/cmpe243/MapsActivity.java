@@ -19,7 +19,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -47,18 +46,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     boolean flag = true;
     Marker me;
     MarkerOptions me_Option;
-    AlertDialog.Builder alertDialogBuilder, alertBuilder4BT;
-    AlertDialog alertDialog,dialog4BT;
-    BluetoothAdapter BTadpt = BluetoothAdapter.getDefaultAdapter();
-    BluetoothDevice BT4car;
-    BluetoothServerSocket serverSocket;
-    Set<BluetoothDevice> pairedDevices;
-
+    AlertDialog.Builder alertDialogBuilder;
+    AlertDialog alertDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+        IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+        registerReceiver(mReceiver, filter);
 
         alertDialogBuilder = new AlertDialog.Builder(MapsActivity.this);
         alertDialogBuilder.setTitle("Unable to locate you.");
@@ -75,42 +72,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         alertDialog = alertDialogBuilder.create();
 
-        alertBuilder4BT = new AlertDialog.Builder(MapsActivity.this);
-        alertBuilder4BT.setTitle("Unable to connect to car.");
-        alertBuilder4BT
-                .setMessage("Click on Settings and turn it on. Ignore if okay.")
-                .setCancelable(false)
-                .setPositiveButton("Settings",new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-
-                        Intent startBT = new Intent(Settings.ACTION_BLUETOOTH_SETTINGS);
-                        startActivity(startBT);
-                    }
-                })
-                .setNegativeButton("Cancle", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        dialog4BT.cancel();
-                    }
-                });
-
-        dialog4BT = alertBuilder4BT.create();
-
         locMan = (LocationManager) getSystemService(LOCATION_SERVICE);
         if (!locMan.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             alertDialog.show();
         }
-
-        if (!BTadpt.isEnabled()){
-            dialog4BT.show();
-        }
-        else
-        {
-            attempt2Connect();
-        }
-
-        IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
-        registerReceiver(mReceiver, filter);
 
         locLis = new LocationListener() {
             @Override
@@ -160,7 +125,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                     //Toast.makeText(MapsActivity.this, "accuracy: " + location.getAccuracy() + ", Speed: " + location.getSpeed(), Toast.LENGTH_SHORT).show();
 
-                    if (location.getSpeed() > 1 && location != null && prevLatLng != null && myLatLng != null) {
+                    if (location.getSpeed() > 1 && prevLatLng != null && myLatLng != null) {
 
                         myLatLng = new LatLng(location.getLatitude(), location.getLongitude());
 
@@ -218,16 +183,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             return;
         }
 
-        locMan.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3000, 2, locLis);
+        locMan.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1500, 2, locLis);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(map);
         mapFragment.getMapAsync(this);
-
-    }
-
-    private void attempt2Connect() {
 
     }
 
@@ -280,16 +241,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 switch (state) {
 
                     case BluetoothAdapter.STATE_OFF:
-                        dialog4BT.show();
+                        onBackPressed();
                         break;
 
                     case BluetoothAdapter.STATE_TURNING_OFF:
                         break;
 
                     case BluetoothAdapter.STATE_ON:
-                        if (dialog4BT.isShowing())
-                            dialog4BT.hide();
-                        attempt2Connect();
                         break;
 
                     case BluetoothAdapter.STATE_TURNING_ON:
@@ -299,4 +257,5 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         }
     };
+
 }
