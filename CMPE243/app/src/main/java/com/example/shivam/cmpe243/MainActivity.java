@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
     AlertDialog.Builder alertBuilder4BT;
     AlertDialog dialog4BT;
     BluetoothAdapter BTadpt = BluetoothAdapter.getDefaultAdapter();
-    TextView heading;
+    TextView heading,tag;
     ImageView img,gifImg;
     MediaPlayer mp;
 
@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
         registerReceiver(mReceiver, filter);
 
         heading = (TextView) findViewById(R.id.textView);
+        tag = (TextView) findViewById(R.id.textView2);
         img = (ImageView) findViewById(R.id.imageView);
         gifImg = (ImageView) findViewById(R.id.gifImageView);
 
@@ -68,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
             gifImg.setVisibility(View.INVISIBLE);
             img.setVisibility(View.VISIBLE);
             mp.stop();
+            tag.setVisibility(View.INVISIBLE);
             dialog4BT.show();
         }
         else
@@ -77,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
             gifImg.setVisibility(View.VISIBLE);
             img.setVisibility(View.INVISIBLE);
             mp.start();
+            tag.setVisibility(View.VISIBLE);
             if(attempt2Connect()){
 
             }
@@ -103,11 +106,12 @@ public class MainActivity extends AppCompatActivity {
                         heading.setTextColor(Color.RED);
                         gifImg.setVisibility(View.INVISIBLE);
                         img.setVisibility(View.VISIBLE);
-                        mp.stop();
                         dialog4BT.show();
                         break;
 
                     case BluetoothAdapter.STATE_TURNING_OFF:
+                        tag.setVisibility(View.INVISIBLE);
+                        mp.stop();
                         break;
 
                     case BluetoothAdapter.STATE_ON:
@@ -123,6 +127,7 @@ public class MainActivity extends AppCompatActivity {
                         mp.release();
                         mp = MediaPlayer.create(getApplicationContext(), R.raw.carstart);
                         mp.start();
+                        tag.setVisibility(View.VISIBLE);
                         break;
                 }
             }
