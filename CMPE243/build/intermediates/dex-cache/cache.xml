@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        is-multidex="true"
+        jar="/home/shivam/AndroidStudioProjects/CMPE243/app/build/intermediates/incremental-runtime-classes/debug/instant-run.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="26.0.1"
+        sha1="3be78ebc2706b2e1fe2f12d5726887a92d6c183b">
+        <dex dex="/home/shivam/AndroidStudioProjects/CMPE243/app/build/intermediates/transforms/dex/debug/folders/1000/10000/instant-run_c1ef28e03b76a05bbb69fcdcd487f1f04e3bd862/classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="/home/shivam/.android/build-cache/c02b0cf026c648fb35dc4825bb0946535096c50f/output/jars/classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="26.0.1"
+        sha1="2cc8a87f25be7b9c223257a58c061018fdbea656">
+        <dex dex="/home/shivam/AndroidStudioProjects/CMPE243/app/build/intermediates/transforms/dex/debug/folders/1000/10/classes_1f1ee6735c4e1f8e49157af5e34d1b0443bd66a8/classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="/home/shivam/AndroidStudioProjects/CMPE243/app/build/intermediates/incremental-classes/debug/instant-run-bootstrap.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="26.0.1"
+        sha1="68ef4231a9d4eeaf10654e900a58b2d1cf029863">
+        <dex dex="/home/shivam/AndroidStudioProjects/CMPE243/app/build/intermediates/transforms/dex/debug/folders/1000/10000/instant-run-bootstrap_4e4b2360471e043a78b29480afc60e134c77247d/classes.dex" />
+    </item>
+
+</items>
