@@ -2,8 +2,6 @@ package com.example.shivam.thunderbird;
 
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothServerSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -40,7 +38,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     LocationManager locMan;
     LocationListener locLis;
     LatLng myLatLng;
-    static LatLng prevLatLng = new LatLng(0,0);
+    static LatLng prevLatLng = new LatLng(0, 0);
     Marker me;
     MarkerOptions me_Option;
 
@@ -62,7 +60,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         alertDialogBuilder
                 .setMessage("Click on Settings and turn it on.")
                 .setCancelable(false)
-                .setPositiveButton("Settings",new DialogInterface.OnClickListener() {
+                .setPositiveButton("Settings", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
 
                         Intent startGPS = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
@@ -81,11 +79,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onLocationChanged(Location location) {
 
-                if (flag){
-                    if (ActivityCompat
-                            .checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                            &&
-                            ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                if (flag) {
+                    LocationManager temp = (LocationManager) MapsActivity.this.getSystemService(Context.LOCATION_SERVICE);
+                    if (ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                            && ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
                         // TODO: Consider calling
                         //    ActivityCompat#requestPermissions
                         // here to request the missing permissions, and then overriding
@@ -96,11 +93,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         return;
                     }
 
-
-                    LocationManager temp = (LocationManager) MapsActivity.this.getSystemService(Context.LOCATION_SERVICE);
-                    if (temp.isProviderEnabled(LocationManager.GPS_PROVIDER) && temp.getLastKnownLocation(LocationManager.GPS_PROVIDER)!= null)
+                    if (temp.isProviderEnabled(LocationManager.GPS_PROVIDER) && temp.getLastKnownLocation(LocationManager.GPS_PROVIDER) != null)
                         myLatLng = new LatLng(temp.getLastKnownLocation(LocationManager.GPS_PROVIDER).getLatitude()
-                                ,temp.getLastKnownLocation(LocationManager.GPS_PROVIDER).getLongitude());
+                                , temp.getLastKnownLocation(LocationManager.GPS_PROVIDER).getLongitude());
 
                     if (myLatLng != null) {
                         me_Option = new MarkerOptions()
@@ -120,10 +115,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 500, null);
                         prevLatLng = myLatLng;
                     }
+
                     flag = false;
-                    Toast.makeText(MapsActivity.this,"Let the marker get stable.\nThen tap on map to select destination.",Toast.LENGTH_LONG).show();
-                }
-                else {
+                    Toast.makeText(MapsActivity.this, "Let the marker get stable.\nThen tap on map to select destination.", Toast.LENGTH_LONG).show();
+
+                } else {
 
                     //Toast.makeText(MapsActivity.this, "accuracy: " + location.getAccuracy() + ", Speed: " + location.getSpeed(), Toast.LENGTH_SHORT).show();
 
@@ -184,7 +180,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
-
         locMan.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1500, 2, locLis);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -208,6 +203,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
+
+        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+
+            @Override
+            public void onMapClick(LatLng point) {
+
+                MarkerOptions marker = new MarkerOptions().position(new LatLng(point.latitude, point.longitude));
+                mMap.addMarker(marker);
+
+                Toast.makeText(MapsActivity.this, "Next stop at " + point.latitude + "," + point.longitude, Toast.LENGTH_SHORT).show();
+            }
+        });
+
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
@@ -219,19 +227,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
-
-        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-
-            @Override
-            public void onMapClick(LatLng point) {
-
-                MarkerOptions marker = new MarkerOptions().position(new LatLng(point.latitude, point.longitude));
-                mMap.addMarker(marker);
-
-                Toast.makeText(MapsActivity.this,"Next stop at "+point.latitude+","+point.longitude,Toast.LENGTH_SHORT).show();
-            }
-        });
-
         mMap.setMyLocationEnabled(true);
 
     }
@@ -239,6 +234,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onBackPressed() {
         locMan.removeUpdates(locLis);
+        unregisterReceiver(mReceiver);
         this.finish();
     }
 
