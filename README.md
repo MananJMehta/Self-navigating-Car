@@ -4,7 +4,7 @@ This is the master repository for the autonomous car project of CMPE 243 under P
 
 To start working on this project follow the steps mentioned below:
 
-1) Get permission from the creator of repository to make changes, commit and upload your work on server. ( ignore if you already have permission)
+1) Fork this respository.
 
 2) First download the repository to your machine either by clicking on green button saying "clone or download" and then download zip
   or 
