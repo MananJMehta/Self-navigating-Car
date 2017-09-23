@@ -28,6 +28,11 @@ To start working on this project follow the steps mentioned below:
     - Use git branch to get the list of branches.
     - Use git checkout <branch name> to jump to other branch.
     - If you use ls command now then you'll see the directories in that branch.
+   
+   Initial situation of repository :
+   Master branch - README, ThunderBird (android application code)
+   Android branch - README, ThunderBird (android application code) because both branches were merged before inviting you.
+   Embedded branch - Module wise 5 projects, README, ThunderBird (android application code)
 
 4) Read, edit it and make some changes in related files while working on project. After this you have to upload the changes on remote
    repository.
