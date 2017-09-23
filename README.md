@@ -7,18 +7,15 @@ To start working on this project follow the steps mentioned below:
 1) Fork this respository.
 
 2) First download the repository to your machine either by clicking on green button saying "clone or download" and then download zip
-  or 
-copy the https:// path ( I prefer https:// over SSH because for SSH we need to follow a long procedure. I encourage you to learn it by your own with your personal repository. ) and do it by command line as mentioned below.
+   or 
+   copy the https://<path> OR by command line as mentioned below.
 
    Windows :
    - Download git bash ( https://git-scm.com/downloads ) and open git bash command window .
-   - Use "ls" command to see files and directories present at the directory you are currently in. Change the present working directory by
-     command "cd Directory_name" and  Go to the directory where you want to download the git repository. Use "cd .." to return to previous
-     directory.
    - Then use "git clone PASTE_HTTPS://_PATH_HERE"
  
    Linux :
-   - Write "git clone PASTE_HTTPS://_PATH_HERE" directly in linux terminal. Git is a tool which comes with the Linux.
+   - Write "git clone PASTE_HTTPS://_PATH_HERE" direct in linux. Git is a tool which comes with the Linux.
  
    MAC :
    - Follow steps given on this site:  
@@ -27,22 +24,31 @@ copy the https:// path ( I prefer https:// over SSH because for SSH we need to f
      
      And then use git clone command as above. 
 
-3) After cloning the repository on your machine you'll see all directories and files. 
+3) After cloning the repository on your machine you'll see all directories and files.
+    - In this repository you won't see anything other then README because you are initally in master branch.
+    - Use git branch to see the list or branches in this repository.
+    - Use git checkout <branch name> to jump to other branch.
+    - If you use ls command now then you'll see the directories in that branch.
+  
+  REMEMBER:
+    - Every branch has data of all other branches created before it itself was created.
+    - In our case Master was created first then Embedded and then Android.
+    - So if you use ls command in master you'll see only README, if in Embedded branch then 5 modules + README, and in Android you'll see Android application code + 5 modules + README.
 
 4) Read, edit it and make some changes in related files while working on project. After this you have to upload the changes on remote
    repository.
 
    Follow this steps every time you make a change.
    - git add . (. means everything) "OR" git add -A  (-A means all. This will stage your changes ready to commit.)
+   - git add <file/folder name> works too.
 
-   - git commit -m "write comments and mention your changes and why did you change it here. - your name." ( this will make it easy to see
-     versions of our code and what new was added at what commit)
+   - git commit -m "write comments and mention your changes and why did you change it here. - your name." ( this will make it easy to see versions of our code and what new was added at what commit)
 
-   - Use git checkout -b "name of branch you want to jump" . This is to upload files and not to mix everything in same branch.
+   - Make sure you change to the branch before you add and commit any change.
 
    - Use git checkout "branch name you want to work on"  
 "OR" git checkout -b "branch name" in case of creating new branch.
 
-   - git push origin master  ( here master is a main branch. But when we will start working on it, we will make separate branch of each interface. For example there will a branch for sonar sensor called "sonar", or "motor" for all type of motor interface used in our project. In such case branch name will be "motor" or "sonar" instead of "master".
+   - git push origin <branch name>
 
    - Now you can see your changes on website.
