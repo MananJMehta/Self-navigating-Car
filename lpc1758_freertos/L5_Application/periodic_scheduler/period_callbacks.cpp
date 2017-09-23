@@ -43,7 +43,7 @@ const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
  * This stack size is also used while calling the period_init() and period_reg_tlm(), and if you use
  * printf inside these functions, you need about 1500 bytes minimum
  */
-const uint32_t PERIOD_DISPATCHER_TASK_STACK_SIZE_BYTES = (512 * 3);
+const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
 
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
@@ -59,23 +59,29 @@ bool period_reg_tlm(void)
 }
 
 
+/**
+ * Below are your periodic functions.
+ * The argument 'count' is the number of times each periodic task is called.
+ */
 
-void period_1Hz(void)
+void period_1Hz(uint32_t count)
 {
     LE.toggle(1);
 }
 
-void period_10Hz(void)
+void period_10Hz(uint32_t count)
 {
     LE.toggle(2);
 }
 
-void period_100Hz(void)
+void period_100Hz(uint32_t count)
 {
     LE.toggle(3);
 }
 
-void period_1000Hz(void)
+// 1Khz (1ms) is only run if Periodic Dispatcher was configured to run it at main():
+// scheduler_add_task(new periodicSchedulerTask(run_1Khz = true));
+void period_1000Hz(uint32_t count)
 {
     LE.toggle(4);
 }
