@@ -27,17 +27,15 @@ class Lidar_Sensor : public SingletonTemplate<Lidar_Sensor>
         bool lidar_reset();//unidirectional, send true for succesful reset
         bool lidar_scan();//pass a data structure to this function, return true for succces
         bool lidar_express_scan();//pass data structure, return true
-        void lidar_froce_scan();
+        bool lidar_force_scan();
         void get_info();
         void get_health();
         void get_sample_rate();
-
-        uint16_t getRawValue();       ///< @returns light sensor reading
-        uint8_t  getPercentValue();   ///< @returns light sensor reading as percentage
+        void set_motor_speed(uint8_t PWM, uint8_t frequency ,uint8_t duty_cycle);
 
     private:
         Lidar_Sensor() { }  ///< Private constructor of this Singleton class
-        friend class SingletonTemplate<Light_Sensor>;  ///< Friend class used for Singleton Template
+        friend class SingletonTemplate<Lidar_Sensor>;  ///< Friend class used for Singleton Template
 };
 
 
