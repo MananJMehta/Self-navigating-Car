@@ -34,6 +34,7 @@ class Lidar_Sensor : public SingletonTemplate<Lidar_Sensor>
         void set_motor_speed(uint8_t PWM, uint8_t frequency ,uint8_t duty_cycle);
 
     private:
+        bool send_lidar_command();//we will send an enum data type
         Lidar_Sensor() { }  ///< Private constructor of this Singleton class
         friend class SingletonTemplate<Lidar_Sensor>;  ///< Friend class used for Singleton Template
 };

@@ -55,3 +55,8 @@ void Lidar_Sensor::set_motor_speed(uint8_t PWM, uint8_t frequency, uint8_t duty_
 {
 
 }
+
+bool Lidar_Sensor::send_lidar_command()
+{
+    return 0;
+}
