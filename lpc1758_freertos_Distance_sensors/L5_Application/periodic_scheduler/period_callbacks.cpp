@@ -31,6 +31,7 @@
 #include <stdint.h>
 #include "io.hpp"
 #include "periodic_callback.h"
+#include "lidar_sensor.hpp"
 
 
 
@@ -48,6 +49,8 @@ const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
 {
+    Lidar_Sensor &rplidar  =Lidar_Sensor::getInstance();
+    rplidar.init();
     return true; // Must return true upon success
 }
 
