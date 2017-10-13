@@ -33,7 +33,14 @@ class Lidar_Sensor : public SingletonTemplate<Lidar_Sensor>
             lidar_get_sample_rate = 0x59,
         } lidar_cmd_t;
 
-        //createa a struct
+        //Struct that contains the 5 bytes of data coming from lidar scan command
+        typedef struct {
+            uint8_t quality; //the quality of the data reading
+            uint8_t angle; //the angle of the data point
+            uint8_t distance_1; //first byte describing distance
+            uint8_t distance_2; //second byte describing distance
+        } __attribute__((__packed__)) lidar_data_t;
+
 
         bool init(); ///< Initializes this device, @returns true if successful
 
