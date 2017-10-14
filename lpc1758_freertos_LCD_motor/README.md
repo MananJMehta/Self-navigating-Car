@@ -5,3 +5,5 @@ This folder consist of the code to control the motors and steering of the vehicl
 L4 Folder will consists of wrapper class for
 1. Servo Motor Control (steering.h)
 2. Brushless Motor Control (speed.h)
+
+Both are controlled using the PWM driver.
