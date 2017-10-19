@@ -31,11 +31,14 @@
 #include <stdint.h>
 #include "io.hpp"
 #include "periodic_callback.h"
-
+#include "L4.5_Motor_Control/Steering.hpp"
+#include "L4.5_Motor_Control/Speed.hpp"
 
 
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
+Speed spd;
+Steering str;
 
 /**
  * This is the stack size of the dispatcher task that triggers the period tasks to run.
@@ -48,6 +51,14 @@ const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
 {
+    LE.on(2);
+
+    //error code 1 to signal incorrect initialization of speed PWM
+    if(!spd.init())
+        LD.setNumber(1);
+    //error code 2 to signal incorrect initialization of steering PWM
+    if(!str.init())
+        LD.setNumber(2);
     return true; // Must return true upon success
 }
 
@@ -66,22 +77,30 @@ bool period_reg_tlm(void)
 
 void period_1Hz(uint32_t count)
 {
-    LE.toggle(1);
 }
 
 void period_10Hz(uint32_t count)
 {
-    LE.toggle(2);
+
 }
 
 void period_100Hz(uint32_t count)
 {
-    LE.toggle(3);
+    if(SW.getSwitch(1))
+        str.set(19);
+    else if(SW.getSwitch(2))
+        str.set(18);
+    else if(SW.getSwitch(3))
+          str.set(17);
+    else if(SW.getSwitch(4))
+          str.set(16);
+    else
+          str.set(15);
 }
 
 // 1Khz (1ms) is only run if Periodic Dispatcher was configured to run it at main():
 // scheduler_add_task(new periodicSchedulerTask(run_1Khz = true));
 void period_1000Hz(uint32_t count)
 {
-    LE.toggle(4);
+
 }

@@ -6,22 +6,49 @@
  */
 
 #include "Speed.hpp"
+#include "IO.hpp"
 
-#define Motor      Speed::getInstance()            ///< 4 On-board Switches
-
-bool init()
+bool Speed::init()
 {
-	return true;
+    this->setSpeed(Stop);
+    LE.on(1);
+    return true;
 }
 
-float getSpeed()   ///< @returns floating-point reading of feedback rpm sensor
+float Speed::getSpeed()   ///< @returns floating-point reading of feedback rpm sensor
 {
-	return 0.00;
+    return 0.00;
 }
-void setSpeed(Speed::speedOfCar speed) ///< @param sets floating-point speed of motor
+void Speed::setSpeed(Speed::speedOfCar speed) ///< @param sets floating-point speed of motor
 {
 
-    Motor.MotorSpeed();
+    switch(speed)
+    {
+        case  VERYFAST:
+            this->set(0);
+            break;
+        case FAST:
+            this->set(0);
+            break;
+        case MEDIUM:
+            this->set(0);
+            break;
+        case SLOW:
+            this->set(0);
+            break;
+        case VERYSLOW:
+            this->set(0);
+            break;
+        case Stop:
+            this->set(0);
+            break;
+        case ReverseSlow:
+            this->set(0);
+            break;
+        case ReverseFast:
+            this->set(0);
+            break;
+    }
 }
 
 
