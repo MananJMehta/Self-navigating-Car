@@ -28,19 +28,14 @@ void Speed::setSpeed(Speed::speedOfCar speed) ///< @param sets floating-point sp
             this->set(15.8);
             break;
         case FAST:
-            this->set(15.7);
             break;
         case MEDIUM:
-            this->set(15.6);
             break;
         case SLOW:
-            this->set(15.5);
             break;
         case VERYSLOW:
-            this->set(15.4);
             break;
         case Stop:
-            this->set(15);
             break;
         case ReverseSlow:
             this->set(0);

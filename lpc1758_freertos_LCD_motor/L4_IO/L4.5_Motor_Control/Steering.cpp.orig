@@ -5,7 +5,6 @@
  *      Author: mehtaman
  */
 
-<<<<<<< HEAD
 #include "IO.hpp"
 #include "Steering.hpp"
 
@@ -59,7 +58,11 @@ void Steering::setDirection(directionOfCar value)
             this->currentDirection= directionOfCar::HardLeft;
             break;
         case ExtremeLeft:
+<<<<<<< HEAD
             this->set(11);
+=======
+            this->set(12);
+>>>>>>> Added Steering fucntionality with switches to control steering
             this->currentDirection= directionOfCar::ExtremeLeft;
             break;
         default:
@@ -67,8 +70,3 @@ void Steering::setDirection(directionOfCar value)
             break;
     }
 }
-=======
-
-include ""
-
->>>>>>> SingletonClass for Speed - Work in progress
