@@ -2,18 +2,12 @@
 
 #include "lidar_sensor.hpp"
 
-#define u2  Uart2::getInstance()   ///< Temperature Sensor
 
-
-bool Lidar_Sensor::init()
+void Lidar_Sensor::send_lidar_command(lidar_cmd_t lidar_cmd)
 {
-    //set frequency
-    //set_PWM
-    //set duty_cycle
-
-    u2.init(115200, 360, 360);
-    return true;
+    u2.printf("%x",lidar_cmd);
 }
+
 
 /*
  *
@@ -25,8 +19,8 @@ is stopped, maybe get sample rate
 */
 bool Lidar_Sensor::stop_scan()
 {
-    if(send_lidar_command(lidar_stop_scan)) return true;
-    else return false;
+   send_lidar_command(lidar_stop_scan);
+   return false;
 }
 
 
@@ -42,32 +36,34 @@ bool Lidar_Sensor::stop_scan()
 
 bool Lidar_Sensor::reset_core()
 {
-    if(send_lidar_command(lidar_reset_core)) return true;
+   send_lidar_command(lidar_reset_core);
     return 0;
 }
 
 
 /*
  *
- *
+ *Start the Lidar scan and expect to get values from the lidar
+ *Perhap
  *
  */
 
-bool Lidar_Sensor::start_scan(scan_data_packet_t *lidar_data)
+QueueHandle_t Lidar_Sensor::start_scan(scan_data_packet_t *lidar_data)
 {
-    if(send_lidar_command(lidar_start_scan)) return true;
-    return 0;
+    send_lidar_command(lidar_start_scan);
+
+    return ScanDataQ;
 }
 
 bool Lidar_Sensor::start_express_scan()
 {
-    if(send_lidar_command(lidar_start_exp_scan)) return true;
+   send_lidar_command(lidar_start_exp_scan);
     return 0;
 }
 
 bool Lidar_Sensor::start_force_scan()
 {
-    if(send_lidar_command(lidar_start_force_scan)) return true;
+    send_lidar_command(lidar_start_force_scan);
     return 0;
 }
 
@@ -98,11 +94,7 @@ void Lidar_Sensor::set_motor_speed(uint8_t RPM)
     get_sample_rate(&sample_rate);
 }
 
-bool Lidar_Sensor::send_lidar_command(lidar_cmd_t lidar_cmd)
-{
-    if(u2.printf("%x",lidar_cmd)) return true;
-    else return false;
-}
+
 
 //put received thingies in a queue maybe??
 void Lidar_Sensor::receive_lidar_data(lidar_cmd_t lidar_cmd)

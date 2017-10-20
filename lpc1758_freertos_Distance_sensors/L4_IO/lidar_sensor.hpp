@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include "uart2.hpp"
 
-
+#define u2  Uart2::getInstance()   ///< Temperature Sensor
 
 
 /**
@@ -22,8 +22,6 @@ class Lidar_Sensor : public SingletonTemplate<Lidar_Sensor>
 {
     public:
 
-
-
         typedef enum {
             lidar_stop_scan = 0x25,
             lidar_reset_core = 0x40,
@@ -35,15 +33,13 @@ class Lidar_Sensor : public SingletonTemplate<Lidar_Sensor>
             lidar_get_sample_rate = 0x59,
         } lidar_cmd_t;
 
-
-
         //Struct that contains the 5 bytes of data coming from lidar scan command
         typedef struct {
             uint8_t quality; //the quality of the data reading
             uint8_t angle; //the angle of the data point
             uint8_t distance_1; //first byte describing distance
             uint8_t distance_2; //second byte describing distance
-        } __attribute__((__packed__)) scan_data_packet_t;
+        } __attribute__((__packed__)) scan_data_packet_t, *scan_data_packet_ptr;
 
         //Struct that contains the 5 bytes of data coming from lidar scan command
         typedef struct {
@@ -70,23 +66,46 @@ class Lidar_Sensor : public SingletonTemplate<Lidar_Sensor>
         } __attribute__((__packed__)) health_data_packet_t;
 
 
-        bool init(); ///< Initializes this device, @returns true if successful
+
 
         bool stop_scan();//this is a unidriectional command we wil return true for success
         bool reset_core();//unidirectional, send true for succesful reset
-        bool start_scan(scan_data_packet_t *lidar_data);//pass a data structure to this function, return true for succces
+        QueueHandle_t start_scan(scan_data_packet_t *lidar_data);//pass a data structure to this function, return true for succces
         bool start_express_scan();//pass data structure, return true
         bool start_force_scan();
         void get_info(info_data_packet_t *lidar_info);
         void get_health(health_data_packet_t *health_data);
         void get_sample_rate(sample_rate_packet_t *sample_rate);
         void set_motor_speed(uint8_t RPM);
-
-    private:
-        bool send_lidar_command(lidar_cmd_t lidar_cmd);//we will send an enum data type
+        void send_lidar_command(lidar_cmd_t lidar_cmd);//we will send an enum data type
         void receive_lidar_data(lidar_cmd_t lidar_cmd);
 
-        Lidar_Sensor() { }  ///< Private constructor of this Singleton class
+        scan_data_packet_t data_packet [360];
+
+    private:
+
+        QueueHandle_t ScanDataQ;
+
+
+
+
+        Lidar_Sensor() {
+
+            //create the Queue
+            ScanDataQ = xQueueCreate(360, sizeof(scan_data_packet_t));
+
+
+            //Create 360 Structs for Data and put the pointers to those structs
+            //in the queue
+
+
+
+            //set frequency
+            //set_PWM
+            //set duty_cycle
+
+            u2.init(115200, 360, 360);
+        }  ///< Private constructor of this Singleton class
         friend class SingletonTemplate<Lidar_Sensor>;  ///< Friend class used for Singleton Template
 };
 
