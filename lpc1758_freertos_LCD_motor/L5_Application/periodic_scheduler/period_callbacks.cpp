@@ -87,13 +87,13 @@ void period_10Hz(uint32_t count)
 void period_100Hz(uint32_t count)
 {
     if(SW.getSwitch(1))
-        str.set(19);
+        str.set(6.5);
     else if(SW.getSwitch(2))
-        str.set(18);
+        str.set(6.6);
     else if(SW.getSwitch(3))
-          str.set(17);
+          str.set(6.7);
     else if(SW.getSwitch(4))
-          str.set(16);
+          str.set(6.8);
     else
           str.set(15);
 }

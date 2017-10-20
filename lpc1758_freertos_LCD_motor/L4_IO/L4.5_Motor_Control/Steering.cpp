@@ -58,7 +58,7 @@ void Steering::setDirection(directionOfCar value)
             this->currentDirection= directionOfCar::HardLeft;
             break;
         case ExtremeLeft:
-            this->set(12);
+            this->set(11);
             this->currentDirection= directionOfCar::ExtremeLeft;
             break;
         default:
