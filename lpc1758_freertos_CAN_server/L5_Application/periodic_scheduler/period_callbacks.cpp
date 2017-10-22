@@ -31,8 +31,9 @@
 #include <stdint.h>
 #include "io.hpp"
 #include "periodic_callback.h"
-
-
+#include "can.h"
+#include "_can_dbc/generated_can.h"
+#include "string.h"
 
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
@@ -44,10 +45,24 @@ const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
  * printf inside these functions, you need about 1500 bytes minimum
  */
 const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
+can_t canTest = can1;
+CAN_TEST_t test_msg = {0};
+
+bool dbc_app_send_can_msg(uint32_t mid, uint8_t dlc, uint8_t bytes[8])
+{
+    can_msg_t can_msg = { 0 };
+    can_msg.msg_id                = mid;
+    can_msg.frame_fields.data_len = dlc;
+    memcpy(can_msg.data.bytes, bytes, dlc);
+    return CAN_tx(canTest, &can_msg, 0);
+}
 
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
 {
+    CAN_init(canTest, 10, 10, 10, NULL, NULL);
+    CAN_bypass_filter_accept_all_msgs();
+    CAN_reset_bus(canTest);
     return true; // Must return true upon success
 }
 
@@ -66,12 +81,16 @@ bool period_reg_tlm(void)
 
 void period_1Hz(uint32_t count)
 {
-    LE.toggle(1);
+    if (CAN_is_bus_off(canTest))
+    {
+       CAN_reset_bus(canTest);
+    }
 }
 
 void period_10Hz(uint32_t count)
 {
-    LE.toggle(2);
+    test_msg.CAN_TEST_master = 0xff;
+    dbc_encode_and_send_CAN_TEST(&test_msg);
 }
 
 void period_100Hz(uint32_t count)
