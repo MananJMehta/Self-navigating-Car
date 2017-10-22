@@ -5,6 +5,8 @@
 
 void Lidar_Sensor::send_lidar_command(lidar_cmd_t lidar_cmd)
 {
+
+    u2.printf("%x", lidar_header);
     u2.printf("%x",lidar_cmd);
 }
 
@@ -48,11 +50,9 @@ bool Lidar_Sensor::reset_core()
  *
  */
 
-QueueHandle_t Lidar_Sensor::start_scan(scan_data_packet_t *lidar_data)
+void Lidar_Sensor::start_scan()
 {
     send_lidar_command(lidar_start_scan);
-
-    return ScanDataQ;
 }
 
 bool Lidar_Sensor::start_express_scan()

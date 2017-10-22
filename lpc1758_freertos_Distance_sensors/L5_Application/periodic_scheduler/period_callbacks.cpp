@@ -32,7 +32,11 @@
 #include "io.hpp"
 #include "periodic_callback.h"
 #include "lidar_sensor.hpp"
+#include "lidar_sensor.h"
+#include "tasks.hpp"
 
+
+#define rplidar  Lidar_Sensor::getInstance()   ///< Temperature Sensor
 
 
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
@@ -46,10 +50,59 @@ const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
  */
 const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
 
+
+TaskHandle_t scanHandle = NULL;//use this flow meter handle to turn flow meter on and off
+
+void scan_task(void* p)
+{
+    bool flag = true;
+    health_data_packet_t health_packet;
+    info_data_packet_t info_packet;
+    sample_rate_packet_t sample_packet;
+
+     while(1)
+    {
+         if(flag)
+         {
+             rplidar.get_health(&health_packet);
+             vTaskDelay(2);
+             rplidar.get_info(&info_packet);
+             vTaskDelay(4);
+             rplidar.get_info(&info_packet);
+             vTaskDelay(4);
+             rplidar.get_sample_rate(&sample_packet);
+             vTaskDelay(1);
+             rplidar.get_info(&info_packet);
+             vTaskDelay(4);
+             rplidar.get_info(&info_packet);
+             vTaskDelay(4);
+             rplidar.get_sample_rate(&sample_packet);
+             vTaskDelay(2);
+             rplidar.stop_scan();
+             vTaskDelay(1);
+             rplidar.start_scan();
+             vTaskDelay(1000);
+             flag = false;
+             //start scan
+         }
+
+         else
+         {
+             rplidar.stop_scan();
+             vTaskDelay(1000);
+             flag = true;
+             //stop scan
+         }
+    }
+
+}
+
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
 {
-    Lidar_Sensor &rplidar  = Lidar_Sensor::getInstance();
+    #if 1
+    xTaskCreate(scan_task, (const char*)"scan", STACK_BYTES(2048), 0, PRIORITY_HIGH, &scanHandle);
+    #endif
     return true; // Must return true upon success
 }
 
