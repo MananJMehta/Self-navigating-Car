@@ -6,8 +6,8 @@
 void Lidar_Sensor::send_lidar_command(lidar_cmd_t lidar_cmd)
 {
 
-    u2.printf("%x", lidar_header);
-    u2.printf("%x",lidar_cmd);
+    u2.printf("%c", lidar_header);
+    u2.printf("%c",lidar_cmd);
 }
 
 

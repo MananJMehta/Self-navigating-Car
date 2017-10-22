@@ -80,8 +80,8 @@ void scan_task(void* p)
              vTaskDelay(2);
              rplidar.stop_scan();
              vTaskDelay(1);
-             rplidar.start_scan();
-             vTaskDelay(1000);
+             rplidar.start_express_scan();
+             vTaskDelay(5000);
              flag = false;
              //start scan
          }
