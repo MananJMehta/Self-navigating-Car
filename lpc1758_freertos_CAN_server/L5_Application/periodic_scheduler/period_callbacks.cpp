@@ -33,12 +33,21 @@
 #include "periodic_callback.h"
 #include "_can_dbc/generated_can.h"
 #include "can.h"
+#include "string.h"
 
 
 
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
+bool dbc_app_send_can_msg(uint32_t mid, uint8_t dlc, uint8_t bytes[8])
+{
+    can_msg_t can_msg = { 0 };
+    can_msg.msg_id                = mid;
+    can_msg.frame_fields.data_len = dlc;
+    memcpy(can_msg.data.bytes, bytes, dlc);
 
+    return CAN_tx(can1, &can_msg, 0);
+}
 /**
  * This is the stack size of the dispatcher task that triggers the period tasks to run.
  * Minimum 1500 bytes are needed in order to write a debug file if the period tasks overrun.
@@ -46,7 +55,6 @@ const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
  * printf inside these functions, you need about 1500 bytes minimum
  */
 const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
-can_t can=can1;
 
 /// Called once before the RTOS is , this is a good place to initialize things once
 bool period_init(void)
@@ -75,19 +83,21 @@ void period_1Hz(uint32_t count)
 
 }
 
-CAN_TEST_t masterMessage;
+
 void period_10Hz(uint32_t count)
 {
-    can_msg_t canMessage;
-    while(CAN_rx(can,&canMessage,0))
+    CAN_TEST_t masterMessage={0};
+    KILL_SWITCH_t killSwitch={0};
+    masterMessage.CAN_TEST_master=0x01;
+    dbc_encode_and_send_CAN_TEST(&masterMessage);
+
+    if(SW.getSwitch(1))
     {
-        dbc_msg_hdr_t can_msg_hdr;
-        can_msg_hdr.dlc = canMessage.frame_fields.data_len;
-        can_msg_hdr.mid = canMessage.msg_id;
-        dbc_decode_CAN_TEST(&masterMessage, canMessage.data.bytes, &can_msg_hdr);
-        if(masterMessage.CAN_TEST_master==0xff)
-            LE.toggle(1);
+        killSwitch.KILL_SWITCH_Sig=1;
+        dbc_encode_and_send_KILL_SWITCH(&killSwitch);
     }
+
+
 }
 
 void period_100Hz(uint32_t count)
