@@ -31,6 +31,8 @@
 #include <stdint.h>
 #include "io.hpp"
 #include "periodic_callback.h"
+#include "_can_dbc/generated_can.h"
+#include "can.h"
 
 
 
@@ -44,10 +46,14 @@ const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
  * printf inside these functions, you need about 1500 bytes minimum
  */
 const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
+can_t can=can1;
 
-/// Called once before the RTOS is started, this is a good place to initialize things once
+/// Called once before the RTOS is , this is a good place to initialize things once
 bool period_init(void)
 {
+    CAN_init(can,10,10,10,NULL,NULL);
+    CAN_bypass_filter_accept_all_msgs();
+    CAN_reset_bus(can);
     return true; // Must return true upon success
 }
 
@@ -66,22 +72,32 @@ bool period_reg_tlm(void)
 
 void period_1Hz(uint32_t count)
 {
-    LE.toggle(1);
+
 }
 
+CAN_TEST_t masterMessage;
 void period_10Hz(uint32_t count)
 {
-    LE.toggle(2);
+    can_msg_t canMessage;
+    while(CAN_rx(can,&canMessage,0))
+    {
+        dbc_msg_hdr_t can_msg_hdr;
+        can_msg_hdr.dlc = canMessage.frame_fields.data_len;
+        can_msg_hdr.mid = canMessage.msg_id;
+        dbc_decode_CAN_TEST(&masterMessage, canMessage.data.bytes, &can_msg_hdr);
+        if(masterMessage.CAN_TEST_master==0xff)
+            LE.toggle(1);
+    }
 }
 
 void period_100Hz(uint32_t count)
 {
-    LE.toggle(3);
+
 }
 
 // 1Khz (1ms) is only run if Periodic Dispatcher was configured to run it at main():
 // scheduler_add_task(new periodicSchedulerTask(run_1Khz = true));
 void period_1000Hz(uint32_t count)
 {
-    LE.toggle(4);
+
 }
