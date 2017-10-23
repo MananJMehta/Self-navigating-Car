@@ -25,29 +25,22 @@ SemaphoreHandle_t xSensorHandle_fall3=xSemaphoreCreateBinary();
 //////Call back functions and distance calculators for sensor1//////////
 void rise_detector1()
 {
-    xSemaphoreGive(xSensorHandle_rise1);
-}
-
-void sensor_detect_rise1()
-{
-    if( xSemaphoreTake( xSensorHandle_rise1, ( TickType_t ) 1 ) == pdTRUE )
-        get_start_time1 = sys_get_uptime_us();
+    get_start_time1 = sys_get_uptime_us();
 }
 
 void fall_detector1()
 {
-    xSemaphoreGive(xSensorHandle_fall1);
+    get_stop_time1 = sys_get_uptime_us();
 }
 
 bool Sonar_Sensor::obstacle_1()
 {
-    if( xSemaphoreTake( xSensorHandle_fall1, 0 ) == pdTRUE ){
-        get_stop_time1 = sys_get_uptime_us();
+
         dist1 = ((get_stop_time1 - get_start_time1)/147);
         printf("Y\n"); printf("%f\n",dist1);
         if(dist1<=20.0)
             return true;
-    }
+
     return false;
 }
 
