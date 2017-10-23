@@ -94,10 +94,25 @@ void Lidar_Sensor::set_motor_speed(uint8_t RPM)
     get_sample_rate(&sample_rate);
 }
 
+int8_t Lidar_Sensor::det_smol_angle(){
+    uint8_t i = 4;
+    if(lane_lut[i])
+        return 0;
+    for (int j = 1; j <= 4; j--)
+    {
+        if (lane_lut[i-j])
+            return -1*j;
+        else if(lane_lut[i+j])
+            return j;
+    }
+    return -5;
+}
 
 
 //put received thingies in a queue maybe??
-void Lidar_Sensor::receive_lidar_data(lidar_cmd_t lidar_cmd)
+char Lidar_Sensor::receive_lidar_data()
 {
-    //u2.gets(pBuff, maxLen, timeout);
+    char str[1];
+    if(u2.getChar(str,0)) return str[0];
+    return 0xFF;
 }

@@ -34,6 +34,7 @@
 #include "lidar_sensor.hpp"
 #include "lidar_sensor.h"
 #include "tasks.hpp"
+#include "stdio.h"
 
 
 #define rplidar  Lidar_Sensor::getInstance()   ///< Temperature Sensor
@@ -52,56 +53,123 @@ const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
 
 
 TaskHandle_t scanHandle = NULL;//use this flow meter handle to turn flow meter on and off
+TaskHandle_t receiveHandle = NULL;//use this flow meter handle to turn flow meter on and off
 
 void scan_task(void* p)
 {
     bool flag = true;
-    health_data_packet_t health_packet;
-    info_data_packet_t info_packet;
-    sample_rate_packet_t sample_packet;
+//    health_data_packet_t health_packet;
+//    info_data_packet_t info_packet;
+//    sample_rate_packet_t sample_packet;
 
-     while(1)
-    {
+//     while(flag)
+//    {
          if(flag)
          {
-             rplidar.get_health(&health_packet);
-             vTaskDelay(2);
-             rplidar.get_info(&info_packet);
-             vTaskDelay(4);
-             rplidar.get_info(&info_packet);
-             vTaskDelay(4);
-             rplidar.get_sample_rate(&sample_packet);
-             vTaskDelay(1);
-             rplidar.get_info(&info_packet);
-             vTaskDelay(4);
-             rplidar.get_info(&info_packet);
-             vTaskDelay(4);
-             rplidar.get_sample_rate(&sample_packet);
-             vTaskDelay(2);
+//             rplidar.get_health(&health_packet);
+//             vTaskDelay(2);
+//             rplidar.get_info(&info_packet);
+//             vTaskDelay(4);
+//             rplidar.get_info(&info_packet);
+//             vTaskDelay(4);
+//             rplidar.get_sample_rate(&sample_packet);
+//             vTaskDelay(1);
+//             rplidar.get_info(&info_packet);
+//             vTaskDelay(4);
+//             rplidar.get_info(&info_packet);
+//             vTaskDelay(4);
+//             rplidar.get_sample_rate(&sample_packet);
+//             vTaskDelay(2);
              rplidar.stop_scan();
              vTaskDelay(1);
-             rplidar.start_express_scan();
-             vTaskDelay(5000);
-             flag = false;
+             rplidar.start_scan();
+//             vTaskDelay(5000);
+//             flag = false;
              //start scan
          }
 
          else
          {
-             rplidar.stop_scan();
-             vTaskDelay(1000);
-             flag = true;
+//             rplidar.stop_scan();
+//             vTaskDelay(1000);
+//             flag = true;
              //stop scan
+         }
+//    }
+
+}
+
+void receive_task(void* p)
+{
+
+    bool starting_scan = true;
+    char arr[7]={ 0xa5 , 0x5a , 0x05 , 0x00, 0x00 , 0x40 , 0x81};
+    uint16_t temp;
+    uint16_t temp1;
+    uint16_t angle;
+    uint16_t distance;
+    float angle_q6;
+    float distance_q6;
+
+    for(uint8_t i=0; i<7 ;i++)
+    {
+         if(arr[i]!= rplidar.receive_lidar_data())
+         {
+             starting_scan= false;
          }
     }
 
+    while(starting_scan)
+    {
+        uint32_t lookup[9]={ 280 , 300 , 320 , 340 , 0 , 20 , 40 , 60 , 80 };
+
+        for(uint16_t i = 0; i < 360; i++)
+        {
+            uint8_t count=0;
+
+        rplidar.receive_lidar_data();// get da quality
+        angle = (uint16_t)(rplidar.receive_lidar_data()); //get da angle_1
+
+        temp = (uint16_t)(rplidar.receive_lidar_data()); //get da angle_2
+
+        distance = (uint16_t)(rplidar.receive_lidar_data()); //get da distance_1
+        temp1 = (uint16_t)(rplidar.receive_lidar_data()); //get da distance 2
+
+        if(lookup[count]==i){
+            angle = angle>>1;
+            angle |= temp<<8;
+            angle_q6 = angle/64.0;
+            distance |= temp1<<8;
+            distance_q6 = distance/4.0;
+            count++;
+            if(distance_q6 < 0.5)
+                rplidar.lane_lut[count]=true;
+            else
+                rplidar.lane_lut[count]=false;
+        }
+        }
+
+
+        //get the angle
+        //determine the lane
+        //check if there is there is obstacle
+        //set lane bit accordingly
+    }
+
 }
+
+
+
 
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
 {
     #if 1
     xTaskCreate(scan_task, (const char*)"scan", STACK_BYTES(2048), 0, PRIORITY_HIGH, &scanHandle);
+    #endif
+
+    #if 1
+    xTaskCreate(receive_task, (const char*)"recv", STACK_BYTES(2048), 0, PRIORITY_HIGH, &receiveHandle);
     #endif
     return true; // Must return true upon success
 }
@@ -121,6 +189,7 @@ bool period_reg_tlm(void)
 
 void period_1Hz(uint32_t count)
 {
+    printf("\n%d",rplidar.det_smol_angle());
     LE.toggle(1);
 }
 

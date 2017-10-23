@@ -34,17 +34,29 @@ class Lidar_Sensor : public SingletonTemplate<Lidar_Sensor>
         void get_sample_rate(sample_rate_packet_t *sample_rate);
         void set_motor_speed(uint8_t RPM);
 
-        void receive_lidar_data(lidar_cmd_t lidar_cmd);
+        int8_t det_smol_angle();
+
+        char receive_lidar_data();
+        bool lane_lut[9] ;
 
         scan_data_packet_t data_packet [360];
 
     private:
 
+
+
+
         void send_lidar_command(lidar_cmd_t lidar_cmd);//we will send an enum data type
 
         Lidar_Sensor() {
 
-            //create the Queue
+            //create the lane array
+            //0 means this lane is clear
+            for(int i =0; i < 9; i++)
+            {
+                lane_lut[i] = false;
+            }
+
 
 
             //Create 360 Structs for Data and put the pointers to those structs
@@ -56,7 +68,7 @@ class Lidar_Sensor : public SingletonTemplate<Lidar_Sensor>
             //set_PWM
             //set duty_cycle
 
-            u2.init(115200, 360, 360);
+            u2.init(115200, 50, 2);
         }  ///< Private constructor of this Singleton class
         friend class SingletonTemplate<Lidar_Sensor>;  ///< Friend class used for Singleton Template
 };
