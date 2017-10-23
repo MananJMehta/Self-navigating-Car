@@ -95,12 +95,12 @@ void period_10Hz(uint32_t count)
 
 void period_100Hz(uint32_t count)
 {
-    LE.toggle(3);
+
 }
 
 // 1Khz (1ms) is only run if Periodic Dispatcher was configured to run it at main():
 // scheduler_add_task(new periodicSchedulerTask(run_1Khz = true));
 void period_1000Hz(uint32_t count)
 {
-    LE.toggle(4);
+
 }
