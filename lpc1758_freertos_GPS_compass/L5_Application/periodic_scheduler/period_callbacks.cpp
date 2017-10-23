@@ -82,7 +82,10 @@ bool period_reg_tlm(void)
 
 void period_1Hz(uint32_t count)
 {
-
+    if(CAN_is_bus_off(can1))
+    {
+        CAN_reset_bus(can1);
+    }
 }
 bool killFlag=false;
 GPS_MESSAGE_t msg={0};
@@ -106,14 +109,15 @@ void period_10Hz(uint32_t count)
                 killFlag=true;
                 break;
             case 200:
-
-                msg.GPS_MESSAGE_sig=5;
-                dbc_encode_and_send_GPS_MESSAGE(&msg);
+                if(killFlag!=false)LD.setLeftDigit('S');
+                else LD.setLeftDigit('A');
                 break;
         }
     }
+    msg.GPS_MESSAGE_sig=5;
+    dbc_encode_and_send_GPS_MESSAGE(&msg);
     if(dbc_handle_mia_CAN_TEST(&canMsg,100))
-        LD.setLeftDigit('M');
+        LD.setLeftDigit(5);
 }
 
 void period_100Hz(uint32_t count)

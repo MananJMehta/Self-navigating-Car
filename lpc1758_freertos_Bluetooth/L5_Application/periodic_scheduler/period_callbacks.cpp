@@ -104,11 +104,14 @@ void period_10Hz(uint32_t count)
         {
             case 100:
                 killFlag=true;
+                LE.on(3);
                 break;
             case 200:
-
-                msg.ANDROID_MESSAGE_sig=5;
-                dbc_encode_and_send_ANDROID_MESSAGE(&msg);
+                if(killFlag==false)
+                {
+                    msg.ANDROID_MESSAGE_sig=5;
+                    dbc_encode_and_send_ANDROID_MESSAGE(&msg);
+                }
                 break;
         }
     }

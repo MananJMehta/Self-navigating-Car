@@ -80,7 +80,10 @@ bool period_reg_tlm(void)
 
 void period_1Hz(uint32_t count)
 {
-
+    if(CAN_is_bus_off(can1))
+    {
+        CAN_reset_bus(can1);
+    }
 }
 
 SENSOR_MESSAGE_t sensorMsg={0};
@@ -118,6 +121,39 @@ void period_10Hz(uint32_t count)
     {
         message_header.dlc=can_msg.frame_fields.data_len;
         message_header.mid=can_msg.msg_id;
+
+
+        switch(message_header.mid)
+        {
+            case 300:
+                // dbc_decode_SENSOR_MESSAGE(&sensorMsg,can_msg.data.bytes,&message_header);
+                // if(sensorMsg.SENSOR_MESSAGE_sig!=0)
+                LE.toggle(1);
+                //else
+                //    LD.setLeftDigit(1);
+                break;
+            case 301:
+                // dbc_decode_MOTOR_MESSAGE(&motorMsg,can_msg.data.bytes,&message_header);
+                //  if(motorMsg.MOTOR_MESSAGE_sig!=0)
+                LE.toggle(2);
+                //  else
+                //      LD.setLeftDigit(2);
+                break;
+            case 302:
+                // dbc_decode_ANDROID_MESSAGE(&androidMsg,can_msg.data.bytes,&message_header);
+                // if(androidMsg.ANDROID_MESSAGE_sig!=0)
+                LE.toggle(3);
+                // else
+                //     LD.setLeftDigit(3);
+                break;
+            case 303:
+                // dbc_decode_GPS_MESSAGE(&gpsMsg,can_msg.data.bytes,&message_header);
+                //  if(gpsMsg.GPS_MESSAGE_sig!=0)
+                LE.toggle(4);
+                // else
+                //     LD.setLeftDigit(4);
+                break;
+        }
     }
 
     //MIA handling
@@ -125,38 +161,9 @@ void period_10Hz(uint32_t count)
     dbc_handle_mia_GPS_MESSAGE(&gpsMsg,100);
     dbc_handle_mia_MOTOR_MESSAGE(&motorMsg,100);
     dbc_handle_mia_SENSOR_MESSAGE(&sensorMsg,100);
-
-    switch(message_header.mid)
-    {
-        case 300:
-            dbc_decode_SENSOR_MESSAGE(&sensorMsg,can_msg.data.bytes,&message_header);
-            if(sensorMsg.SENSOR_MESSAGE_sig!=0)
-                LE.toggle(1);
-            else
-                LD.setLeftDigit('S');
-            break;
-        case 301:
-            dbc_decode_MOTOR_MESSAGE(&motorMsg,can_msg.data.bytes,&message_header);
-            if(motorMsg.MOTOR_MESSAGE_sig!=0)
-                LE.toggle(2);
-            else
-                LD.setLeftDigit('M');
-            break;
-        case 302:
-            dbc_decode_ANDROID_MESSAGE(&androidMsg,can_msg.data.bytes,&message_header);
-            if(androidMsg.ANDROID_MESSAGE_sig!=0)
-                LE.toggle(3);
-            else
-                LD.setLeftDigit('A');
-            break;
-        case 303:
-            dbc_decode_GPS_MESSAGE(&gpsMsg,can_msg.data.bytes,&message_header);
-            if(gpsMsg.GPS_MESSAGE_sig!=0)
-                LE.toggle(4);
-            else
-                LD.setLeftDigit('G');
-            break;
-    }
+    dbc_decode_SENSOR_MESSAGE(&sensorMsg,can_msg.data.bytes,&message_header);
+    if(sensorMsg.SENSOR_MESSAGE_sig==0)
+        LE.toggle(4);
 }
 
 void period_100Hz(uint32_t count)

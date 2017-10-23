@@ -88,7 +88,10 @@ bool period_reg_tlm(void)
 
 void period_1Hz(uint32_t count)
 {
-
+    if(CAN_is_bus_off(can1))
+    {
+        CAN_reset_bus(can1);
+    }
 }
 bool killFlag=false;
 MOTOR_MESSAGE_t msg={0};
@@ -111,14 +114,16 @@ void period_10Hz(uint32_t count)
                 killFlag=true;
                 break;
             case 200:
-
+                if(killFlag!=false)LD.setLeftDigit('S');
+                else {LD.setLeftDigit('A');
                 msg.MOTOR_MESSAGE_sig=5;
-                dbc_encode_and_send_MOTOR_MESSAGE(&msg);
+                dbc_encode_and_send_MOTOR_MESSAGE(&msg);}
                 break;
         }
     }
+
     if(dbc_handle_mia_CAN_TEST(&canMsg,100))
-        LD.setLeftDigit('M');
+        LD.setLeftDigit(7);
 }
 
 void period_100Hz(uint32_t count)
