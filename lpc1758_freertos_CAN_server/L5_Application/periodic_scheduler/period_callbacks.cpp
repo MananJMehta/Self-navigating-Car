@@ -59,9 +59,9 @@ const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
 /// Called once before the RTOS is , this is a good place to initialize things once
 bool period_init(void)
 {
-    CAN_init(can,10,10,10,NULL,NULL);
+    CAN_init(can1,10,10,10,NULL,NULL);
     CAN_bypass_filter_accept_all_msgs();
-    CAN_reset_bus(can);
+    CAN_reset_bus(can1);
     return true; // Must return true upon success
 }
 
@@ -83,9 +83,23 @@ void period_1Hz(uint32_t count)
 
 }
 
+SENSOR_MESSAGE_t sensorMsg={0};
+ANDROID_MESSAGE_t androidMsg={0};
+GPS_MESSAGE_t gpsMsg={0};
+MOTOR_MESSAGE_t motorMsg={0};
+
+const uint32_t                             SENSOR_MESSAGE__MIA_MS=3000;
+const SENSOR_MESSAGE_t                     SENSOR_MESSAGE__MIA_MSG={0};
+const uint32_t                             MOTOR_MESSAGE__MIA_MS=3000;
+const MOTOR_MESSAGE_t                      MOTOR_MESSAGE__MIA_MSG={0};
+const uint32_t                             ANDROID_MESSAGE__MIA_MS=3000;
+const ANDROID_MESSAGE_t                    ANDROID_MESSAGE__MIA_MSG={0};
+const uint32_t                             GPS_MESSAGE__MIA_MS=3000;
+const GPS_MESSAGE_t                        GPS_MESSAGE__MIA_MSG={0};
 
 void period_10Hz(uint32_t count)
 {
+    //CANtx handling
     CAN_TEST_t masterMessage={0};
     KILL_SWITCH_t killSwitch={0};
     masterMessage.CAN_TEST_master=0x01;
@@ -96,8 +110,53 @@ void period_10Hz(uint32_t count)
         killSwitch.KILL_SWITCH_Sig=1;
         dbc_encode_and_send_KILL_SWITCH(&killSwitch);
     }
+    dbc_msg_hdr_t message_header;
+    can_msg_t can_msg;
 
+    //CANrx Handling
+    while(CAN_rx(can1,&can_msg,0))
+    {
+        message_header.dlc=can_msg.frame_fields.data_len;
+        message_header.mid=can_msg.msg_id;
+    }
 
+    //MIA handling
+    dbc_handle_mia_ANDROID_MESSAGE(&androidMsg,100);
+    dbc_handle_mia_GPS_MESSAGE(&gpsMsg,100);
+    dbc_handle_mia_MOTOR_MESSAGE(&motorMsg,100);
+    dbc_handle_mia_SENSOR_MESSAGE(&sensorMsg,100);
+
+    switch(message_header.mid)
+    {
+        case 300:
+            dbc_decode_SENSOR_MESSAGE(&sensorMsg,can_msg.data.bytes,&message_header);
+            if(sensorMsg.SENSOR_MESSAGE_sig!=0)
+                LE.toggle(1);
+            else
+                LD.setLeftDigit('S');
+            break;
+        case 301:
+            dbc_decode_MOTOR_MESSAGE(&motorMsg,can_msg.data.bytes,&message_header);
+            if(motorMsg.MOTOR_MESSAGE_sig!=0)
+                LE.toggle(2);
+            else
+                LD.setLeftDigit('M');
+            break;
+        case 302:
+            dbc_decode_ANDROID_MESSAGE(&androidMsg,can_msg.data.bytes,&message_header);
+            if(androidMsg.ANDROID_MESSAGE_sig!=0)
+                LE.toggle(3);
+            else
+                LD.setLeftDigit('A');
+            break;
+        case 303:
+            dbc_decode_GPS_MESSAGE(&gpsMsg,can_msg.data.bytes,&message_header);
+            if(gpsMsg.GPS_MESSAGE_sig!=0)
+                LE.toggle(4);
+            else
+                LD.setLeftDigit('G');
+            break;
+    }
 }
 
 void period_100Hz(uint32_t count)

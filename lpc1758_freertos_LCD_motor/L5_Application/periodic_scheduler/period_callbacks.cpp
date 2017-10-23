@@ -31,12 +31,25 @@
 #include <stdint.h>
 #include "io.hpp"
 #include "periodic_callback.h"
+#include "can.h"
+#include "_can_dbc/generated_can.h"
+#include "string.h"
 
 
 
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
+can_t myCan=can1;
 
+bool dbc_app_send_can_msg(uint32_t mid, uint8_t dlc, uint8_t bytes[8])
+{
+    can_msg_t can_msg = { 0 };
+    can_msg.msg_id                = mid;
+    can_msg.frame_fields.data_len = dlc;
+    memcpy(can_msg.data.bytes, bytes, dlc);
+
+    return CAN_tx(can1, &can_msg, 0);
+}
 /**
  * This is the stack size of the dispatcher task that triggers the period tasks to run.
  * Minimum 1500 bytes are needed in order to write a debug file if the period tasks overrun.
@@ -48,6 +61,9 @@ const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
 {
+    CAN_init(can1,10,10,10,NULL,NULL);
+    CAN_bypass_filter_accept_all_msgs();
+    CAN_reset_bus(can1);
     return true; // Must return true upon success
 }
 
@@ -66,22 +82,48 @@ bool period_reg_tlm(void)
 
 void period_1Hz(uint32_t count)
 {
-    LE.toggle(1);
+
 }
+bool killFlag=false;
+MOTOR_MESSAGE_t msg={0};
+CAN_TEST_t canMsg={0};
+const uint32_t                             CAN_TEST__MIA_MS=3000;
+const CAN_TEST_t                           CAN_TEST__MIA_MSG={0};
+
 
 void period_10Hz(uint32_t count)
 {
-    LE.toggle(2);
+    can_msg_t can_msg;
+    while(CAN_rx(can1,&can_msg,0))
+    {
+        dbc_msg_hdr_t dbcHeader;
+        dbcHeader.dlc=can_msg.frame_fields.data_len;
+        dbcHeader.mid=can_msg.msg_id;
+
+        switch(dbcHeader.mid)
+        {
+            case 100:
+                killFlag=true;
+                break;
+            case 200:
+
+                msg.MOTOR_MESSAGE_sig=5;
+                dbc_encode_and_send_MOTOR_MESSAGE(&msg);
+                break;
+        }
+    }
+    if(dbc_handle_mia_CAN_TEST(&canMsg,100))
+        LD.setLeftDigit('M');
 }
 
 void period_100Hz(uint32_t count)
 {
-    LE.toggle(3);
+
 }
 
 // 1Khz (1ms) is only run if Periodic Dispatcher was configured to run it at main():
 // scheduler_add_task(new periodicSchedulerTask(run_1Khz = true));
 void period_1000Hz(uint32_t count)
 {
-    LE.toggle(4);
+
 }
