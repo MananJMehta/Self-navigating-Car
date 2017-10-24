@@ -204,23 +204,40 @@ void period_1Hz(uint32_t count)
 
 void period_10Hz(uint32_t count)
 {
-    LE.toggle(2);
+//    LE.toggle(2);
 }
 
 void period_100Hz(uint32_t count)
 {
-    static bool scanning = false;
+    static bool lidar_ready_to_send = false;
+    static bool sent_scan_start = false;
 
 
-    if (!scanning) rplidar.check_start_scan();
+    //wait 2 seconds then start scan
+    if (!sent_scan_start && count==200)
+    {
+        rplidar.start_scan();
+        sent_scan_start = true;
+    }
+    //if scan start is sent look for the start scan sequence from lidar
+    else if (sent_scan_start)
+    {
+        if(rplidar.check_start_scan())
+        {
+            lidar_ready_to_send = true;
+        }
+    }
+    //if lidar is ready to send then toggle LED
+    else if (lidar_ready_to_send)
+    {
+        LE.toggle(3);
+    }
 
-
-    LE.toggle(3);
 }
 
 // 1Khz (1ms) is only run if Periodic Dispatcher was configured to run it at main():
 // scheduler_add_task(new periodicSchedulerTask(run_1Khz = true));
 void period_1000Hz(uint32_t count)
 {
-    LE.toggle(4);
+//    LE.toggle(4);
 }
