@@ -17,18 +17,31 @@
  * @ingroup BoardIO
  */
 
+typedef enum {
+    fallingedge,
+    risingedge
+}interruptOn;
+
+typedef enum {
+    left,
+    center,
+    right
+}position;
+
 class Sonar_Sensor //: public SingletonTemplate<Sonar_Sensor>
 {
     public:
-        bool obstacle_1();
-        bool obstacle_2();
-        bool obstacle_3();
         void start_operation();
-        bool sensor_detect_fall();
-        void init();
+        static void sensor_detect_fall_left();
+        static void sensor_detect_rise_left();
+        static void sensor_detect_fall_center();
+        static void sensor_detect_rise_center();
+        static void sensor_detect_fall_right();
+        static void sensor_detect_rise_right();
+        bool init();
         Sonar_Sensor() {}
     private:
-
+        //int pin;
         //friend class SingletonTemplate<Sonar_Sensor>;
 };
 
