@@ -68,7 +68,7 @@ bool period_init(void)
     if(!spd.init())
     CAN_reset_bus(can1);
     //error code 2 to signal incorrect initialization of steering PWM
-    if(!str.init())
+    LD.init();
         LD.setNumber(2);
     return true; // Must return true upon success
 }
@@ -115,9 +115,9 @@ void period_10Hz(uint32_t count)
                 break;
             case 200:
                 if(killFlag!=false)LD.setLeftDigit('S');
-                else {LD.setLeftDigit('A');
+                else LD.setLeftDigit('A');
                 msg.MOTOR_MESSAGE_sig=5;
-                dbc_encode_and_send_MOTOR_MESSAGE(&msg);}
+                dbc_encode_and_send_MOTOR_MESSAGE(&msg);
                 break;
         }
     }

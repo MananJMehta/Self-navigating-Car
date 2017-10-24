@@ -35,8 +35,6 @@
 #include "can.h"
 #include "string.h"
 
-
-
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
 bool dbc_app_send_can_msg(uint32_t mid, uint8_t dlc, uint8_t bytes[8])
@@ -62,6 +60,7 @@ bool period_init(void)
     CAN_init(can1,10,10,10,NULL,NULL);
     CAN_bypass_filter_accept_all_msgs();
     CAN_reset_bus(can1);
+    LD.init();
     return true; // Must return true upon success
 }
 
@@ -105,10 +104,17 @@ void period_10Hz(uint32_t count)
     //CANtx handling
     CAN_TEST_t masterMessage={0};
     KILL_SWITCH_t killSwitch={0};
+    MOTOR_MOVEMENT_t motorMovement ={0};
     masterMessage.CAN_TEST_master=0x01;
     dbc_encode_and_send_CAN_TEST(&masterMessage);
 
-    if(SW.getSwitch(1))
+
+    motorMovement.MOTOR_MOVEMENT_sig = SW.getSwitchValues();
+    LD.setNumber(SW.getSwitchValues());
+    dbc_encode_and_send_MOTOR_MOVEMENT(&motorMovement);
+
+
+    if(LS.getPercentValue() >=75)
     {
         killSwitch.KILL_SWITCH_Sig=1;
         dbc_encode_and_send_KILL_SWITCH(&killSwitch);
@@ -126,32 +132,16 @@ void period_10Hz(uint32_t count)
         switch(message_header.mid)
         {
             case 300:
-                // dbc_decode_SENSOR_MESSAGE(&sensorMsg,can_msg.data.bytes,&message_header);
-                // if(sensorMsg.SENSOR_MESSAGE_sig!=0)
                 LE.toggle(1);
-                //else
-                //    LD.setLeftDigit(1);
                 break;
             case 301:
-                // dbc_decode_MOTOR_MESSAGE(&motorMsg,can_msg.data.bytes,&message_header);
-                //  if(motorMsg.MOTOR_MESSAGE_sig!=0)
                 LE.toggle(2);
-                //  else
-                //      LD.setLeftDigit(2);
                 break;
             case 302:
-                // dbc_decode_ANDROID_MESSAGE(&androidMsg,can_msg.data.bytes,&message_header);
-                // if(androidMsg.ANDROID_MESSAGE_sig!=0)
                 LE.toggle(3);
-                // else
-                //     LD.setLeftDigit(3);
                 break;
             case 303:
-                // dbc_decode_GPS_MESSAGE(&gpsMsg,can_msg.data.bytes,&message_header);
-                //  if(gpsMsg.GPS_MESSAGE_sig!=0)
                 LE.toggle(4);
-                // else
-                //     LD.setLeftDigit(4);
                 break;
         }
     }
@@ -162,8 +152,7 @@ void period_10Hz(uint32_t count)
     dbc_handle_mia_MOTOR_MESSAGE(&motorMsg,100);
     dbc_handle_mia_SENSOR_MESSAGE(&sensorMsg,100);
     dbc_decode_SENSOR_MESSAGE(&sensorMsg,can_msg.data.bytes,&message_header);
-    if(sensorMsg.SENSOR_MESSAGE_sig==0)
-        LE.toggle(4);
+
 }
 
 void period_100Hz(uint32_t count)

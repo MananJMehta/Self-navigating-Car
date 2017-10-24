@@ -1,0 +1,26 @@
+Conversion Warnings Log
+
+
+MSG_ID: 200 	MSG_TYPE: S 	MSG_NAME: CAN_TEST
+	SIG_NAME: CAN_TEST_master, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+
+MSG_ID: 300 	MSG_TYPE: S 	MSG_NAME: SENSOR_MESSAGE
+	SIG_NAME: SENSOR_MESSAGE_sig, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+
+MSG_ID: 301 	MSG_TYPE: S 	MSG_NAME: MOTOR_MESSAGE
+	SIG_NAME: MOTOR_MESSAGE_sig, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+
+MSG_ID: 302 	MSG_TYPE: S 	MSG_NAME: ANDROID_MESSAGE
+	SIG_NAME: ANDROID_MESSAGE_sig, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+
+MSG_ID: 303 	MSG_TYPE: S 	MSG_NAME: GPS_MESSAGE
+	SIG_NAME: GPS_MESSAGE_sig, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+
+MSG_ID: 201 	MSG_TYPE: S 	MSG_NAME: MOTOR_MOVEMENT
+	SIG_NAME: MOTOR_MOVEMENT_sig, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+
+MSG_ID: 100 	MSG_TYPE: S 	MSG_NAME: KILL_SWITCH
+	SIG_NAME: KILL_SWITCH_Sig, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+BA_DEF_DEF_ " "  : Match not Found in Param List
+BA_DEF_DEF_ " "  : Match not Found in Param List
+BA_DEF_DEF_ " 0;"  : Match not Found in Param List
