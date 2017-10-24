@@ -35,6 +35,7 @@
 #include "stdio.h"
 
 Sonar_Sensor* sonar ;
+SemaphoreHandle_t sonar_mutex;
 float get_start_time1, dist1, get_stop_time1;
 float get_start_time2, dist2, get_stop_time2;
 float get_start_time3, dist3, get_stop_time3;
@@ -55,6 +56,7 @@ const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
 {
+    sonar_mutex = xSemaphoreCreateMutex();
     sonar = new Sonar_Sensor();
     sonar->init();
     return true; // Must return true upon success
@@ -80,8 +82,11 @@ void period_1Hz(uint32_t count)
 
 void period_10Hz(uint32_t count)
 {
-    sonar->start_operation();
-    printf("Distance left = %f\n", dist1);
+    if(xSemaphoreTake(sonar_mutex,1))
+    {
+        sonar->start_operation();
+        printf("Distance left = %f\n", dist1);
+    }
 }
 
 void period_100Hz(uint32_t count)
