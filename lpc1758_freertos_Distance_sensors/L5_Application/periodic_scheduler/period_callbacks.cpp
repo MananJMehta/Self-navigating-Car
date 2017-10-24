@@ -199,7 +199,7 @@ void period_1Hz(uint32_t count)
 {
 //    printf("\n%d",rplidar.det_smol_angle());
 
-    LE.toggle(1);
+//    LE.toggle(1);
 }
 
 void period_10Hz(uint32_t count)
@@ -220,7 +220,7 @@ void period_100Hz(uint32_t count)
         sent_scan_start = true;
     }
     //if scan start is sent look for the start scan sequence from lidar
-    else if (sent_scan_start)
+    if (sent_scan_start)
     {
         if(rplidar.check_start_scan())
         {
@@ -228,9 +228,9 @@ void period_100Hz(uint32_t count)
         }
     }
     //if lidar is ready to send then toggle LED
-    else if (lidar_ready_to_send)
+    if (lidar_ready_to_send)
     {
-        LE.toggle(3);
+        LE.toggle(1);
     }
 
 }

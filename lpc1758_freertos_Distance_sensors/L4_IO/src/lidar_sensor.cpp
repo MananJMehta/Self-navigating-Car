@@ -126,8 +126,7 @@ bool Lidar_Sensor::check_start_scan()
 {
 
     for(uint8_t i=0; i<7 ;i++)
-        if(arr[i]!= receive_lidar_data())
-            return false;
+        if(arr[i]!= receive_lidar_data()) return false;
 
 
     return true;
