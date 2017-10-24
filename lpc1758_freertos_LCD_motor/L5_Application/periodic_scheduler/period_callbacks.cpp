@@ -95,6 +95,7 @@ void period_1Hz(uint32_t count)
 }
 bool killFlag=false;
 MOTOR_MESSAGE_t msg={0};
+MOTOR_MOVEMENT_t move={0};
 CAN_TEST_t canMsg={0};
 const uint32_t                             CAN_TEST__MIA_MS=3000;
 const CAN_TEST_t                           CAN_TEST__MIA_MSG={0};
@@ -119,6 +120,20 @@ void period_10Hz(uint32_t count)
                 msg.MOTOR_MESSAGE_sig=5;
                 dbc_encode_and_send_MOTOR_MESSAGE(&msg);
                 break;
+            case 201:
+                dbc_decode_MOTOR_MOVEMENT(&move,can_msg.data.bytes,&dbcHeader);
+                if(move.MOTOR_MOVEMENT_sig >8)
+                {
+                    if(move.MOTOR_MOVEMENT_sig  == 9);//insert motor code;
+                    if(move.MOTOR_MOVEMENT_sig  == 10);//insert motor code;
+                    if(move.MOTOR_MOVEMENT_sig  == 12);//insert motor code;
+                }
+                else
+                {
+                    if(move.MOTOR_MOVEMENT_sig  == 1);//insert motor code;
+                    if(move.MOTOR_MOVEMENT_sig  == 2);//insert motor code;
+                    if(move.MOTOR_MOVEMENT_sig  == 4);//insert motor code;
+                }
         }
     }
 
