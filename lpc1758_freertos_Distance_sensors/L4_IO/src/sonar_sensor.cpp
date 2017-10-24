@@ -14,9 +14,9 @@
 
 //Sonar_Sensor left_sensor,right_sensor, center_sensor;
 
-float get_start_time1, dist1, get_stop_time1;
-float get_start_time2, dist2, get_stop_time2;
-float get_start_time3, dist3, get_stop_time3;
+extern float get_start_time1, dist1, get_stop_time1;
+extern float get_start_time2, dist2, get_stop_time2;
+extern float get_start_time3, dist3, get_stop_time3;
 
 static GPIO myPinRX1(P2_1);     // left sensor
 static GPIO myPinRX2(P2_3);     // center sensor
@@ -35,7 +35,6 @@ void Sonar_Sensor::sensor_detect_fall_left()
 {
     get_stop_time1 = sys_get_uptime_us();
     dist1 = ((get_stop_time1 - get_start_time1)/147);
-    printf("Distance left = %f\n", dist1);
 }
 
 // callbacks for center sensor
@@ -104,20 +103,17 @@ void Sonar_Sensor::start_operation()
     myPinRX1.setHigh();
     delay_us(25);
     myPinRX1.setLow();
-    delay_ms(50);
 
 //initialising trigger pin for sensor center
     //myPinRX2.setAsOutput();
     myPinRX2.setHigh();
     delay_us(25);
     myPinRX2.setLow();
-    delay_ms(50);
 
 //initialising trigger pin for sensor right
    // myPinRX3.setAsOutput();
     myPinRX3.setHigh();
     delay_us(25);
     myPinRX3.setLow();
-    delay_ms(50);
 
 }
