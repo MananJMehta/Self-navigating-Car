@@ -64,6 +64,7 @@ bool period_init(void)
     CAN_init(can1,10,10,10,NULL,NULL);
     CAN_bypass_filter_accept_all_msgs();
     CAN_reset_bus(can1);
+    LD.init();
     return true; // Must return true upon success
 }
 
@@ -111,11 +112,12 @@ void period_10Hz(uint32_t count)
             case 200:
                 if(killFlag!=false)LD.setLeftDigit('S');
                 else LD.setLeftDigit('A');
+                msg.GPS_MESSAGE_sig=5;
+                dbc_encode_and_send_GPS_MESSAGE(&msg);
                 break;
         }
     }
-    msg.GPS_MESSAGE_sig=5;
-    dbc_encode_and_send_GPS_MESSAGE(&msg);
+
     if(dbc_handle_mia_CAN_TEST(&canMsg,100))
         LD.setLeftDigit(5);
 }
