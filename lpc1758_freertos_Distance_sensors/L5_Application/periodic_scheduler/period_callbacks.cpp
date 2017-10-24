@@ -32,8 +32,12 @@
 #include "io.hpp"
 #include "periodic_callback.h"
 #include "sonar_sensor.hpp"
+#include "stdio.h"
 
 Sonar_Sensor* sonar ;
+float get_start_time1, dist1, get_stop_time1;
+float get_start_time2, dist2, get_stop_time2;
+float get_start_time3, dist3, get_stop_time3;
 
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
@@ -71,17 +75,13 @@ bool period_reg_tlm(void)
 
 void period_1Hz(uint32_t count)
 {
-    //LE.toggle(1);
-    /*if(sonar.obstacle_1())
-            LE.toggle(2);
-    else LE.toggle(1);*/
-    sonar->start_operation();
+
 }
 
 void period_10Hz(uint32_t count)
 {
-    //sonar->start_operation();
-
+    sonar->start_operation();
+    printf("Distance left = %f\n", dist1);
 }
 
 void period_100Hz(uint32_t count)
