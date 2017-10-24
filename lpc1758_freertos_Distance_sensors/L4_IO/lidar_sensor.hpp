@@ -43,14 +43,14 @@ class Lidar_Sensor : public SingletonTemplate<Lidar_Sensor>
         scan_data_packet_t data_packet [360];
 
     private:
-
+        char arr[8];
 
 
 
         void send_lidar_command(lidar_cmd_t lidar_cmd);//we will send an enum data type
 
         Lidar_Sensor() {
-
+            arr[8] = { 0xa5 , 0x5a , 0x05 , 0x00 , 0x00 , 0x40 , 0x81};
             //create the lane array
             //0 means this lane is clear
             for(int i =0; i < 9; i++)
