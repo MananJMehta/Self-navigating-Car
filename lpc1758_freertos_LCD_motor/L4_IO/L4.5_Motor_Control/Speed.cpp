@@ -19,7 +19,7 @@ float Speed::getSpeed()   ///< @returns floating-point reading of feedback rpm s
 {
     return 0.00;
 }
-void Speed::setSpeed(Speed::speedOfCar speed) ///< @param sets floating-point speed of motor
+ void Speed::setSpeed(Speed::speedOfCar speed) ///< @param sets floating-point speed of motor
 {
 //speed values start from ~15.4 for forward. values uptil 18 have been tested to be very fast
     switch(speed)

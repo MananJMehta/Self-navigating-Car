@@ -10,7 +10,7 @@
 #define SPEED_HPP_
 #include "lpc_pwm.hpp"
 
-class Speed: PWM
+ class Speed: PWM
 
 {
 public:

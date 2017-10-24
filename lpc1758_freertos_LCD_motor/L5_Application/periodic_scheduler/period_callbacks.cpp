@@ -40,7 +40,8 @@
 
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
-Steering str;
+Steering str = Steering();
+Speed spd = Speed();
 
 bool dbc_app_send_can_msg(uint32_t mid, uint8_t dlc, uint8_t bytes[8])
 {
@@ -65,11 +66,13 @@ bool period_init(void)
     CAN_init(can1,10,10,10,NULL,NULL);
     CAN_bypass_filter_accept_all_msgs();
     //error code 1 to signal incorrect initialization of speed PWM
-    if(!spd.init())
+
+    spd.init();
+    str.init();
     CAN_reset_bus(can1);
     //error code 2 to signal incorrect initialization of steering PWM
     LD.init();
-        LD.setNumber(2);
+
     return true; // Must return true upon success
 }
 
@@ -99,6 +102,8 @@ MOTOR_MOVEMENT_t move={0};
 CAN_TEST_t canMsg={0};
 const uint32_t                             CAN_TEST__MIA_MS=3000;
 const CAN_TEST_t                           CAN_TEST__MIA_MSG={0};
+const uint32_t                             MOTOR_MOVEMENT__MIA_MS =300;
+const MOTOR_MOVEMENT_t                     MOTOR_MOVEMENT__MIA_MSG = {0};
 
 void period_10Hz(uint32_t count)
 {
@@ -122,37 +127,37 @@ void period_10Hz(uint32_t count)
                 break;
             case 201:
                 dbc_decode_MOTOR_MOVEMENT(&move,can_msg.data.bytes,&dbcHeader);
-                if(move.MOTOR_MOVEMENT_sig >8)
+                LD.setNumber(move.MOTOR_MOVEMENT_sig);
+                if(move.MOTOR_MOVEMENT_sig >=8)
                 {
-                    if(move.MOTOR_MOVEMENT_sig  == 9);//insert motor code;
-                    if(move.MOTOR_MOVEMENT_sig  == 10);//insert motor code;
-                    if(move.MOTOR_MOVEMENT_sig  == 12);//insert motor code;
+                    if(move.MOTOR_MOVEMENT_sig  == 9) str.setDirection(str.directionOfCar::HardLeft);//insert motor code;
+                    if(move.MOTOR_MOVEMENT_sig  == 10)str.setDirection(str.directionOfCar::HardRight);//insert motor code;
+                    if(move.MOTOR_MOVEMENT_sig  == 12)str.setDirection(str.directionOfCar::SoftLeft);//insert motor code;
                 }
                 else
                 {
-                    if(move.MOTOR_MOVEMENT_sig  == 1);//insert motor code;
-                    if(move.MOTOR_MOVEMENT_sig  == 2);//insert motor code;
-                    if(move.MOTOR_MOVEMENT_sig  == 4);//insert motor code;
+                    if(move.MOTOR_MOVEMENT_sig  == 1)spd.setSpeed(spd.speedOfCar::SLOW);//insert motor code;
+                    if(move.MOTOR_MOVEMENT_sig  == 2)spd.setSpeed(spd.speedOfCar::MEDIUM);//insert motor code;
+                    if(move.MOTOR_MOVEMENT_sig  == 4)str.setDirection(str.directionOfCar::SoftRight);//insert motor code;
+                }
+                if(move.MOTOR_MOVEMENT_sig ==0)
+                {
+                    str.setDirection(str.directionOfCar::Center);
+                    spd.setSpeed(spd.speedOfCar::Stop);
                 }
         }
     }
 
-    if(dbc_handle_mia_CAN_TEST(&canMsg,100))
-        LD.setLeftDigit(7);
+    if(dbc_handle_mia_MOTOR_MOVEMENT(&move,100))
+    {
+        str.setDirection(str.directionOfCar::Center);
+        spd.setSpeed(spd.speedOfCar::Stop);
+    }
 }
 
 void period_100Hz(uint32_t count)
 {
-    if(SW.getSwitch(1))
-        str.set(6.5);
-    else if(SW.getSwitch(2))
-        str.set(6.6);
-    else if(SW.getSwitch(3))
-          str.set(6.7);
-    else if(SW.getSwitch(4))
-          str.set(6.8);
-    else
-          str.set(15);
+
 }
 
 // 1Khz (1ms) is only run if Periodic Dispatcher was configured to run it at main():
