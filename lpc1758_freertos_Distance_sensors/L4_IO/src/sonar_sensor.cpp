@@ -12,8 +12,7 @@
 #include "stdio.h"
 #include "utilities.h"
 
-//Sonar_Sensor left_sensor,right_sensor, center_sensor;
-
+extern SemaphoreHandle_t sonar_mutex;
 extern float get_start_time1, dist1, get_stop_time1;
 extern float get_start_time2, dist2, get_stop_time2;
 extern float get_start_time3, dist3, get_stop_time3;
@@ -35,6 +34,7 @@ void Sonar_Sensor::sensor_detect_fall_left()
 {
     get_stop_time1 = sys_get_uptime_us();
     dist1 = ((get_stop_time1 - get_start_time1)/147);
+    xSemaphoreGiveFromISR(sonar_mutex,0);
 }
 
 // callbacks for center sensor
@@ -103,17 +103,5 @@ void Sonar_Sensor::start_operation()
     myPinRX1.setHigh();
     delay_us(25);
     myPinRX1.setLow();
-
-//initialising trigger pin for sensor center
-    //myPinRX2.setAsOutput();
-    myPinRX2.setHigh();
-    delay_us(25);
-    myPinRX2.setLow();
-
-//initialising trigger pin for sensor right
-   // myPinRX3.setAsOutput();
-    myPinRX3.setHigh();
-    delay_us(25);
-    myPinRX3.setLow();
 
 }
