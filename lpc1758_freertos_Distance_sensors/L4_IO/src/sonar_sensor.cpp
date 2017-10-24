@@ -12,113 +12,85 @@
 #include "stdio.h"
 #include "utilities.h"
 
-float get_start_time1 , dist1, get_stop_time1;
-float get_start_time2 , dist2, get_stop_time2;
-float get_start_time3 , dist3, get_stop_time3;
-SemaphoreHandle_t xSensorHandle_rise1=xSemaphoreCreateBinary();
-SemaphoreHandle_t xSensorHandle_fall1=xSemaphoreCreateBinary();
-SemaphoreHandle_t xSensorHandle_rise2=xSemaphoreCreateBinary();
-SemaphoreHandle_t xSensorHandle_fall2=xSemaphoreCreateBinary();
-SemaphoreHandle_t xSensorHandle_rise3=xSemaphoreCreateBinary();
-SemaphoreHandle_t xSensorHandle_fall3=xSemaphoreCreateBinary();
+//Sonar_Sensor left_sensor,right_sensor, center_sensor;
 
-//////Call back functions and distance calculators for sensor1//////////
-void rise_detector1()
+float get_start_time1, dist1, get_stop_time1;
+float get_start_time2, dist2, get_stop_time2;
+float get_start_time3, dist3, get_stop_time3;
+
+static GPIO myPinRX1(P2_1);     // left sensor
+static GPIO myPinRX2(P2_3);     // center sensor
+static GPIO myPinRX3(P2_5);     // right sensor
+GPIO PWM_left(P2_0);
+GPIO PWM_center(P2_2);
+GPIO PWM_right(P2_4);
+
+
+void Sonar_Sensor::sensor_detect_rise_left()
 {
     get_start_time1 = sys_get_uptime_us();
 }
 
-void fall_detector1()
+void Sonar_Sensor::sensor_detect_fall_left()
 {
     get_stop_time1 = sys_get_uptime_us();
+    dist1 = ((get_stop_time1 - get_start_time1)/147);
+    printf("Distance left = %f\n", dist1);
 }
 
-bool Sonar_Sensor::obstacle_1()
+// callbacks for center sensor
+
+void Sonar_Sensor::sensor_detect_rise_center()
 {
-
-        dist1 = ((get_stop_time1 - get_start_time1)/147);
-        printf("Y\n"); printf("%f\n",dist1);
-        if(dist1<=20.0)
-            return true;
-
-    return false;
+    get_start_time2 = sys_get_uptime_us();
 }
 
-//////Call back functions and distance calculators for sensor 2//////////
-
-void rise_detector2()
+void Sonar_Sensor::sensor_detect_fall_center()
 {
-    xSemaphoreGive(xSensorHandle_rise2);
+    get_stop_time2 = sys_get_uptime_us();
+    dist2 = ((get_stop_time2 - get_start_time2)/147);
 }
 
-void sensor_detect_rise2()
+// callbacks for right sensor
+
+void Sonar_Sensor::sensor_detect_rise_right()
 {
-    if( xSemaphoreTake( xSensorHandle_rise2, ( TickType_t ) 1 ) == pdTRUE )
-        get_start_time2 = sys_get_uptime_us();
+    get_start_time3 = sys_get_uptime_us();
 }
 
-void fall_detector2()
+void Sonar_Sensor::sensor_detect_fall_right()
 {
-    xSemaphoreGive(xSensorHandle_fall2);
+    get_stop_time3 = sys_get_uptime_us();
+    dist3 = ((get_stop_time3 - get_start_time3)/147);
 }
 
-bool Sonar_Sensor::obstacle_2()
-{
-    if( xSemaphoreTake( xSensorHandle_fall2, ( TickType_t ) 1 ) == pdTRUE ){
-        get_stop_time2 = sys_get_uptime_us();
-        dist2 = ((get_stop_time2 - get_start_time2)/147);
-        if(dist2<=80)
-            return true;
-    }
-    return false;
-}
 
-//////Call back functions and distance calculators for sensor 3//////////
-
-void rise_detector3()
-{
-    xSemaphoreGive(xSensorHandle_rise3);
-}
-
-void sensor_detect_rise3()
-{
-    if( xSemaphoreTake( xSensorHandle_rise3, ( TickType_t ) 1 ) == pdTRUE )
-        get_start_time3 = sys_get_uptime_us();
-}
-
-void fall_detector3()
-{
-    xSemaphoreGive(xSensorHandle_fall3);
-}
-
-bool Sonar_Sensor::obstacle_3()
-{
-    if( xSemaphoreTake( xSensorHandle_fall3, ( TickType_t ) 1 ) == pdTRUE ){
-        get_stop_time3 = sys_get_uptime_us();
-        dist3 = ((get_stop_time3 - get_start_time3)/147);
-        if(dist3<=80)
-            return true;
-    }
-    return false;
-}
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void Sonar_Sensor::init()
+bool Sonar_Sensor::init()
 {
-    //initialising interrupt pins for sensor 1
-    eint3_enable_port2(0,eint_rising_edge, rise_detector1);
-    eint3_enable_port2(0,eint_falling_edge, fall_detector1);
+    myPinRX1.setAsOutput();
+    myPinRX2.setAsOutput();
+    myPinRX3.setAsOutput();
+    PWM_left.setAsInput();
+    PWM_center.setAsInput();
+    PWM_right.setAsInput();
 
-    //initialising interrupt pins for sensor 2
-    eint3_enable_port2(2,eint_rising_edge, rise_detector2);
-    eint3_enable_port2(2,eint_falling_edge, fall_detector2);
+//initialising interrupt pins for sensor 1
 
-    //initialising interrupt pins for sensor 3
-    eint3_enable_port2(4,eint_rising_edge, rise_detector3);
-    eint3_enable_port2(4,eint_falling_edge, fall_detector3);
+    eint3_enable_port2(0,eint_falling_edge,sensor_detect_fall_left);
+    eint3_enable_port2(0,eint_rising_edge,sensor_detect_rise_left);
+
+    eint3_enable_port2(2,eint_falling_edge,sensor_detect_fall_center);
+    eint3_enable_port2(2,eint_rising_edge,sensor_detect_rise_center);
+
+    eint3_enable_port2(4,eint_falling_edge,sensor_detect_fall_right);
+    eint3_enable_port2(4,eint_rising_edge,sensor_detect_rise_right);
+
+    return true;
 }
 
 #ifdef __cplusplus
@@ -127,25 +99,25 @@ void Sonar_Sensor::init()
 
 void Sonar_Sensor::start_operation()
 {
-    //initialising trigger pin for sensor 1
-    static GPIO myPinRX1(P2_1);
-    myPinRX1.setAsOutput();
+//initialising trigger pin for sensor left
+    //myPinRX1.setAsOutput();
     myPinRX1.setHigh();
-
-    //initialising trigger pin for sensor 2
-    static GPIO myPinRX2(P2_3);
-    myPinRX2.setAsOutput();
-    myPinRX2.setHigh();
-
-    //initialising trigger pin for sensor 3
-    static GPIO myPinRX3(P2_5);
-    myPinRX3.setAsOutput();
-    myPinRX3.setHigh();
-
-    //essential for HW state machine
     delay_us(25);
-
     myPinRX1.setLow();
+    delay_ms(50);
+
+//initialising trigger pin for sensor center
+    //myPinRX2.setAsOutput();
+    myPinRX2.setHigh();
+    delay_us(25);
     myPinRX2.setLow();
+    delay_ms(50);
+
+//initialising trigger pin for sensor right
+   // myPinRX3.setAsOutput();
+    myPinRX3.setHigh();
+    delay_us(25);
     myPinRX3.setLow();
+    delay_ms(50);
+
 }

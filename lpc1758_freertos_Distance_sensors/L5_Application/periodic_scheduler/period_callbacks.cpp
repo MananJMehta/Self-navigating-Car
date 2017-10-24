@@ -33,6 +33,7 @@
 #include "periodic_callback.h"
 #include "sonar_sensor.hpp"
 
+Sonar_Sensor* sonar ;
 
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
@@ -45,12 +46,13 @@ const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
  */
 const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
 
-Sonar_Sensor s;
+
 
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
 {
-    s.init();
+    sonar = new Sonar_Sensor();
+    sonar->init();
     return true; // Must return true upon success
 }
 
@@ -70,14 +72,15 @@ bool period_reg_tlm(void)
 void period_1Hz(uint32_t count)
 {
     //LE.toggle(1);
-    if(s.obstacle_1())
+    /*if(sonar.obstacle_1())
             LE.toggle(2);
-    else LE.toggle(1);
+    else LE.toggle(1);*/
+    sonar->start_operation();
 }
 
 void period_10Hz(uint32_t count)
 {
-    s.start_operation();
+    //sonar->start_operation();
 
 }
 
