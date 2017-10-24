@@ -33,6 +33,7 @@ class Lidar_Sensor : public SingletonTemplate<Lidar_Sensor>
         void get_health(health_data_packet_t *health_data);
         void get_sample_rate(sample_rate_packet_t *sample_rate);
         void set_motor_speed(uint8_t RPM);
+        bool check_start_scan();
 
         int8_t det_smol_angle();
 

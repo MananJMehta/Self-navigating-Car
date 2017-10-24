@@ -55,6 +55,8 @@ const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
 TaskHandle_t scanHandle = NULL;//use this flow meter handle to turn flow meter on and off
 TaskHandle_t receiveHandle = NULL;//use this flow meter handle to turn flow meter on and off
 
+
+
 void scan_task(void* p)
 {
     bool flag = true;
@@ -99,61 +101,67 @@ void scan_task(void* p)
 
 }
 
+
+//this task can be turnned on and off every time there is a
+//start and stop command...so in the rplidar.start_scan function enable this task
+//in rplidar.stop_scan(); turn off this task
 void receive_task(void* p)
 {
 
-    bool starting_scan = true;
-    char arr[7]={ 0xa5 , 0x5a , 0x05 , 0x00, 0x00 , 0x40 , 0x81};
-    uint16_t temp;
-    uint16_t temp1;
-    uint16_t angle;
-    uint16_t distance;
-    float angle_q6;
-    float distance_q6;
+//    bool starting_scan = true;
+//    char arr[7]={ 0xa5 , 0x5a , 0x05 , 0x00, 0x00 , 0x40 , 0x81};
+//    uint16_t temp;
+//    uint16_t temp1;
+//    uint16_t angle;
+//    uint16_t distance;
+//    float angle_q6;
+//    float distance_q6;
+//
+//    starting_scan = rplidar.check_start_scan();
+//
+//    while(starting_scan)
+//    {
+//        uint32_t lookup[9]={ 280 , 300 , 320 , 340 , 0 , 20 , 40 , 60 , 80 };
+//
+//        for(uint16_t i = 0; i < 360; i++)
+//        {
+//            uint8_t count=0;
+//
+//        rplidar.receive_lidar_data();// get da quality
+//        angle = (uint16_t)(rplidar.receive_lidar_data()); //get da angle_1
+//
+//        temp = (uint16_t)(rplidar.receive_lidar_data()); //get da angle_2
+//
+//        distance = (uint16_t)(rplidar.receive_lidar_data()); //get da distance_1
+//        temp1 = (uint16_t)(rplidar.receive_lidar_data()); //get da distance 2
+//
+//        if(lookup[count]==i){
+//            angle = angle>>1;
+//            angle |= temp<<8;
+//            angle_q6 = angle/64.0;
+//            distance |= temp1<<8;
+//            distance_q6 = distance/4.0;
+//            count++;
+//            if(distance_q6 < 0.5)
+//                rplidar.lane_lut[count]=true;
+//            else
+//                rplidar.lane_lut[count]=false;
+//        }
+//        }
+//
+//
+//        //get the angle
+//        //determine the lane
+//        //check if there is there is obstacle
+//        //set lane bit accordingly
+//    }
 
-    for(uint8_t i=0; i<7 ;i++)
+    bool scanning = false;
+
+    while (1)
     {
-         if(arr[i]!= rplidar.receive_lidar_data())
-         {
-             starting_scan= false;
-         }
-    }
+        if(!scanning) rplidar.check_start_scan();
 
-    while(starting_scan)
-    {
-        uint32_t lookup[9]={ 280 , 300 , 320 , 340 , 0 , 20 , 40 , 60 , 80 };
-
-        for(uint16_t i = 0; i < 360; i++)
-        {
-            uint8_t count=0;
-
-        rplidar.receive_lidar_data();// get da quality
-        angle = (uint16_t)(rplidar.receive_lidar_data()); //get da angle_1
-
-        temp = (uint16_t)(rplidar.receive_lidar_data()); //get da angle_2
-
-        distance = (uint16_t)(rplidar.receive_lidar_data()); //get da distance_1
-        temp1 = (uint16_t)(rplidar.receive_lidar_data()); //get da distance 2
-
-        if(lookup[count]==i){
-            angle = angle>>1;
-            angle |= temp<<8;
-            angle_q6 = angle/64.0;
-            distance |= temp1<<8;
-            distance_q6 = distance/4.0;
-            count++;
-            if(distance_q6 < 0.5)
-                rplidar.lane_lut[count]=true;
-            else
-                rplidar.lane_lut[count]=false;
-        }
-        }
-
-
-        //get the angle
-        //determine the lane
-        //check if there is there is obstacle
-        //set lane bit accordingly
     }
 
 }
@@ -164,11 +172,11 @@ void receive_task(void* p)
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
 {
-    #if 1
+    #if 0
     xTaskCreate(scan_task, (const char*)"scan", STACK_BYTES(2048), 0, PRIORITY_HIGH, &scanHandle);
     #endif
 
-    #if 1
+    #if 0
     xTaskCreate(receive_task, (const char*)"recv", STACK_BYTES(2048), 0, PRIORITY_HIGH, &receiveHandle);
     #endif
     return true; // Must return true upon success
@@ -189,7 +197,8 @@ bool period_reg_tlm(void)
 
 void period_1Hz(uint32_t count)
 {
-    printf("\n%d",rplidar.det_smol_angle());
+//    printf("\n%d",rplidar.det_smol_angle());
+
     LE.toggle(1);
 }
 
@@ -200,6 +209,12 @@ void period_10Hz(uint32_t count)
 
 void period_100Hz(uint32_t count)
 {
+    static bool scanning = false;
+
+
+    if (!scanning) rplidar.check_start_scan();
+
+
     LE.toggle(3);
 }
 

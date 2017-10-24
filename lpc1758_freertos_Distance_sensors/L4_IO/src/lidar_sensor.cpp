@@ -116,3 +116,20 @@ char Lidar_Sensor::receive_lidar_data()
     if(u2.getChar(str,0)) return str[0];
     return 0xFF;
 }
+
+/*
+ *
+ * This function will check the
+ *
+ * */
+bool Lidar_Sensor::check_start_scan()
+{
+//    for(uint8_t i=0; i<7 ;i++)
+//        {
+//             if(arr[i]!= receive_lidar_data())
+//             {
+//                 starting_scan = false;
+//             }
+//        }
+    return false;
+}
