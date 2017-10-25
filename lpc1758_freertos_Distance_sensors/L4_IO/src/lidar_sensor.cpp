@@ -2,7 +2,6 @@
 
 #include "lidar_sensor.hpp"
 
-
 void Lidar_Sensor::send_lidar_command(lidar_cmd_t lidar_cmd)
 {
 
@@ -113,7 +112,8 @@ int8_t Lidar_Sensor::det_smol_angle(){
 char Lidar_Sensor::receive_lidar_data()
 {
     char str[1];
-    if(u2.getChar(str,0)) return str[0];
+    if(u2.getChar(str,portMAX_DELAY))
+        return str[0];
     return 0xFF;
 }
 
@@ -122,13 +122,26 @@ char Lidar_Sensor::receive_lidar_data()
  * This function will check the
  *
  * */
-bool Lidar_Sensor::check_start_scan()
+void Lidar_Sensor::check_start_scan()
 {
 
     for(uint8_t i=0; i<7 ;i++)
         if(arr[i]!= receive_lidar_data())
-            return false;
+        {
+            break;
+            return;
+        }
+
+    check_start = true;
+}
 
 
-    return true;
+//this task can be turnned on and off every time there is a
+//start and stop command...so in the rplidar.start_scan function enable this task
+//in rplidar.stop_scan(); turn off this task
+void Lidar_Sensor::update_lanes()
+{
+    for ( uint8_t i=0 ; i<9 ;i++)
+        printf("%d ", lane_lut[i]);
+        printf("\n");
 }
