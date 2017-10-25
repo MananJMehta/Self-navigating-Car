@@ -1,0 +1,14 @@
+"Statictext0" 0000 0000 58 1C
+"Led0" 0800 0000 08 D8
+"Led1" 2000 0000 48 D8
+"Led2" 3200 0000 84 D8
+"Led3" 4400 0000 BC D8
+"Meter0" 5600 0000 10 40
+"Customdigits0" 2200 000E 68 118
+"iCustomdigits0" 2600 000E 68 118
+"Statictext1" 3000 000E 5C 12C
+"Statictext2" 3800 000E 52 B4
+"Userled0" 4200 000E 1C 110
+"Statictext3" 5000 000E 11 12C
+"Userled1" 5800 000E B4 110
+"Statictext4" 6600 000E B4 12C
