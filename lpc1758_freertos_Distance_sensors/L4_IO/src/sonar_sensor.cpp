@@ -34,7 +34,7 @@ void Sonar_Sensor::sensor_detect_fall_left()
 {
     get_stop_time1 = sys_get_uptime_us();
     dist1 = ((get_stop_time1 - get_start_time1)/147);
-    xSemaphoreGiveFromISR(sonar_mutex,0);
+    //xSemaphoreGiveFromISR(sonar_mutex,0);
 }
 
 // callbacks for center sensor
@@ -61,6 +61,7 @@ void Sonar_Sensor::sensor_detect_fall_right()
 {
     get_stop_time3 = sys_get_uptime_us();
     dist3 = ((get_stop_time3 - get_start_time3)/147);
+    xSemaphoreGiveFromISR(sonar_mutex,0);
 }
 
 
