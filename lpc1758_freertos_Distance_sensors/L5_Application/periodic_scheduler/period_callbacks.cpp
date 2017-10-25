@@ -85,7 +85,7 @@ void period_10Hz(uint32_t count)
     if(xSemaphoreTake(sonar_mutex,1))
     {
         sonar->start_operation();
-        printf("Distance left = %f\n", dist1);
+        printf("left = %f center = %f right = %f\n", dist1, dist2, dist3);
     }
 }
 
