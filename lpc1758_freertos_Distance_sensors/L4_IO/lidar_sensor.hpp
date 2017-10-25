@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include "uart2.hpp"
 #include "lidar_sensor.h"
+#include "stdio.h"
+
 
 #define u2  Uart2::getInstance()   ///< Temperature Sensor
 
@@ -33,21 +35,29 @@ class Lidar_Sensor : public SingletonTemplate<Lidar_Sensor>
         void get_health(health_data_packet_t *health_data);
         void get_sample_rate(sample_rate_packet_t *sample_rate);
         void set_motor_speed(uint8_t RPM);
-        bool check_start_scan();
-
+        void check_start_scan();
+        void update_lanes();
         int8_t det_smol_angle();
 
         char receive_lidar_data();
-        bool lane_lut[9] ;
 
         scan_data_packet_t data_packet [360];
 
+        bool check_start = false;
+        bool lane_lut[9] ;
+        bool one=true;
+        float lookup1[9];
+
     private:
+<<<<<<< HEAD
 
 
         char arr[8] = { 0xa5 , 0x5a , 0x05 , 0x00 , 0x00 , 0x40 , 0x81};
+=======
+>>>>>>> lidar/shashank
 
 
+        char arr[8] = { 0xa5 , 0x5a , 0x05 , 0x00 , 0x00 , 0x40 , 0x81};
 
         void send_lidar_command(lidar_cmd_t lidar_cmd);//we will send an enum data type
 
@@ -61,20 +71,13 @@ class Lidar_Sensor : public SingletonTemplate<Lidar_Sensor>
             }
 
 
-
             //Create 360 Structs for Data and put the pointers to those structs
             //in the queue
 
-
-
-            //set frequency
-            //set_PWM
-            //set duty_cycle
-
             u2.init(115200, 50, 2);
-        }  ///< Private constructor of this Singleton class
-        friend class SingletonTemplate<Lidar_Sensor>;  ///< Friend class used for Singleton Template
+        }
+        friend class SingletonTemplate<Lidar_Sensor>;
 };
 
-
+#define rplidar  Lidar_Sensor::getInstance()
 #endif /* LIDAR_SENSOR_HPP_ */
