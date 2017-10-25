@@ -77,8 +77,7 @@ bool period_reg_tlm(void)
 void period_1Hz(uint32_t count)
 {
 
-<<<<<<< HEAD
-=======
+
     rplidar.update_lanes();
     /*if(rplidar.one){
             for (uint8_t i=0;i<9;i++)
@@ -86,7 +85,7 @@ void period_1Hz(uint32_t count)
             rplidar.one=false;
         }*/
     //rplidar.stop_scan();
->>>>>>> lidar/shashank
+
 //    LE.toggle(1);
 }
 
@@ -97,34 +96,6 @@ void period_10Hz(uint32_t count)
 
 void period_100Hz(uint32_t count)
 {
-<<<<<<< HEAD
-    static bool lidar_ready_to_send = false;
-    static bool sent_scan_start = false;
-
-
-    //wait 2 seconds then start scan
-    if (!sent_scan_start && count==200)
-    {
-        rplidar.start_scan();
-        sent_scan_start = true;
-    }
-    //if scan start is sent look for the start scan sequence from lidar
-    if (sent_scan_start)
-    {
-        if(rplidar.check_start_scan())
-        {
-            lidar_ready_to_send = true;
-        }
-    }
-    //if lidar is ready to send then toggle LED
-    if (lidar_ready_to_send)
-    {
-        LE.toggle(1);
-    }
-=======
-
->>>>>>> lidar/shashank
-
 }
 
 // 1Khz (1ms) is only run if Periodic Dispatcher was configured to run it at main():
