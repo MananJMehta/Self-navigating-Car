@@ -126,19 +126,11 @@ void Lidar_Sensor::check_start_scan()
 {
 
     for(uint8_t i=0; i<7 ;i++)
-<<<<<<< HEAD
-        if(arr[i]!= receive_lidar_data()) return false;
-=======
         if(arr[i]!= receive_lidar_data())
-        {
-            break;
             return;
-        }
 
     check_start = true;
 }
->>>>>>> lidar/shashank
-
 
 //this task can be turnned on and off every time there is a
 //start and stop command...so in the rplidar.start_scan function enable this task

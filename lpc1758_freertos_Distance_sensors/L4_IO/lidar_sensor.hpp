@@ -49,12 +49,6 @@ class Lidar_Sensor : public SingletonTemplate<Lidar_Sensor>
         float lookup1[9];
 
     private:
-<<<<<<< HEAD
-
-
-        char arr[8] = { 0xa5 , 0x5a , 0x05 , 0x00 , 0x00 , 0x40 , 0x81};
-=======
->>>>>>> lidar/shashank
 
 
         char arr[8] = { 0xa5 , 0x5a , 0x05 , 0x00 , 0x00 , 0x40 , 0x81};
