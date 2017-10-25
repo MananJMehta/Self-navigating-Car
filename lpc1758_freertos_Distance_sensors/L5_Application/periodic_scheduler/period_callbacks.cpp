@@ -111,11 +111,8 @@ void period_10Hz(uint32_t count)
                 LE.on(3);
                 break;
             case 200:
-                LE.toggle(1);
-
                 if(killFlag!=false)LD.setLeftDigit('S');
                 else LD.setLeftDigit('A');
-
 
                 msg.SENSOR_MESSAGE_sig=5;
                 dbc_encode_and_send_SENSOR_MESSAGE(&msg);
@@ -124,7 +121,7 @@ void period_10Hz(uint32_t count)
     }
 
     if(dbc_handle_mia_CAN_TEST(&canMsg,100))
-        LD.setLeftDigit(7);
+        LE.toggle(1);
 }
 
 void period_100Hz(uint32_t count)

@@ -119,7 +119,7 @@ void period_10Hz(uint32_t count)
     }
 
     if(dbc_handle_mia_CAN_TEST(&canMsg,100))
-        LD.setLeftDigit(5);
+       LE.toggle(1);
 }
 
 void period_100Hz(uint32_t count)

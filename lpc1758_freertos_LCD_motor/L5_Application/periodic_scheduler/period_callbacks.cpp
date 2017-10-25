@@ -27,7 +27,8 @@
  * For example, the 1000Hz take slot runs periodically every 1ms, and whatever you
  * do must be completed within 1ms.  Running over the time slot will reset the system.
  */
-
+#include <stdio.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include "io.hpp"
 #include "periodic_callback.h"
@@ -120,27 +121,27 @@ void period_10Hz(uint32_t count)
                 killFlag=true;
                 break;
             case 200:
-                if(killFlag!=false)LD.setLeftDigit('S');
-                else LD.setLeftDigit('A');
                 msg.MOTOR_MESSAGE_sig=5;
                 dbc_encode_and_send_MOTOR_MESSAGE(&msg);
                 break;
             case 201:
                 dbc_decode_MOTOR_MOVEMENT(&move,can_msg.data.bytes,&dbcHeader);
                 LD.setNumber(move.MOTOR_MOVEMENT_sig);
-                if(move.MOTOR_MOVEMENT_sig >=8)
-                {
-                    if(move.MOTOR_MOVEMENT_sig  == 9) str.setDirection(str.directionOfCar::HardLeft);//insert motor code;
-                    if(move.MOTOR_MOVEMENT_sig  == 10)str.setDirection(str.directionOfCar::HardRight);//insert motor code;
-                    if(move.MOTOR_MOVEMENT_sig  == 12)str.setDirection(str.directionOfCar::SoftLeft);//insert motor code;
-                }
+
+                if(move.MOTOR_MOVEMENT_sig  == 3)
+                    str.setDirection(str.directionOfCar::HardLeft);//insert motor code;
+                else if(move.MOTOR_MOVEMENT_sig  == 5)
+                    str.setDirection(str.directionOfCar::HardRight);//insert motor code;
+                else if(move.MOTOR_MOVEMENT_sig  == 9)
+                    str.setDirection(str.directionOfCar::Left);//insert motor code;
+                else if(move.MOTOR_MOVEMENT_sig  == 1)
+                    str.setDirection(str.directionOfCar::Right);//insert motor code;
+
+                else if(move.MOTOR_MOVEMENT_sig  == 2)
+                    spd.setSpeed(spd.speedOfCar::MEDIUM);//insert motor code;
+                else if(move.MOTOR_MOVEMENT_sig  == 4)
+                    spd.setSpeed(spd.speedOfCar::VERYFAST);//insert motor code;
                 else
-                {
-                    if(move.MOTOR_MOVEMENT_sig  == 1)spd.setSpeed(spd.speedOfCar::SLOW);//insert motor code;
-                    if(move.MOTOR_MOVEMENT_sig  == 2)spd.setSpeed(spd.speedOfCar::MEDIUM);//insert motor code;
-                    if(move.MOTOR_MOVEMENT_sig  == 4)str.setDirection(str.directionOfCar::SoftRight);//insert motor code;
-                }
-                if(move.MOTOR_MOVEMENT_sig ==0)
                 {
                     str.setDirection(str.directionOfCar::Center);
                     spd.setSpeed(spd.speedOfCar::Stop);
@@ -150,9 +151,12 @@ void period_10Hz(uint32_t count)
 
     if(dbc_handle_mia_MOTOR_MOVEMENT(&move,100))
     {
+        LE.toggle(2);
         str.setDirection(str.directionOfCar::Center);
         spd.setSpeed(spd.speedOfCar::Stop);
     }
+    if(dbc_handle_mia_CAN_TEST(&canMsg,100))
+        LE.toggle(1);
 }
 
 void period_100Hz(uint32_t count)

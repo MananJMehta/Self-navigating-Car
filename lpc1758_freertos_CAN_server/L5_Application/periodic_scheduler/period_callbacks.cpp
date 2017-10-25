@@ -128,7 +128,6 @@ void period_10Hz(uint32_t count)
         message_header.dlc=can_msg.frame_fields.data_len;
         message_header.mid=can_msg.msg_id;
 
-
         switch(message_header.mid)
         {
             case 300:
@@ -147,11 +146,14 @@ void period_10Hz(uint32_t count)
     }
 
     //MIA handling
-    dbc_handle_mia_ANDROID_MESSAGE(&androidMsg,100);
-    dbc_handle_mia_GPS_MESSAGE(&gpsMsg,100);
-    dbc_handle_mia_MOTOR_MESSAGE(&motorMsg,100);
-    dbc_handle_mia_SENSOR_MESSAGE(&sensorMsg,100);
-    dbc_decode_SENSOR_MESSAGE(&sensorMsg,can_msg.data.bytes,&message_header);
+    if(dbc_handle_mia_ANDROID_MESSAGE(&androidMsg,100))
+        LE.off(3);
+    if(dbc_handle_mia_GPS_MESSAGE(&gpsMsg,100))
+        LE.off(4);
+    if(dbc_handle_mia_MOTOR_MESSAGE(&motorMsg,100))
+        LE.off(2);
+    if(dbc_handle_mia_SENSOR_MESSAGE(&sensorMsg,100))
+        LE.off(1);
 
 }
 
