@@ -102,12 +102,13 @@ bool lidar_data_acquisition::run(void* p)
         distance = (uint16_t)(rplidar.receive_lidar_data()); //get da distance_1
         temp1 = (uint16_t)(rplidar.receive_lidar_data()); //get da distance 2
 
-        if(lookup[count]==i){
-            angle = angle>>1;
-            angle |= temp<<7;
-            angle_q6 = (float)(angle)/64.0;
-            distance |= temp1<<8;
-            distance_q6 = (float)(distance)/4.0;
+        angle = angle>>1;
+        angle |= temp<<7;
+        angle_q6 = (float)(angle)/64.0;
+        distance |= temp1<<8;
+        distance_q6 = (float)(distance)/4.0;
+
+        if(abs(lookup[count]-angle_q6) <= 15){
             count++;
             rplidar.lookup1[count]=angle_q6;
             if(distance_q6 < 0.3)
