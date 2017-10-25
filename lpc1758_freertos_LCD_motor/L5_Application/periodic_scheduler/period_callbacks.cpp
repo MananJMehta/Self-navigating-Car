@@ -121,6 +121,8 @@ void period_10Hz(uint32_t count)
                 killFlag=true;
                 break;
             case 200:
+                if(killFlag!=false)LD.setLeftDigit('S');
+                else LD.setLeftDigit('A');
                 msg.MOTOR_MESSAGE_sig=5;
                 dbc_encode_and_send_MOTOR_MESSAGE(&msg);
                 break;
