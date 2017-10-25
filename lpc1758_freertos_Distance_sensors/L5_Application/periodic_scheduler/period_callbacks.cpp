@@ -36,9 +36,9 @@
 
 Sonar_Sensor* sonar ;
 SemaphoreHandle_t sonar_mutex;
-float get_start_time1, dist1, get_stop_time1;
-float get_start_time2, dist2, get_stop_time2;
-float get_start_time3, dist3, get_stop_time3;
+float left_start, dist_in_left, left_stop;
+float center_start, dist_in_center, center_stop;
+float right_start, dist_in_right, right_stop;
 
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
@@ -85,7 +85,7 @@ void period_10Hz(uint32_t count)
     if(xSemaphoreTake(sonar_mutex,1))
     {
         sonar->start_operation();
-        printf("left = %f center = %f right = %f\n", dist1, dist2, dist3);
+        printf("left = %f center = %f right = %f\n", dist_in_left, dist_in_center, dist_in_right);
     }
 }
 

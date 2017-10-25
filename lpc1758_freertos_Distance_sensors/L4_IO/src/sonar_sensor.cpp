@@ -13,9 +13,9 @@
 #include "utilities.h"
 
 extern SemaphoreHandle_t sonar_mutex;
-extern float get_start_time1, dist1, get_stop_time1;
-extern float get_start_time2, dist2, get_stop_time2;
-extern float get_start_time3, dist3, get_stop_time3;
+extern float left_start, dist_in_left, left_stop;
+extern float center_start, dist_in_center, center_stop;
+extern float right_start, dist_in_right, right_stop;
 
 static GPIO myPinRX1(P2_1);     // left sensor
 static GPIO myPinRX2(P2_3);     // center sensor
@@ -27,13 +27,13 @@ GPIO PWM_right(P2_4);
 
 void Sonar_Sensor::sensor_detect_rise_left()
 {
-    get_start_time1 = sys_get_uptime_us();
+    left_start = sys_get_uptime_us();
 }
 
 void Sonar_Sensor::sensor_detect_fall_left()
 {
-    get_stop_time1 = sys_get_uptime_us();
-    dist1 = ((get_stop_time1 - get_start_time1)/147);
+    left_stop = sys_get_uptime_us();
+    dist_in_left = ((left_stop - left_start)/147);
     //xSemaphoreGiveFromISR(sonar_mutex,0);
 }
 
@@ -41,26 +41,26 @@ void Sonar_Sensor::sensor_detect_fall_left()
 
 void Sonar_Sensor::sensor_detect_rise_center()
 {
-    get_start_time2 = sys_get_uptime_us();
+    center_start = sys_get_uptime_us();
 }
 
 void Sonar_Sensor::sensor_detect_fall_center()
 {
-    get_stop_time2 = sys_get_uptime_us();
-    dist2 = ((get_stop_time2 - get_start_time2)/147);
+    center_stop = sys_get_uptime_us();
+    dist_in_center = ((center_stop - center_start)/147);
 }
 
 // callbacks for right sensor
 
 void Sonar_Sensor::sensor_detect_rise_right()
 {
-    get_start_time3 = sys_get_uptime_us();
+    right_start = sys_get_uptime_us();
 }
 
 void Sonar_Sensor::sensor_detect_fall_right()
 {
-    get_stop_time3 = sys_get_uptime_us();
-    dist3 = ((get_stop_time3 - get_start_time3)/147);
+    right_stop = sys_get_uptime_us();
+    dist_in_right = ((right_stop - right_start)/147);
     xSemaphoreGiveFromISR(sonar_mutex,0);
 }
 
