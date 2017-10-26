@@ -31,6 +31,8 @@
 #include <stdint.h>
 #include "io.hpp"
 #include "periodic_callback.h"
+#include "lcd.hpp"
+#include "uart2.hpp"
 
 
 
@@ -48,6 +50,9 @@ const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
 {
+    Uart2& u2 = Uart2::getInstance();
+    u2.init(38400);
+
     return true; // Must return true upon success
 }
 
@@ -66,12 +71,14 @@ bool period_reg_tlm(void)
 
 void period_1Hz(uint32_t count)
 {
-    LE.toggle(1);
+
 }
 
 void period_10Hz(uint32_t count)
 {
-    LE.toggle(2);
+    int value = get_random_int(20);
+    char random_speed = value;
+    display_speedometer(random_speed);
 }
 
 void period_100Hz(uint32_t count)
