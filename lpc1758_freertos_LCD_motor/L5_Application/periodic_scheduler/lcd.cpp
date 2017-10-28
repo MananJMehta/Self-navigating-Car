@@ -51,8 +51,8 @@ void display_lidar_spectrum(char pos, char val)
     u2.putChar(0x01);   //Write Object
     u2.putChar(0x18);   //Object ID for bus_reset
     u2.putChar(0x00);
-    u2.putChar(pos);   //MSB
-    u2.putChar(val); //LSB
+    u2.putChar(pos);    //MSB
+    u2.putChar(val);    //LSB
     char checkSum = 0x01^0x18^0x00^pos^ val;
     u2.putChar(checkSum);
 }
@@ -64,7 +64,7 @@ void display_lcd_led(char led_num, char state)
     u2.putChar(0x0E);   //Object ID for bus_reset
     u2.putChar(led_num);
     u2.putChar(0x00);
-    u2.putChar(state); //LSB
+    u2.putChar(state);  //LSB
     char checkSum = 0x01^0x0E^led_num^0x00^state;
     u2.putChar(checkSum);
 }
@@ -81,4 +81,16 @@ void display_LCD_health(char led_num, char state)
     u2.putChar(checkSum);
 }
 
+//TODO- to be included in hpp
+void display_lcd_numbers(char display_num, char msb, char lsb)
+{
+    Uart2& u2 = Uart2::getInstance();
+    u2.putChar(0x01);   //Write Object
+    u2.putChar(0x0F);   //Object ID for bus_reset
+    u2.putChar(display_num);
+    u2.putChar(msb);
+    u2.putChar(lsb);    //LSB
+    char checkSum = 0x01^0x0F^display_num^msb^lsb;
+    u2.putChar(checkSum);
+}
 

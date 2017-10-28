@@ -50,6 +50,8 @@ const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
 const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
 
 enum lcd_led{Sensor, Motor, Comm, Geo};
+enum lcd_digits{Miles_covered, Miles_remaining, dest_lat, dest_long, current_lat, current_long};
+enum lcd_health{System, Battery};
 
 
 /// Called once before the RTOS is started, this is a good place to initialize things once
@@ -76,17 +78,35 @@ bool period_reg_tlm(void)
 void period_1Hz(uint32_t count)
 {
     //TODO-1 if bus if off, reset bus and print the error in log file
-    //TODO-2 Receive messages from Can Bus before printing
+
+    /**
+     * TODO-2 Receive all these messages from Can Bus before printing
+     */
     int value = get_random_int(20);
     char random_speed = value;
     display_speedometer(random_speed);
     display_bus_reset();
     display_lcd_led(Sensor, 1);
-    display_LCD_health(1,0);
-    display_LCD_health(0,1);
+    display_LCD_health(System,0);
+    display_LCD_health(Battery,1);
+
+    //TODO- Convert this to for loop
     display_lidar_spectrum(5, 6);
     display_lidar_spectrum(3, 2);
     display_lidar_spectrum(1, 5);
+
+    /*
+     * TODO- To be verified
+     * Write a wrapper function for conversion of integer to hex values
+     */
+
+    display_lcd_numbers(Miles_covered, 0xFF, 0xFF);
+    display_lcd_numbers(Miles_remaining, 0xEE, 0xEE);
+    display_lcd_numbers(dest_lat, 0x44, 0x44);
+    display_lcd_numbers(dest_long, 0x22, 0x22);
+    display_lcd_numbers(current_lat, 0x32, 0x12);
+    display_lcd_numbers(current_long, 0x12, 0x34);
+
 }
 
 void period_10Hz(uint32_t count)
