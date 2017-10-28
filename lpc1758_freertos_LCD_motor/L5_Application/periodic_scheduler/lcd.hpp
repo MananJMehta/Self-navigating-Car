@@ -10,5 +10,9 @@
 
 int get_random_int(int max_val);
 void display_speedometer(char random_speed);
+void display_bus_reset();
+void display_lidar_spectrum(char pos, char val);
+void display_lcd_led(char led_num, char state);
+void display_LCD_health(char led_num, char state);
 
 #endif /* LCD_HPP_ */

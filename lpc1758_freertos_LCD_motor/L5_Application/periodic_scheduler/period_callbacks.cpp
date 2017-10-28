@@ -33,6 +33,8 @@
 #include "periodic_callback.h"
 #include "lcd.hpp"
 #include "uart2.hpp"
+#include "_can_dbc/generated_can.h"
+#include "can.h"
 
 
 
@@ -47,12 +49,14 @@ const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
  */
 const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
 
+enum lcd_led{Sensor, Motor, Comm, Geo};
+
+
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
 {
     Uart2& u2 = Uart2::getInstance();
     u2.init(38400);
-
     return true; // Must return true upon success
 }
 
@@ -71,24 +75,33 @@ bool period_reg_tlm(void)
 
 void period_1Hz(uint32_t count)
 {
-
+    //TODO-1 if bus if off, reset bus and print the error in log file
+    //TODO-2 Receive messages from Can Bus before printing
+    int value = get_random_int(20);
+    char random_speed = value;
+    display_speedometer(random_speed);
+    display_bus_reset();
+    display_lcd_led(Sensor, 1);
+    display_LCD_health(1,0);
+    display_LCD_health(0,1);
+    display_lidar_spectrum(5, 6);
+    display_lidar_spectrum(3, 2);
+    display_lidar_spectrum(1, 5);
 }
 
 void period_10Hz(uint32_t count)
 {
-    int value = get_random_int(20);
-    char random_speed = value;
-    display_speedometer(random_speed);
+
 }
 
 void period_100Hz(uint32_t count)
 {
-    LE.toggle(3);
+//    LE.toggle(3);
 }
 
 // 1Khz (1ms) is only run if Periodic Dispatcher was configured to run it at main():
 // scheduler_add_task(new periodicSchedulerTask(run_1Khz = true));
 void period_1000Hz(uint32_t count)
 {
-    LE.toggle(4);
+//    LE.toggle(4);
 }
