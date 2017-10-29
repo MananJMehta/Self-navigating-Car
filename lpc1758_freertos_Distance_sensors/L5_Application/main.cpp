@@ -62,6 +62,7 @@ bool lidar_data_acquisition::init()
 
 bool lidar_data_acquisition::run(void* p)
 {
+    while(1){
     if(!rplidar.check_start)
     {
         LE.on(1);
@@ -87,11 +88,12 @@ bool lidar_data_acquisition::run(void* p)
     float angle_q6;
     float distance_q6;
 
+    //float lookup[9]={ 0.0 , 20.0 , 40.0 , 60.0 , 80.0 , 280.0 , 300.0 , 320.0 , 340.0};
     uint32_t lookup[9]={ 0 , 20 , 40 , 60 , 80 , 280 , 300 , 320 , 340};
 
-    uint8_t count=0;
-    for(uint32_t i = 0; i < 360; i++)
-    {
+    static uint8_t count=0;
+//    for(uint32_t i = 0; i < 360; i++)
+//    {
 
         rplidar.receive_lidar_data();// get da quality
 
@@ -108,16 +110,28 @@ bool lidar_data_acquisition::run(void* p)
         distance |= temp1<<8;
         distance_q6 = (float)(distance)/4.0;
 
-        if(abs(lookup[count]-angle_q6) <= 15){
+        if(abs(lookup[count]-angle_q6) <= 6)
+        {
             count++;
             rplidar.lookup1[count]=angle_q6;
-            if(distance_q6 < 0.3)
+            if(distance_q6 <= 0.1)
                 rplidar.lane_lut[count]=false;
             else
                 rplidar.lane_lut[count]=true;
         }
+        else if (angle_q6>=355)
+        {
+            if(distance_q6 <= 0.1)
+                rplidar.lane_lut[0]=false;
+            else
+                rplidar.lane_lut[0]=true;
+            rplidar.lookup1[count]=angle_q6;
+            count=0;
+
+        }
 
     }
+//    }
 
 
 

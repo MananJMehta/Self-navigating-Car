@@ -137,7 +137,17 @@ void Lidar_Sensor::check_start_scan()
 //in rplidar.stop_scan(); turn off this task
 void Lidar_Sensor::update_lanes()
 {
-    for ( uint8_t i=0 ; i<9 ;i++)
+    uint8_t i;
+    for (  i=6 ; i<9 ;i++)
         printf("%d ", lane_lut[i]);
-        printf("\n");
+    for (  i=0 ; i<6 ;i++)
+            printf("%d ", lane_lut[i]);
+
+    printf("\n");
+    for (  i=6 ; i<9 ;i++)
+        printf("%f ", lookup1[i]);
+    for (  i=0 ; i<6 ;i++)
+            printf("%f ", lookup1[i]);
+
+    printf("\n");
 }
