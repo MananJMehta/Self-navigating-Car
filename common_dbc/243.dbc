@@ -80,11 +80,5 @@ CM_ BU_ GEO "Geo will help in navigation";
 CM_ BU_ ANDROID "User sets destination and commands to start-stop the car";
 
 BA_ "FieldType" SG_ 120 HEARTBEAT_cmd "HEARTBEAT_cmd";
-BA_ "FieldType" SG_ 150 SONAR_left "SONAR_left";
-BA_ "FieldType" SG_ 150 SONAR_right "SONAR_right";
-BA_ "FieldType" SG_ 150 SONAR_back "SONAR_back";
 
 VAL_ 120 HEARTBEAT_cmd 2 "HEARTBEAT_cmd_REBOOT" 1 "HEARTBEAT_cmd_SYNC" 0 "HEARTBEAT_cmd_NOOP" ;
-VAL_ 150 SONAR_left 2 "SONAR_left_safe" 1 "SONAR_left_alert" 0 "SONAR_left_critical" ;
-VAL_ 150 SONAR_right 2 "SONAR_right_safe" 1 "SONAR_right_alert" 0 "SONAR_right_critical" ;
-VAL_ 150 SONAR_back 2 "SONAR_back_safe" 1 "SONAR_back_alert" 0 "SONAR_back_critical" ;
