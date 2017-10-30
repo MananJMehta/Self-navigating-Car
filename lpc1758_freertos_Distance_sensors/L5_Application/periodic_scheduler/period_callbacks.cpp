@@ -110,9 +110,9 @@ void period_1Hz(uint32_t count)
 
 void period_10Hz(uint32_t count)
 {
+    static bool Lane_LUT[9];
     if(count%2==0)
     {
-        static bool Lane_LUT[9];
         rplidar.update_lanes(Lane_LUT);
         //Lane_LUT is a 9 bit bool array containing lane data
         //pass these to your message
