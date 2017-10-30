@@ -39,8 +39,9 @@
 #include "can.h"
 #include "string.h"
 
-
+can_msg_t rx_msg;
 SENSOR_DATA_t sensor_data;
+
 bool dbc_app_send_can_msg(uint32_t mid, uint8_t dlc, uint8_t bytes[8])
 {
     can_msg_t can_msg = { 0 };
@@ -74,7 +75,9 @@ bool period_init(void)
     #endif
 
     CAN_init(can1,100,10,10,NULL,NULL);
-    CAN_bypass_filter_accept_all_msgs();
+    const can_std_id_t slist[] = { CAN_gen_sid(can1, 100), CAN_gen_sid(can1, 120)};
+    CAN_setup_filter(slist,2,NULL,0,NULL,0,NULL,0);
+    //CAN_bypass_filter_accept_all_msgs();
     CAN_reset_bus(can1);
     return true; // Must return true upon success
 }
@@ -130,6 +133,19 @@ void period_10Hz(uint32_t count)
     {
         LE.toggle(4);
     }
+    else
+    {
+        LE.on(4);
+    }
+
+    if(CAN_rx(can1,&rx_msg,1))
+    {
+        if(rx_msg.msg_id == 120)
+        {
+            LE.toggle(3);
+        }
+    }
+
 //    LE.toggle(2);
 }
 
