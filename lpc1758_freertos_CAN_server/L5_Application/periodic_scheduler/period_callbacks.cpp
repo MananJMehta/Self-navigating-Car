@@ -28,11 +28,14 @@
  * do must be completed within 1ms.  Running over the time slot will reset the system.
  */
 
+#include "string.h"
 #include <stdint.h>
 #include "io.hpp"
 #include "periodic_callback.h"
-
-
+#include "can.h"
+#include "_can_dbc/generated_can.h"
+#include "io.hpp"
+#include "printf_lib.h"
 
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
@@ -45,9 +48,27 @@ const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
  */
 const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
 
+can_t canTest = can1;
+
+SENSOR_DATA_t sensor_msg = { 0 };
+CAR_CONTROL_t master_motor_msg = { 0 };
+HEARTBEAT_t heartbeat_msg;
+
+bool dbc_app_send_can_msg(uint32_t mid, uint8_t dlc, uint8_t bytes[8])
+{
+    can_msg_t can_msg = { 0 };
+    can_msg.msg_id = mid;
+    can_msg.frame_fields.data_len = dlc;
+    memcpy(can_msg.data.bytes, bytes, dlc);
+    return CAN_tx(canTest, &can_msg, 0);
+}
+
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
 {
+    CAN_init(canTest, 100, 10, 10, NULL, NULL);
+    CAN_bypass_filter_accept_all_msgs();
+    CAN_reset_bus(canTest);
     return true; // Must return true upon success
 }
 
@@ -58,30 +79,75 @@ bool period_reg_tlm(void)
     return true; // Must return true upon success
 }
 
-
 /**
  * Below are your periodic functions.
  * The argument 'count' is the number of times each periodic task is called.
  */
-
 void period_1Hz(uint32_t count)
 {
-    LE.toggle(1);
+    heartbeat_msg.HEARTBEAT_cmd = HEARTBEAT_cmd_SYNC;
+    dbc_encode_and_send_HEARTBEAT(&heartbeat_msg);
+    LE.toggle(3);
+    if(CAN_is_bus_off(can1))
+    {
+        CAN_reset_bus(can1);
+    }
 }
 
 void period_10Hz(uint32_t count)
 {
-    LE.toggle(2);
+    //LE.toggle(2);
+    can_msg_t can_msg;
+
+
+    while(CAN_rx(canTest,&can_msg,0))
+    {
+        dbc_msg_hdr_t can_header;
+        can_header.dlc = can_msg.frame_fields.data_len;
+        can_header.mid = can_msg.msg_id;
+        u0_dbg_printf("in while");
+        switch(can_msg.msg_id)
+        {
+            u0_dbg_printf("in switch");
+            case 150:
+                if (dbc_decode_SENSOR_DATA(&sensor_msg, can_msg.data.bytes, &can_header))
+                {
+                    if (sensor_msg.LIDAR_0 || sensor_msg.LIDAR_20 || sensor_msg.LIDAR_40 || sensor_msg.LIDAR_60 || sensor_msg.LIDAR_80)
+                    {
+                        LE.toggle(1);
+                        master_motor_msg.CAR_CONTROL_steer = 2;
+                        dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
+                    }
+                    else if (sensor_msg.LIDAR_neg20 || sensor_msg.LIDAR_neg40 || sensor_msg.LIDAR_neg60 || sensor_msg.LIDAR_neg80)
+                    {
+                        LE.toggle(2);
+                        master_motor_msg.CAR_CONTROL_steer = 2;
+                        dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
+                    }
+                    u0_dbg_printf("%c",sensor_msg.LIDAR_0);
+                    u0_dbg_printf("%c",sensor_msg.LIDAR_20);
+                    u0_dbg_printf("%c",sensor_msg.LIDAR_40);
+                    u0_dbg_printf("%c",sensor_msg.LIDAR_60);
+                    u0_dbg_printf("%c",sensor_msg.LIDAR_80);
+                    u0_dbg_printf("%c",sensor_msg.LIDAR_neg20);
+                    u0_dbg_printf("%c",sensor_msg.LIDAR_neg40);
+                    u0_dbg_printf("%c",sensor_msg.LIDAR_neg60);
+                    u0_dbg_printf("%c",sensor_msg.LIDAR_neg80);
+
+                }
+                break;
+        }
+    }
 }
 
 void period_100Hz(uint32_t count)
 {
-    LE.toggle(3);
+    //LE.toggle(3);
 }
 
 // 1Khz (1ms) is only run if Periodic Dispatcher was configured to run it at main():
 // scheduler_add_task(new periodicSchedulerTask(run_1Khz = true));
 void period_1000Hz(uint32_t count)
 {
-    LE.toggle(4);
+    //LE.toggle(4);
 }
