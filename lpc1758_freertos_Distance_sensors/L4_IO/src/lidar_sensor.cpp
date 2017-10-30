@@ -135,19 +135,33 @@ void Lidar_Sensor::check_start_scan()
 //this task can be turnned on and off every time there is a
 //start and stop command...so in the rplidar.start_scan function enable this task
 //in rplidar.stop_scan(); turn off this task
-void Lidar_Sensor::update_lanes()
+void Lidar_Sensor::update_lanes(bool* return_lut)
 {
     uint8_t i;
-    for (  i=6 ; i<9 ;i++)
-        printf("%d ", lane_lut[i]);
-    for (  i=0 ; i<6 ;i++)
-            printf("%d ", lane_lut[i]);
 
+    /// poppulate_lut();
+    for (  i=6 ; i<9 ;i++)
+    {
+        printf("%d ", lane_lut[i]);
+        return_lut[i] = lane_lut[i];
+    }
+
+    for (  i=0 ; i<6 ;i++)
+    {
+        printf("%d ", lane_lut[i]);
+        return_lut[i] = lane_lut[i];
+    }
     printf("\n");
+    /// poppulate_lut();
+
+
+    //print_lookup();
     for (  i=6 ; i<9 ;i++)
         printf("%f ", lookup1[i]);
+
     for (  i=0 ; i<6 ;i++)
             printf("%f ", lookup1[i]);
 
     printf("\n");
+    //print_lookup();
 }

@@ -77,8 +77,6 @@ bool period_reg_tlm(void)
 void period_1Hz(uint32_t count)
 {
 
-
-    rplidar.update_lanes();
     /*if(rplidar.one){
             for (uint8_t i=0;i<9;i++)
                 printf("%f\n",rplidar.lookup1[i]);
@@ -91,6 +89,11 @@ void period_1Hz(uint32_t count)
 
 void period_10Hz(uint32_t count)
 {
+    static bool Lane_LUT [9];
+    rplidar.update_lanes(Lane_LUT);
+    //Lane_LUT is a 9 bit bool array containing lane data
+    //pass these to your message
+
 //    LE.toggle(2);
 }
 
