@@ -35,7 +35,21 @@
 #include "lidar_sensor.h"
 #include "tasks.hpp"
 #include "stdio.h"
+#include "_can_dbc/generated_can.h"
+#include "can.h"
+#include "string.h"
 
+
+SENSOR_DATA_t sensor_data;
+bool dbc_app_send_can_msg(uint32_t mid, uint8_t dlc, uint8_t bytes[8])
+{
+    can_msg_t can_msg = { 0 };
+    can_msg.msg_id                = mid;
+    can_msg.frame_fields.data_len = dlc;
+    memcpy(can_msg.data.bytes, bytes, dlc);
+
+    return CAN_tx(can1, &can_msg, 0);
+}
 
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
@@ -58,6 +72,10 @@ bool period_init(void)
     #if 0
     xTaskCreate(receive_task, (const char*)"recv", STACK_BYTES(2048), 0, PRIORITY_HIGH, &receiveHandle);
     #endif
+
+    CAN_init(can1,100,10,10,NULL,NULL);
+    CAN_bypass_filter_accept_all_msgs();
+    CAN_reset_bus(can1);
     return true; // Must return true upon success
 }
 
@@ -89,11 +107,29 @@ void period_1Hz(uint32_t count)
 
 void period_10Hz(uint32_t count)
 {
-    static bool Lane_LUT [9];
+    static bool Lane_LUT[9];
     rplidar.update_lanes(Lane_LUT);
     //Lane_LUT is a 9 bit bool array containing lane data
     //pass these to your message
 
+    sensor_data.LIDAR_neg80 = Lane_LUT[0];
+    sensor_data.LIDAR_neg60 = Lane_LUT[1];
+    sensor_data.LIDAR_neg40 = Lane_LUT[2];
+    sensor_data.LIDAR_neg20 = Lane_LUT[3];
+    sensor_data.LIDAR_0 = Lane_LUT[4];
+    sensor_data.LIDAR_20 = Lane_LUT[5];
+    sensor_data.LIDAR_40 = Lane_LUT[6];
+    sensor_data.LIDAR_60 = Lane_LUT[7];
+    sensor_data.LIDAR_80 = Lane_LUT[8];
+
+    sensor_data.SONAR_back = 2;
+    sensor_data.SONAR_left = 2;
+    sensor_data.SONAR_right = 2;
+
+    if(dbc_encode_and_send_SENSOR_DATA(&sensor_data))
+    {
+        LE.toggle(4);
+    }
 //    LE.toggle(2);
 }
 
