@@ -142,26 +142,26 @@ void Lidar_Sensor::update_lanes(bool* return_lut)
     /// poppulate_lut();
     for (  i=6 ; i<9 ;i++)
     {
-        printf("%d ", lane_lut[i]);
+//        printf("%d ", lane_lut[i]);
         return_lut[i] = lane_lut[i];
     }
 
     for (  i=0 ; i<6 ;i++)
     {
-        printf("%d ", lane_lut[i]);
+//        printf("%d ", lane_lut[i]);
         return_lut[i] = lane_lut[i];
     }
-    printf("\n");
+//    printf("\n");
     /// poppulate_lut();
 
 
     //print_lookup();
-    for (  i=6 ; i<9 ;i++)
-        printf("%f ", lookup1[i]);
-
-    for (  i=0 ; i<6 ;i++)
-            printf("%f ", lookup1[i]);
-
-    printf("\n");
+//    for (  i=6 ; i<9 ;i++)
+//        printf("%f ", lookup1[i]);
+//
+//    for (  i=0 ; i<6 ;i++)
+//            printf("%f ", lookup1[i]);
+//
+//    printf("\n");
     //print_lookup();
 }
