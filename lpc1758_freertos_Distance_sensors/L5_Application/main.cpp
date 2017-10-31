@@ -89,9 +89,13 @@ bool lidar_data_acquisition::run(void* p)
     float distance_q6;
 
     //float lookup[9]={ 0.0 , 20.0 , 40.0 , 60.0 , 80.0 , 280.0 , 300.0 , 320.0 , 340.0};
-    uint32_t lookup[9]={ 0 , 20 , 40 , 60 , 80 , 280 , 300 , 320 , 340};
+    //uint32_t lookup[9]={280 , 300 , 320 , 340 ,  0 , 20 , 40 , 60 , 80};
+    float lookup[27]={275.0 , 280.0 , 285.0 , 295.0 , 300.0 , 305.0 , 315.0 , 320.0 , 325.0 , 335.0 , 340.0 , 345.0 , 355.0 ,  0.0 , 5.0 , 15.0 , 20.0 , 25.0 , 35.0 , 40.0 , 45.0 , 55.0 , 60.0 , 65.0 , 75.0 , 80.0 , 85.0};
 
-    static uint8_t count=0;
+    static uint8_t count_for_lut_in_this_function=0;
+    static uint8_t count_that_checks_threshold=0;
+    static uint8_t count_for_rplidar_lut=0;
+    static bool lane_lut_in_this_function[27];
 //    for(uint32_t i = 0; i < 360; i++)
 //    {
 
@@ -110,25 +114,28 @@ bool lidar_data_acquisition::run(void* p)
         distance |= temp1<<8;
         distance_q6 = (float)(distance)/4.0;
 
-        if(abs(lookup[count]-angle_q6) <= 6)
+        if(abs(lookup[count_for_lut_in_this_function]-angle_q6) <= 1)
         {
-            count++;
-            rplidar.lookup1[count]=angle_q6;
-            if(distance_q6 <= 0.1)
-                rplidar.lane_lut[count]=false;
+            if(distance_q6 <= 20)
+                lane_lut_in_this_function[count_for_lut_in_this_function]=false;
             else
-                rplidar.lane_lut[count]=true;
+                lane_lut_in_this_function[count_for_lut_in_this_function]=true;
+            count_that_checks_threshold++;
+            count_for_lut_in_this_function++;
         }
-        else if (angle_q6>=355)
+        if(count_that_checks_threshold == 3)
         {
-            if(distance_q6 <= 0.1)
-                rplidar.lane_lut[0]=false;
+            count_that_checks_threshold=0;
+            if(lane_lut_in_this_function[count_for_lut_in_this_function -2] && lane_lut_in_this_function[count_for_lut_in_this_function -1] && lane_lut_in_this_function[count_for_lut_in_this_function - 3])
+                rplidar.lane_lut[count_for_rplidar_lut] = true;
             else
-                rplidar.lane_lut[0]=true;
-            rplidar.lookup1[count]=angle_q6;
-            count=0;
-
+                rplidar.lane_lut[count_for_rplidar_lut] = false;
+            rplidar.lookup1[count_for_rplidar_lut]=angle_q6;
+            rplidar.diss[count_for_rplidar_lut]= distance_q6;
+            count_for_rplidar_lut++;
         }
+        count_for_lut_in_this_function=count_for_lut_in_this_function > 26 ? 0 :count_for_lut_in_this_function;
+        count_for_rplidar_lut=count_for_rplidar_lut > 8 ? 0 : count_for_rplidar_lut;
 
     }
 //    }

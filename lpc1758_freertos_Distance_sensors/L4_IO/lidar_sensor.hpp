@@ -47,6 +47,7 @@ class Lidar_Sensor : public SingletonTemplate<Lidar_Sensor>
         bool lane_lut[9] ;
         bool one=true;
         float lookup1[9];
+        float diss[9];
 
     private:
 
