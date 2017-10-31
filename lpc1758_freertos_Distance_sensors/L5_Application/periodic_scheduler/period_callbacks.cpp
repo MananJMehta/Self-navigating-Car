@@ -177,6 +177,9 @@ void period_10Hz(uint32_t count)
         distance_data.LIDAR_80 = Lane_LUT[8];
     }
 
+    distance_data.LIDAR_neg80 = distance_data.LIDAR_neg60 = distance_data.LIDAR_neg40 = distance_data.LIDAR_neg20 = 0;
+    distance_data.LIDAR_0 = distance_data.LIDAR_20 = distance_data.LIDAR_40 = distance_data.LIDAR_60 = distance_data.LIDAR_80 = 0;
+
     if(dbc_encode_and_send_SENSOR_DATA(&distance_data))
     {
         LE.toggle(4);

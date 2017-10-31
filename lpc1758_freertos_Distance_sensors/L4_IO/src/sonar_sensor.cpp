@@ -21,7 +21,7 @@ static GPIO myPinRX1(P2_1);     // left sensor
 static GPIO myPinRX2(P2_3);     // center sensor
 static GPIO myPinRX3(P2_5);     // right sensor
 GPIO PWM_left(P2_0);
-GPIO PWM_center(P2_2);
+GPIO PWM_back(P2_2);
 GPIO PWM_right(P2_4);
 
 
@@ -39,15 +39,16 @@ void Sonar_Sensor::sensor_detect_fall_left()
 
 // callbacks for center sensor
 
-void Sonar_Sensor::sensor_detect_rise_center()
+void Sonar_Sensor::sensor_detect_rise_back()
 {
     back_start = sys_get_uptime_us();
 }
 
-void Sonar_Sensor::sensor_detect_fall_center()
+void Sonar_Sensor::sensor_detect_fall_back()
 {
     back_stop = sys_get_uptime_us();
     dist_in_back = ((back_stop - back_start)/147);
+    xSemaphoreGiveFromISR(sonar_mutex,0);
 }
 
 // callbacks for right sensor
@@ -61,7 +62,7 @@ void Sonar_Sensor::sensor_detect_fall_right()
 {
     right_stop = sys_get_uptime_us();
     dist_in_right = ((right_stop - right_start)/147);
-    xSemaphoreGiveFromISR(sonar_mutex,0);
+    //xSemaphoreGiveFromISR(sonar_mutex,0);
 }
 
 Sonar_Sensor::Sonar_Sensor()
@@ -89,7 +90,7 @@ bool Sonar_Sensor::init()
     myPinRX2.setAsOutput();
     myPinRX3.setAsOutput();
     PWM_left.setAsInput();
-    PWM_center.setAsInput();
+    PWM_back.setAsInput();
     PWM_right.setAsInput();
 
 //initialising interrupt pins for sensor 1
@@ -97,8 +98,8 @@ bool Sonar_Sensor::init()
     eint3_enable_port2(0,eint_falling_edge,sensor_detect_fall_left);
     eint3_enable_port2(0,eint_rising_edge,sensor_detect_rise_left);
 
-    eint3_enable_port2(2,eint_falling_edge,sensor_detect_fall_center);
-    eint3_enable_port2(2,eint_rising_edge,sensor_detect_rise_center);
+    eint3_enable_port2(2,eint_falling_edge,sensor_detect_fall_back);
+    eint3_enable_port2(2,eint_rising_edge,sensor_detect_rise_back);
 
     eint3_enable_port2(4,eint_falling_edge,sensor_detect_fall_right);
     eint3_enable_port2(4,eint_rising_edge,sensor_detect_rise_right);
