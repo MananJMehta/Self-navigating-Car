@@ -40,6 +40,24 @@
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
 
+enum {
+    sonar_safe = 0,
+    sonar_alert = 1,
+    sonar_critical = 2
+};
+
+typedef enum {
+        ExtremeLeft,
+        ExtremeRight,
+        HardLeft,
+        Left,
+        SoftLeft,
+        Center,
+        SoftRight,
+        Right,
+        HardRight
+    }directionOfCar;
+
 /**
  * This is the stack size of the dispatcher task that triggers the period tasks to run.
  * Minimum 1500 bytes are needed in order to write a debug file if the period tasks overrun.
@@ -87,7 +105,7 @@ void period_1Hz(uint32_t count)
 {
     heartbeat_msg.HEARTBEAT_cmd = HEARTBEAT_cmd_SYNC;
     dbc_encode_and_send_HEARTBEAT(&heartbeat_msg);
-    LE.toggle(3);
+    LE.toggle(1);
     if(CAN_is_bus_off(can1))
     {
         CAN_reset_bus(can1);
@@ -98,8 +116,6 @@ void period_10Hz(uint32_t count)
 {
     //LE.toggle(2);
     can_msg_t can_msg;
-
-
     while(CAN_rx(canTest,&can_msg,0))
     {
         dbc_msg_hdr_t can_header;
@@ -112,16 +128,52 @@ void period_10Hz(uint32_t count)
             case 150:
                 if (dbc_decode_SENSOR_DATA(&sensor_msg, can_msg.data.bytes, &can_header))
                 {
-                    if (sensor_msg.LIDAR_0 || sensor_msg.LIDAR_20 || sensor_msg.LIDAR_40 || sensor_msg.LIDAR_60 || sensor_msg.LIDAR_80)
+                    if (sensor_msg.SONAR_left == sonar_critical)
                     {
-                        LE.toggle(1);
-                        master_motor_msg.CAR_CONTROL_steer = 2;
+                        LE.toggle(4);
+                        master_motor_msg.CAR_CONTROL_steer = HardRight;
+                        dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
+                    }
+                    else if (sensor_msg.SONAR_right == sonar_critical)
+                    {
+                        LE.toggle(3);
+                        master_motor_msg.CAR_CONTROL_steer = HardLeft;
+                        dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
+                    }
+//                    else if (sensor_msg.SONAR_back == sonar_critical)
+//                    {
+//                        LE.toggle(4);
+//                        master_motor_msg.CAR_CONTROL_steer = HardRight;
+//                        dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
+//                    }
+                    else if (sensor_msg.SONAR_left == sonar_alert)
+                    {
+                        LE.toggle(2);
+                        master_motor_msg.CAR_CONTROL_steer = Center;        //put stop here
+                        dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
+                    }
+                    else if (sensor_msg.SONAR_right == sonar_alert)
+                    {
+                        LE.toggle(3);
+                        master_motor_msg.CAR_CONTROL_steer = SoftLeft;
+                        dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
+                    }
+                    else if (sensor_msg.LIDAR_0 || sensor_msg.LIDAR_20 || sensor_msg.LIDAR_40 || sensor_msg.LIDAR_60 || sensor_msg.LIDAR_80)
+                    {
+                        LE.toggle(3);
+                        master_motor_msg.CAR_CONTROL_steer = HardLeft;
                         dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
                     }
                     else if (sensor_msg.LIDAR_neg20 || sensor_msg.LIDAR_neg40 || sensor_msg.LIDAR_neg60 || sensor_msg.LIDAR_neg80)
                     {
-                        LE.toggle(2);
-                        master_motor_msg.CAR_CONTROL_steer = 2;
+                        LE.toggle(4);
+                        master_motor_msg.CAR_CONTROL_steer = HardRight;
+                        dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
+                    }
+                    else
+                    {
+                        LE.toggle(1);
+                        master_motor_msg.CAR_CONTROL_steer = Center;        //check this
                         dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
                     }
                     u0_dbg_printf("%c",sensor_msg.LIDAR_0);
@@ -133,7 +185,6 @@ void period_10Hz(uint32_t count)
                     u0_dbg_printf("%c",sensor_msg.LIDAR_neg40);
                     u0_dbg_printf("%c",sensor_msg.LIDAR_neg60);
                     u0_dbg_printf("%c",sensor_msg.LIDAR_neg80);
-
                 }
                 break;
         }
