@@ -31,6 +31,7 @@
 #include <stdint.h>
 #include "io.hpp"
 #include "periodic_callback.h"
+#include "sonar_sensor.hpp"
 #include "lidar_sensor.hpp"
 #include "lidar_sensor.h"
 #include "tasks.hpp"
@@ -39,8 +40,30 @@
 #include "can.h"
 #include "string.h"
 
+Sonar_Sensor* sonar ;
+SemaphoreHandle_t sonar_mutex;
+float left_start, dist_in_left, left_stop;
+float back_start, dist_in_back, back_stop;
+float right_start, dist_in_right, right_stop;
+
+enum {
+    sonar_safe = 0,
+    sonar_alert = 1,
+    sonar_critical = 2
+};
+
 can_msg_t rx_msg;
 SENSOR_DATA_t SensorData;
+
+bool dbc_app_send_can_msg(uint32_t mid, uint8_t dlc, uint8_t bytes[8])
+{
+    can_msg_t can_msg = { 0 };
+    can_msg.msg_id                = mid;
+    can_msg.frame_fields.data_len = dlc;
+    memcpy(can_msg.data.bytes, bytes, dlc);
+
+    return CAN_tx(can1, &can_msg, 0);
+}
 
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
@@ -53,13 +76,18 @@ const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
  */
 const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
 
+
+
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
 {
+    sonar_mutex = xSemaphoreCreateMutex();
+    sonar = new Sonar_Sensor();
+    sonar->init();
+
     CAN_init(can1,100,10,10,NULL,NULL);
     const can_std_id_t slist[] = { CAN_gen_sid(can1, 100), CAN_gen_sid(can1, 120)};
     CAN_setup_filter(slist,2,NULL,0,NULL,0,NULL,0);
-    //CAN_bypass_filter_accept_all_msgs();
     CAN_reset_bus(can1);
     return true; // Must return true upon success
 }
@@ -85,13 +113,58 @@ void period_1Hz(uint32_t count)
 
 void period_10Hz(uint32_t count)
 {
-
-
     if(CAN_rx(can1,&rx_msg,1))
     {
         if(rx_msg.msg_id == 120)
         {
             LE.toggle(3);
+        }
+    }
+
+
+    if(xSemaphoreTake(sonar_mutex,1))
+    {
+        sonar->start_operation();
+//--------------------- for Left sonar sensor ---------------------//
+        if(dist_in_left >= 25)
+        {
+            SensorData.SONAR_left = sonar_safe;
+        }
+        else if(dist_in_left >= 15)
+        {
+            SensorData.SONAR_left = sonar_alert;
+        }
+        else
+        {
+            SensorData.SONAR_left = sonar_critical;
+        }
+
+//--------------------- for Right sonar sensor ---------------------//
+        if(dist_in_right >= 25)
+        {
+            SensorData.SONAR_right = sonar_safe;
+        }
+        else if(dist_in_right >= 15)
+        {
+            SensorData.SONAR_right = sonar_alert;
+        }
+        else
+        {
+            SensorData.SONAR_right = sonar_critical;
+        }
+
+//--------------------- for Back sonar sensor ---------------------//
+        if(dist_in_back >= 25)
+        {
+            SensorData.SONAR_back = sonar_safe;
+        }
+        else if(dist_in_back >= 15)
+        {
+            SensorData.SONAR_back = sonar_alert;
+        }
+        else
+        {
+            SensorData.SONAR_back = sonar_critical;
         }
     }
 
@@ -109,11 +182,12 @@ void period_10Hz(uint32_t count)
 
 void period_100Hz(uint32_t count)
 {
+    //LE.toggle(3);
 }
 
 // 1Khz (1ms) is only run if Periodic Dispatcher was configured to run it at main():
 // scheduler_add_task(new periodicSchedulerTask(run_1Khz = true));
 void period_1000Hz(uint32_t count)
 {
-//    LE.toggle(4);
+    //LE.toggle(4);
 }

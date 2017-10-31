@@ -56,9 +56,4 @@ typedef struct {
     uint8_t error_code2; //first byte describing distance
 } __attribute__((__packed__)) health_data_packet_t;
 
-
-
-
-
-
 #endif /* LIDAR_SENSOR_H_ */
