@@ -10,7 +10,7 @@
 
 bool Speed::init()
 {
-    this->setSpeed(Stop);
+    this->setSpeed(speedOfCar::Stop);
     LE.on(1);
     return true;
 }

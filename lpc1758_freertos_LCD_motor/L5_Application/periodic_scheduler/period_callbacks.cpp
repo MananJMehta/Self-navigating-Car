@@ -33,7 +33,9 @@
 #include "periodic_callback.h"
 #include "L4.5_Motor_Control/Steering.hpp"
 #include "L4.5_Motor_Control/Speed.hpp"
-
+#include "_can_dbc/generated_can.h"
+#include "can.h"
+#include "printf_lib.h"
 
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
@@ -51,8 +53,8 @@ const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
 {
-    LE.on(2);
 
+    CAN_init(can1,100,10,10,NULL,NULL);
     //error code 1 to signal incorrect initialization of speed PWM
     if(!spd.init())
         LD.setNumber(1);
@@ -77,25 +79,53 @@ bool period_reg_tlm(void)
 
 void period_1Hz(uint32_t count)
 {
+    if(CAN_is_bus_off(can1))
+    {
+        CAN_reset_bus(can1);
+        LE.init();
+        LE.on(4);
+    }
 }
-
+const uint32_t        CAR_CONTROL__MIA_MS=3000;
+const CAR_CONTROL_t   CAR_CONTROL__MIA_MSG={0};
+can_msg_t msg;
+CAR_CONTROL_t carControl;
+HEARTBEAT_t heartbeat;
 void period_10Hz(uint32_t count)
 {
+    spd.setSpeed(Speed::speedOfCar::MEDIUM);
 
+
+
+    while(CAN_rx(can1,&msg,0))
+    {
+        dbc_msg_hdr_t header;
+        header.dlc = msg.frame_fields.data_len;
+        header.mid = msg.msg_id;
+        switch(header.mid)
+        {
+            case 120:
+                dbc_decode_HEARTBEAT(&heartbeat,msg.data.bytes,&header);
+                LE.toggle(2);
+                break;
+            case 140:
+                dbc_decode_CAR_CONTROL(&carControl,msg.data.bytes,&header);
+            LE.toggle(3);
+                break;
+        }
+    }
+
+    if(dbc_handle_mia_CAR_CONTROL(&carControl,100))
+        LE.on(1);
+    else LE.off(1);
+
+    str.setDirection((Steering::directionOfCar)carControl.CAR_CONTROL_steer);
+    u0_dbg_printf("%i\n",carControl.CAR_CONTROL_steer);
 }
 
 void period_100Hz(uint32_t count)
 {
-    if(SW.getSwitch(1))
-        str.set(6.5);
-    else if(SW.getSwitch(2))
-        str.set(6.6);
-    else if(SW.getSwitch(3))
-          str.set(6.7);
-    else if(SW.getSwitch(4))
-          str.set(6.8);
-    else
-          str.set(15);
+
 }
 
 // 1Khz (1ms) is only run if Periodic Dispatcher was configured to run it at main():
