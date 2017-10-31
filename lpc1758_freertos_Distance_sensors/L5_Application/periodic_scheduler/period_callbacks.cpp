@@ -33,12 +33,36 @@
 #include "periodic_callback.h"
 #include "sonar_sensor.hpp"
 #include "stdio.h"
+#include "_can_dbc/generated_can.h"
+#include "can.h"
+#include "string.h"
 
 Sonar_Sensor* sonar ;
 SemaphoreHandle_t sonar_mutex;
 float left_start, dist_in_left, left_stop;
-float center_start, dist_in_center, center_stop;
+float back_start, dist_in_back, back_stop;
 float right_start, dist_in_right, right_stop;
+
+enum {
+    sonar_safe = 0,
+    sonar_alert = 1,
+    sonar_critical = 2
+};
+
+SENSOR_DATA_t distance_data;
+
+can_msg_t rx_msg;
+
+bool dbc_app_send_can_msg(uint32_t mid, uint8_t dlc, uint8_t bytes[8])
+{
+    can_msg_t can_msg = { 0 };
+    can_msg.msg_id                = mid;
+    can_msg.frame_fields.data_len = dlc;
+    memcpy(can_msg.data.bytes, bytes, dlc);
+
+    return CAN_tx(can1, &can_msg, 0);
+}
+
 
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
@@ -59,6 +83,13 @@ bool period_init(void)
     sonar_mutex = xSemaphoreCreateMutex();
     sonar = new Sonar_Sensor();
     sonar->init();
+
+    CAN_init(can1,100,10,10,NULL,NULL);
+    const can_std_id_t slist[] = { CAN_gen_sid(can1, 100), CAN_gen_sid(can1, 120)};
+    CAN_setup_filter(slist,2,NULL,0,NULL,0,NULL,0);
+    //CAN_bypass_filter_accept_all_msgs();
+    CAN_reset_bus(can1);
+
     return true; // Must return true upon success
 }
 
@@ -85,8 +116,65 @@ void period_10Hz(uint32_t count)
     if(xSemaphoreTake(sonar_mutex,1))
     {
         sonar->start_operation();
-        printf("left = %f center = %f right = %f\n", dist_in_left, dist_in_center, dist_in_right);
+//--------------------- for Left sonar sensor ---------------------//
+        if(dist_in_left >= 25)
+        {
+            distance_data.SONAR_left = sonar_safe;
+        }
+        else if(dist_in_left >= 15)
+        {
+            distance_data.SONAR_left = sonar_alert;
+        }
+        else
+            distance_data.SONAR_left = sonar_critical;
+
+//--------------------- for Right sonar sensor ---------------------//
+        if(dist_in_right >= 25)
+        {
+            distance_data.SONAR_right = sonar_safe;
+        }
+        else if(dist_in_right >= 15)
+        {
+            distance_data.SONAR_right = sonar_alert;
+        }
+        else
+            distance_data.SONAR_right = sonar_critical;
+
+//--------------------- for Back sonar sensor ---------------------//
+        if(dist_in_back >= 25)
+        {
+            distance_data.SONAR_back = sonar_safe;
+        }
+        else if(dist_in_back >= 15)
+        {
+            distance_data.SONAR_back = sonar_alert;
+        }
+        else
+            distance_data.SONAR_back = sonar_critical;
+        //printf("left = %f center = %f right = %f\n", dist_in_left, dist_in_center, dist_in_right);
     }
+
+    distance_data.LIDAR_0 = distance_data.LIDAR_20 = distance_data.LIDAR_40 = distance_data.LIDAR_60 = distance_data.LIDAR_80 = 0;
+    distance_data.LIDAR_neg20 = distance_data.LIDAR_neg40 =distance_data.LIDAR_neg60 =distance_data.LIDAR_neg80 = 0;
+
+    if(dbc_encode_and_send_SENSOR_DATA(&distance_data))
+        {
+            LE.toggle(4);
+        }
+        else
+        {
+            LE.on(4);
+        }
+
+
+    if(CAN_rx(can1,&rx_msg,1))
+        {
+            if(rx_msg.msg_id == 120)
+            {
+                LE.toggle(3);
+            }
+        }
+
 }
 
 void period_100Hz(uint32_t count)

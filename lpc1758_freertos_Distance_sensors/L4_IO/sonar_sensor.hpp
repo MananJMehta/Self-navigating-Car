@@ -33,7 +33,7 @@ class Sonar_Sensor //: public SingletonTemplate<Sonar_Sensor>
     public:
         void start_operation();
         bool init();
-        Sonar_Sensor() {}
+        Sonar_Sensor();
     private:
         static void sensor_detect_fall_left();
         static void sensor_detect_rise_left();

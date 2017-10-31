@@ -14,7 +14,7 @@
 
 extern SemaphoreHandle_t sonar_mutex;
 extern float left_start, dist_in_left, left_stop;
-extern float center_start, dist_in_center, center_stop;
+extern float back_start, dist_in_back, back_stop;
 extern float right_start, dist_in_right, right_stop;
 
 static GPIO myPinRX1(P2_1);     // left sensor
@@ -41,13 +41,13 @@ void Sonar_Sensor::sensor_detect_fall_left()
 
 void Sonar_Sensor::sensor_detect_rise_center()
 {
-    center_start = sys_get_uptime_us();
+    back_start = sys_get_uptime_us();
 }
 
 void Sonar_Sensor::sensor_detect_fall_center()
 {
-    center_stop = sys_get_uptime_us();
-    dist_in_center = ((center_stop - center_start)/147);
+    back_stop = sys_get_uptime_us();
+    dist_in_back = ((back_stop - back_start)/147);
 }
 
 // callbacks for right sensor
@@ -64,7 +64,20 @@ void Sonar_Sensor::sensor_detect_fall_right()
     xSemaphoreGiveFromISR(sonar_mutex,0);
 }
 
+Sonar_Sensor::Sonar_Sensor()
+{
+    left_start=0;
+    dist_in_left=0;
+    left_stop=0;
 
+    right_start=0;
+    dist_in_right=0;
+    right_stop=0;
+
+    back_start=0;
+    dist_in_back=0;
+    back_stop=0;
+}
 
 #ifdef __cplusplus
 extern "C" {
