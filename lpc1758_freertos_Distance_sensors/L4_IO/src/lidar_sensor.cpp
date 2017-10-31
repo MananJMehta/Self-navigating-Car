@@ -7,7 +7,8 @@
 
 //extern "C"
 //{
-    #include "_can_dbc/generated_can.h"
+#include "_can_dbc/generated_can.h"
+extern SENSOR_DATA_t SensorData;
 //}
 
 bool dbc_app_send_can_msg(uint32_t mid, uint8_t dlc, uint8_t bytes[8])
@@ -156,7 +157,7 @@ void Lidar_Sensor::check_start_scan()
 //in rplidar.stop_scan(); turn off this task
 void Lidar_Sensor::update_lanes()
 {
-    SENSOR_DATA_t SensorData;
+    //SENSOR_DATA_t SensorData;
 
     SensorData.LIDAR_neg80 = lane_lut[0];
     SensorData.LIDAR_neg60 = lane_lut[1];
@@ -168,6 +169,6 @@ void Lidar_Sensor::update_lanes()
     SensorData.LIDAR_60 = lane_lut[7];
     SensorData.LIDAR_80 = lane_lut[8];
 
-    dbc_encode_and_send_SENSOR_DATA(&SensorData);
+    //dbc_encode_and_send_SENSOR_DATA(&SensorData);
 
 }

@@ -40,17 +40,7 @@
 #include "string.h"
 
 can_msg_t rx_msg;
-SENSOR_DATA_t sensor_data;
-
-bool dbc_app_send_can_msg(uint32_t mid, uint8_t dlc, uint8_t bytes[8])
-{
-    can_msg_t can_msg = { 0 };
-    can_msg.msg_id                = mid;
-    can_msg.frame_fields.data_len = dlc;
-    memcpy(can_msg.data.bytes, bytes, dlc);
-
-    return CAN_tx(can1, &can_msg, 0);
-}
+SENSOR_DATA_t SensorData;
 
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
@@ -89,13 +79,14 @@ bool period_reg_tlm(void)
 
 void period_1Hz(uint32_t count)
 {
-
-    rplidar.update_lanes();
-
+    if(CAN_is_bus_off(can1))
+        CAN_reset_bus(can1);
 }
 
 void period_10Hz(uint32_t count)
 {
+
+
     if(CAN_rx(can1,&rx_msg,1))
     {
         if(rx_msg.msg_id == 120)
@@ -112,8 +103,8 @@ void period_10Hz(uint32_t count)
         rplidar.update_lanes();
         prev_count = count;
     }
-    //Lane_LUT is a 9 bit bool array containing lane data
-    //pass these to your message
+
+    dbc_encode_and_send_SENSOR_DATA(&SensorData);
 }
 
 void period_100Hz(uint32_t count)
