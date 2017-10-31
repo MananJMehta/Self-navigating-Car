@@ -13,11 +13,12 @@ void display_speedometer(char random_speed);
 void display_bus_reset();
 //void display_lidar_spectrum(char pos, char val);
 void display_lcd_led(char led_num, char state);
-void display_LCD_health(char led_num, char state);
+void display_LCD_large_led(char led_num, char state);
 //void display_lcd_numbers(char display_num, uint16_t msb, uint16_t lsb);
 void display_lcd_numbers(char display_num, uint16_t value);
 void display_lcd_bar(char display_num, uint16_t value);
 void display_lidar_led(char display_num, uint16_t value);
-//void check_form(char *form);
+char check_form();
+void ack();
 
 #endif /* LCD_HPP_ */

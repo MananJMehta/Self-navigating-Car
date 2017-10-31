@@ -95,53 +95,68 @@ void period_1Hz(uint32_t count)
      * TODO-2 Receive all these messages from Can Bus before printing
      */
 
-    //Frame 0
-    int value = get_random_int(20);
-    char random_speed = value;
-    display_speedometer(random_speed);
+    char ack = 'a';
+    Uart2& u2 = Uart2::getInstance();
+    u2.gets(&ack, 7, 50);
     display_bus_reset();
-    display_LCD_health(System, Off);
-    display_LCD_health(Battery,On);
 
-    /**
-     * //TODO- Convert this to for loop
-        display_lidar_spectrum(5, 6);
-        display_lidar_spectrum(3, 2);
-        display_lidar_spectrum(1, 5);
-     *
-     */
+    char form = check_form();
 
+    if (form == 0)
+    {
+        int value = get_random_int(20);
+        char random_speed = value;
+        display_speedometer(random_speed);
+        display_LCD_large_led(System, Off);
+        display_LCD_large_led(Battery, On);
+    }
 
     //Frame 2
-    //TODO- Display LCD Numbers
-/**    display_lcd_numbers(Miles_covered, 1234);
+    else if (form == 2)
+    {
+    //Display LCD Numbers
+    display_lcd_numbers(Miles_covered, 1234);
     display_lcd_numbers(Miles_remaining, 5678);
-    display_lcd_numbers(Dest_lat, 9101);
-    display_lcd_numbers(Dest_long, 2345);
-    display_lcd_numbers(Current_lat, 6789);
-    display_lcd_numbers(Current_long, 65535);
-**/
+    }
+
+    //Frame 3
+    else if (form == 3)
+    {
+
+        display_lcd_numbers(Dest_lat, 9101);
+        display_lcd_numbers(Dest_long, 2345);
+        display_lcd_numbers(Current_lat, 6789);
+        display_lcd_numbers(Current_long, 65535);
+    }
+
     //Frame 1
-    //Display Ultrasound Sensor readings
-    display_lcd_bar(Ultrasound_left, 50);
-    display_lcd_bar(Ultrasound_front, 25);
-    display_lcd_bar(Ultrasound_right, 10);
-
-    //Display Lidar
-    static int i;
-    if (i+1 == 2)
+    else if (form == 1)
     {
-        display_LCD_health(10, On);
-        display_LCD_health(2, Off);
-    }
+        //Display Ultrasound Sensor readings
+        display_lcd_bar(Ultrasound_left, 50);
+        display_lcd_bar(Ultrasound_front, 25);
+        display_lcd_bar(Ultrasound_right, 10);
 
-    else
-    {
-        display_LCD_health(i - 1, On);
-        display_LCD_health(i, Off);
+        //Display Lidar
+        static int i;
+        if (i + 1 == 2)
+        {
+            display_LCD_large_led(10, On);
+            display_LCD_large_led(2, Off);
+        }
+
+        else
+        {
+            display_LCD_large_led(i - 1, On);
+            display_LCD_large_led(i, Off);
+        }
+        i++;
+        if (i == 11)
+        {
+            i = 2;
+        }
+
     }
-    i++;
-    if (i == 11) i = 2;
 
 }
 

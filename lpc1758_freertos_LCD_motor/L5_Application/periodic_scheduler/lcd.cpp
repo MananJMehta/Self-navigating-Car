@@ -12,10 +12,9 @@
 
 enum lcd_led{Sensor, Motor, Comm, Geo};
 
-//TODO Acknowledgment from LCD screen
 int get_random_int(int max_val)
 {
-    srand((unsigned) time(0));
+    srand((unsigned) time(0)                        );
     int random_integer = rand();
     int value = random_integer % max_val;
     return value;
@@ -31,6 +30,7 @@ void display_speedometer(char random_speed)
     u2.putChar(random_speed); //LSB
     char checkSum = 0x01^0x10^0x00^0x00^ random_speed;
     u2.putChar(checkSum);
+    ack();
 }
 
 void display_bus_reset()
@@ -44,6 +44,7 @@ void display_bus_reset()
     u2.putChar(++bus_reset_count); //LSB
     char checkSum = 0x01^0x09^0x00^0x00^ bus_reset_count;
     u2.putChar(checkSum);
+    ack();
 }
 
 /**
@@ -70,9 +71,10 @@ void display_lcd_led(char led_num, char state)
     u2.putChar(state);  //LSB
     char checkSum = 0x01^0x0E^led_num^0x00^state;
     u2.putChar(checkSum);
+    ack();
 }
 
-void display_LCD_health(char led_num, char state)
+void display_LCD_large_led(char led_num, char state)
 {
     Uart2& u2 = Uart2::getInstance();
     u2.putChar(0x01);   //Write Object
@@ -82,6 +84,7 @@ void display_LCD_health(char led_num, char state)
     u2.putChar(state); //LSB
     char checkSum = 0x01^0x13^led_num^0x00^state;
     u2.putChar(checkSum);
+    ack();
 }
 
 void convert16_to_hex(uint16_t number, uint8_t *lsb_val, uint8_t *msb_val)
@@ -102,6 +105,7 @@ void display_lcd_numbers(char display_num, uint16_t value)
     u2.putChar(lsb);    //LSB
     char checkSum = 0x01^0x0F^display_num^msb^lsb;
     u2.putChar(checkSum);
+    ack();
 }
 
 void display_lcd_bar(char display_num, uint16_t value)
@@ -116,16 +120,38 @@ void display_lcd_bar(char display_num, uint16_t value)
     u2.putChar(lsb);    //LSB
     char checkSum = 0x01^0x0B^display_num^msb^lsb;
     u2.putChar(checkSum);
+    ack();
 }
 
-//void check_form(char *form)
-//{
-//    Uart2& u2 = Uart2::getInstance();
-//    u2.putChar(0x00);
-//    u2.putChar(0x0A);
-//    u2.putChar(0x00);
-//    u2.putChar(0x0A);
-//    //getval
-//}
+char check_form()
+{
+    Uart2& u2 = Uart2::getInstance();
+    u2.putChar(0x00);
+    u2.putChar(0x0A);
+    u2.putChar(0x00);
+    u2.putChar(0x0A);
+    char hello[6] = {'\0'};
+    char test[1] = {'\0'};
+    char *input = hello;
+    char *form_value = test;
+    u2.getChar(input);
+    u2.getChar(++input);
+    u2.getChar(++input);
+    u2.getChar(++input);
+    u2.getChar(form_value);
+    u2.getChar(++input);
+    printf("%d\n", *form_value);
+    return test[0];
+}
+
+
+void ack()
+{
+    Uart2& u2 = Uart2::getInstance();
+       char test[1] = {'\0'};
+        char *ack_val = test;
+        u2.getChar(ack_val, 100);
+//        printf("%c", ack_val);
+}
 
 
