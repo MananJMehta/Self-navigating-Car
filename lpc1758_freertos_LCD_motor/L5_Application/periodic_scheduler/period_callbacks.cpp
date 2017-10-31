@@ -55,6 +55,8 @@ bool period_init(void)
 {
 
     CAN_init(can1,100,10,10,NULL,NULL);
+    CAN_bypass_filter_accept_all_msgs();
+    CAN_reset_bus(can1);
     //error code 1 to signal incorrect initialization of speed PWM
     if(!spd.init())
         LD.setNumber(1);
@@ -93,7 +95,7 @@ CAR_CONTROL_t carControl;
 HEARTBEAT_t heartbeat;
 void period_10Hz(uint32_t count)
 {
-    spd.setSpeed(Speed::speedOfCar::MEDIUM);
+    spd.set(16);
 
 
 
