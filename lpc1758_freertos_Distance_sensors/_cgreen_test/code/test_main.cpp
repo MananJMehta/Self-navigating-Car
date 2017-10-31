@@ -222,15 +222,30 @@ Ensure(take_so_long_that_ctrl_c_is_needed) {
     sleep(10);
 }
 
+
+Ensure(char_stream_returns_true)
+{
+    
+}
+
+
+TestSuite *start_scan_tests() 
+{
+    TestSuite *suite = create_test_suite();
+    add_test(suite, char_stream_returns_true);
+    return suite;
+}
+
+
 int main(int argc, char **argv) 
 {
     TestSuite *suite = create_test_suite();
-    add_suite(suite, assertion_tests());
-    add_suite(suite, fixture_tests());
-    add_suite(suite, visible_fixtures());
-    add_suite(suite, isolation_tests());
-    add_suite(suite, mock_tests());
-    add_suite(suite, foo());
+    // add_suite(suite, assertion_tests());
+    // add_suite(suite, fixture_tests());
+    // add_suite(suite, visible_fixtures());
+    // add_suite(suite, isolation_tests());
+    // add_suite(suite, mock_tests());
+     add_suite(suite, start_scan_tests());
 
     if (argc > 1) {
         add_test(suite, take_so_long_that_ctrl_c_is_needed);

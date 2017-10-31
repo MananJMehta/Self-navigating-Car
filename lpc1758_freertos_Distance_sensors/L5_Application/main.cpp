@@ -19,13 +19,16 @@
 /**
  * @file
  * @brief This is the application entry point.
- * 			FreeRTOS and stdio printf is pre-configured to use uart0_min.h before main() enters.
- * 			@see L0_LowLevel/lpc_sys.h if you wish to override printf/scanf functions.
+ *          FreeRTOS and stdio printf is pre-configured to use uart0_min.h before main() enters.
+ *          @see L0_LowLevel/lpc_sys.h if you wish to override printf/scanf functions.
  *
  */
 #include "tasks.hpp"
 #include "examples/examples.hpp"
-
+#include "stdio.h"
+#include "lidar_sensor.hpp"
+#include "io.hpp"
+#include "printf_lib.h"
 /**
  * The main() creates tasks or "threads".  See the documentation of scheduler_task class at scheduler_task.hpp
  * for details.  There is a very simple example towards the beginning of this class's declaration.
@@ -40,6 +43,105 @@
  *        In either case, you should avoid using this bus or interfacing to external components because
  *        there is no semaphore configured for this bus and it should be used exclusively by nordic wireless.
  */
+
+class lidar_data_acquisition : public scheduler_task
+{
+    public:
+        lidar_data_acquisition(uint8_t priority) : scheduler_task("lidar", 2000, priority){}
+        bool init();
+        bool run(void* p);
+};
+
+bool lidar_data_acquisition::init()
+{
+    //rplidar.check_start_scan();
+    rplidar.start_scan();
+    //printf("init\n");
+    return true;
+}
+
+bool lidar_data_acquisition::run(void* p)
+{
+    while(1){
+    if(!rplidar.check_start)
+    {
+        LE.on(1);
+        LE.on(2);
+        //LE.on(3);
+        //LE.on(4);
+        rplidar.check_start_scan();
+        return true;
+    }
+
+    else
+    {
+        LE.off(1);
+        LE.off(2);
+        //LE.off(3);
+        //LE.off(4);
+    }
+
+    uint16_t temp;
+    uint16_t temp1;
+    uint16_t angle;
+    uint16_t distance;
+    float angle_q6;
+    float distance_q6;
+
+    //float lookup[9]={ 0.0 , 20.0 , 40.0 , 60.0 , 80.0 , 280.0 , 300.0 , 320.0 , 340.0};
+    uint32_t lookup[9]={ 0 , 20 , 40 , 60 , 80 , 280 , 300 , 320 , 340};
+
+    static uint8_t count=0;
+//    for(uint32_t i = 0; i < 360; i++)
+//    {
+
+        rplidar.receive_lidar_data();// get da quality
+
+        angle = (uint16_t)(rplidar.receive_lidar_data()); //get da angle_1
+
+        temp = (uint16_t)(rplidar.receive_lidar_data()); //get da angle_2
+
+        distance = (uint16_t)(rplidar.receive_lidar_data()); //get da distance_1
+        temp1 = (uint16_t)(rplidar.receive_lidar_data()); //get da distance 2
+
+        angle = angle>>1;
+        angle |= temp<<7;
+        angle_q6 = (float)(angle)/64.0;
+        distance |= temp1<<8;
+        distance_q6 = (float)(distance)/4.0;
+
+        if(abs(lookup[count]-angle_q6) <= 6)
+        {
+            count++;
+            rplidar.lookup1[count]=angle_q6;
+            if(distance_q6 <= 0.1)
+                rplidar.lane_lut[count]=false;
+            else
+                rplidar.lane_lut[count]=true;
+        }
+        else if (angle_q6>=355)
+        {
+            if(distance_q6 <= 0.1)
+                rplidar.lane_lut[0]=false;
+            else
+                rplidar.lane_lut[0]=true;
+            rplidar.lookup1[count]=angle_q6;
+            count=0;
+
+        }
+
+    }
+//    }
+
+
+
+    //get the angle
+    //determine the lane
+    //check if there is there is obstacle
+    //set lane bit accordingly
+    return true;
+}
+
 int main(void)
 {
     /**
@@ -56,6 +158,8 @@ int main(void)
 
     /* Consumes very little CPU, but need highest priority to handle mesh network ACKs */
     scheduler_add_task(new wirelessTask(PRIORITY_CRITICAL));
+
+    scheduler_add_task(new lidar_data_acquisition(PRIORITY_CRITICAL));
 
     /* Change "#if 0" to "#if 1" to run period tasks; @see period_callbacks.cpp */
     #if 1
@@ -90,8 +194,8 @@ int main(void)
     #endif
 
     /**
-	 * Try the rx / tx tasks together to see how they queue data to each other.
-	 */
+     * Try the rx / tx tasks together to see how they queue data to each other.
+     */
     #if 0
         scheduler_add_task(new queue_tx());
         scheduler_add_task(new queue_rx());

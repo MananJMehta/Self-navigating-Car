@@ -32,6 +32,9 @@
 #include "io.hpp"
 #include "periodic_callback.h"
 #include "sonar_sensor.hpp"
+#include "lidar_sensor.hpp"
+#include "lidar_sensor.h"
+#include "tasks.hpp"
 #include "stdio.h"
 #include "_can_dbc/generated_can.h"
 #include "can.h"
@@ -50,7 +53,6 @@ enum {
 };
 
 SENSOR_DATA_t distance_data;
-
 can_msg_t rx_msg;
 
 bool dbc_app_send_can_msg(uint32_t mid, uint8_t dlc, uint8_t bytes[8])
@@ -62,7 +64,6 @@ bool dbc_app_send_can_msg(uint32_t mid, uint8_t dlc, uint8_t bytes[8])
 
     return CAN_tx(can1, &can_msg, 0);
 }
-
 
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
@@ -87,9 +88,7 @@ bool period_init(void)
     CAN_init(can1,100,10,10,NULL,NULL);
     const can_std_id_t slist[] = { CAN_gen_sid(can1, 100), CAN_gen_sid(can1, 120)};
     CAN_setup_filter(slist,2,NULL,0,NULL,0,NULL,0);
-    //CAN_bypass_filter_accept_all_msgs();
     CAN_reset_bus(can1);
-
     return true; // Must return true upon success
 }
 
@@ -126,7 +125,9 @@ void period_10Hz(uint32_t count)
             distance_data.SONAR_left = sonar_alert;
         }
         else
+        {
             distance_data.SONAR_left = sonar_critical;
+        }
 
 //--------------------- for Right sonar sensor ---------------------//
         if(dist_in_right >= 25)
@@ -138,7 +139,9 @@ void period_10Hz(uint32_t count)
             distance_data.SONAR_right = sonar_alert;
         }
         else
+        {
             distance_data.SONAR_right = sonar_critical;
+        }
 
 //--------------------- for Back sonar sensor ---------------------//
         if(dist_in_back >= 25)
@@ -150,31 +153,46 @@ void period_10Hz(uint32_t count)
             distance_data.SONAR_back = sonar_alert;
         }
         else
+        {
             distance_data.SONAR_back = sonar_critical;
+        }
         //printf("left = %f center = %f right = %f\n", dist_in_left, dist_in_center, dist_in_right);
     }
 
-    distance_data.LIDAR_0 = distance_data.LIDAR_20 = distance_data.LIDAR_40 = distance_data.LIDAR_60 = distance_data.LIDAR_80 = 0;
-    distance_data.LIDAR_neg20 = distance_data.LIDAR_neg40 =distance_data.LIDAR_neg60 =distance_data.LIDAR_neg80 = 0;
+    static bool Lane_LUT[9];
+    if(count%2==0)
+    {
+        rplidar.update_lanes(Lane_LUT);
+        //Lane_LUT is a 9 bit bool array containing lane data
+        //pass these to your message
+
+        distance_data.LIDAR_neg80 = Lane_LUT[0];
+        distance_data.LIDAR_neg60 = Lane_LUT[1];
+        distance_data.LIDAR_neg40 = Lane_LUT[2];
+        distance_data.LIDAR_neg20 = Lane_LUT[3];
+        distance_data.LIDAR_0 = Lane_LUT[4];
+        distance_data.LIDAR_20 = Lane_LUT[5];
+        distance_data.LIDAR_40 = Lane_LUT[6];
+        distance_data.LIDAR_60 = Lane_LUT[7];
+        distance_data.LIDAR_80 = Lane_LUT[8];
+    }
 
     if(dbc_encode_and_send_SENSOR_DATA(&distance_data))
-        {
-            LE.toggle(4);
-        }
-        else
-        {
-            LE.on(4);
-        }
-
+    {
+        LE.toggle(4);
+    }
+    else
+    {
+        LE.on(4);
+    }
 
     if(CAN_rx(can1,&rx_msg,1))
+    {
+        if(rx_msg.msg_id == 120)
         {
-            if(rx_msg.msg_id == 120)
-            {
-                LE.toggle(3);
-            }
+            LE.toggle(3);
         }
-
+    }
 }
 
 void period_100Hz(uint32_t count)
