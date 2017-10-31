@@ -62,83 +62,261 @@ bool lidar_data_acquisition::init()
 
 bool lidar_data_acquisition::run(void* p)
 {
-    while(1){
-    if(!rplidar.check_start)
+    rplidar.Lane_LUT = 0;
+    while(1)
     {
-        LE.on(1);
-        LE.on(2);
-        LE.on(3);
-        LE.on(4);
-        rplidar.check_start_scan();
-        return true;
-    }
+            if(!rplidar.check_start)
+            {
+                LE.on(1);
+                LE.on(2);
+                LE.on(3);
+                LE.on(4);
+                rplidar.check_start_scan();
+                return true;
+            }
 
-    else
-    {
-        LE.off(1);
-        LE.off(2);
-        LE.off(3);
-        LE.off(4);
-    }
-
-    uint16_t temp;
-    uint16_t temp1;
-    uint16_t angle;
-    uint16_t distance;
-    float angle_q6;
-    float distance_q6;
-
-    //float lookup[9]={ 0.0 , 20.0 , 40.0 , 60.0 , 80.0 , 280.0 , 300.0 , 320.0 , 340.0};
-    uint32_t lookup[9]={ 0 , 20 , 40 , 60 , 80 , 280 , 300 , 320 , 340};
-
-    static uint8_t count=0;
-//    for(uint32_t i = 0; i < 360; i++)
-//    {
-
-        rplidar.receive_lidar_data();// get da quality
-
-        angle = (uint16_t)(rplidar.receive_lidar_data()); //get da angle_1
-
-        temp = (uint16_t)(rplidar.receive_lidar_data()); //get da angle_2
-
-        distance = (uint16_t)(rplidar.receive_lidar_data()); //get da distance_1
-        temp1 = (uint16_t)(rplidar.receive_lidar_data()); //get da distance 2
-
-        angle = angle>>1;
-        angle |= temp<<7;
-        angle_q6 = (float)(angle)/64.0;
-        distance |= temp1<<8;
-        distance_q6 = (float)(distance)/4.0;
-
-        if(abs(lookup[count]-angle_q6) <= 6)
-        {
-            count++;
-            rplidar.lookup1[count]=angle_q6;
-            if(distance_q6 <= 0.1)
-                rplidar.lane_lut[count]=false;
             else
-                rplidar.lane_lut[count]=true;
-        }
-        else if (angle_q6>=355)
-        {
-            if(distance_q6 <= 0.1)
-                rplidar.lane_lut[0]=false;
-            else
-                rplidar.lane_lut[0]=true;
-            rplidar.lookup1[count]=angle_q6;
-            count=0;
+            {
+                LE.off(1);
+                LE.off(2);
+                LE.off(3);
+                LE.off(4);
+            }
 
-        }
+            uint16_t temp;
+            uint16_t temp1;
+            uint16_t angle;
+            uint16_t distance;
+            float angle_q6;
+            float distance_q6;
+            // write boundary lookup table instead 270, 290,
+//            uint32_t lookup[9]={ 280 , 300 , 320 , 340, 0 , 20 , 40 , 60 , 80};
+//
+            static const uint8_t data = 10;
+            static uint8_t count=0;
+            static uint8_t lane=8;
+
+            rplidar.receive_lidar_data();// get da quality
+
+            angle = (uint16_t)(rplidar.receive_lidar_data()); //get da angle_1
+
+            temp = (uint16_t)(rplidar.receive_lidar_data()); //get da angle_2
+
+            distance = (uint16_t)(rplidar.receive_lidar_data()); //get da distance_1
+            temp1 = (uint16_t)(rplidar.receive_lidar_data()); //get da distance 2
+
+            angle = angle>>1;
+            angle |= temp<<7;
+            angle_q6 = (float)(angle)/64.0;
+            distance |= temp1<<8;
+            distance_q6 = (float)(distance)/4.0;
+
+            if (angle_q6>=270&&angle_q6<290)
+            {
+                if(lane == 8)
+                {
+                    if(count>data)
+                    {
+                        rplidar.lane_lut[8] = false;
+                    }
+                    else
+                    {
+                        rplidar.lane_lut[8] = true;
+                    }
+
+                    count = 0;
+                }
+
+                if(distance_q6 <= 0.1)
+                {
+                    count++;
+                }
+                lane = 0;
+
+            }
+
+            else if(angle_q6>=290&&angle_q6<310)
+            {
+                if(lane == 0)
+                {
+                    if(count>data)
+                    {
+                        rplidar.lane_lut[0] = false;
+                    }
+                    else
+                    {
+                        rplidar.lane_lut[0] = true;
+                    }
+
+                    count = 0;
+                }
+
+                if(distance_q6 <= 0.1)
+                {
+                    count++;
+                }
+                lane = 1;
+
+            }
+            else if(angle_q6>=310&&angle_q6<330)
+            {
+                if(lane == 1)
+                {
+                    if(count>data)
+                    {
+                        rplidar.lane_lut[1] = false;
+                    }
+                    else
+                    {
+                        rplidar.lane_lut[1] = true;
+                    }
+
+                    count = 0;
+                }
+
+                if(distance_q6 <= 0.1)
+                {
+                    count++;
+                }
+                lane = 2;
+            }
+            else if(angle_q6>=330&&angle_q6<350)
+            {
+                if(lane == 2)
+                {
+                    if(count>data)
+                    {
+                        rplidar.lane_lut[2] = false;
+                    }
+                    else
+                    {
+                        rplidar.lane_lut[2] = true;
+                    }
+
+                    count = 0;
+                }
+
+                if(distance_q6 <= 0.1)
+                {
+                    count++;
+                }
+                lane = 3;
+            }
+            else if((angle_q6>=350&&angle_q6<360) | (angle_q6>=0&&angle_q6<10))
+            {
+                if(lane == 3)
+                {
+                    if(count>data)
+                    {
+                        rplidar.lane_lut[3] = false;
+                    }
+                    else
+                    {
+                        rplidar.lane_lut[3] = true;
+                    }
+
+                    count = 0;
+                }
+
+                if(distance_q6 <= 0.1)
+                {
+                    count++;
+                }
+                lane = 4;
+            }
+            else if(angle_q6>=10&&angle_q6<30)
+            {
+                if(lane == 4)
+                {
+                    if(count>data)
+                    {
+                        rplidar.lane_lut[4] = false;
+                    }
+                    else
+                    {
+                        rplidar.lane_lut[4] = true;
+                    }
+                    count = 0;
+                }
+
+                if(distance_q6 <= 0.1)
+                {
+                    count++;
+                }
+                lane = 5;
+            }
+            else if(angle_q6>=30&&angle_q6<50)
+            {
+                if(lane == 5)
+                {
+                    if(count>data)
+                    {
+                        rplidar.lane_lut[5] = false;
+                    }
+                    else
+                    {
+                        rplidar.lane_lut[5] = true;
+                    }
+
+                    count = 0;
+                }
+
+                if(distance_q6 <= 0.1)
+                {
+                    count++;
+                }
+                lane = 6;
+            }
+            else if(angle_q6>=50&&angle_q6<70)
+            {
+                if(lane == 6)
+                {
+                    if(count>data)
+                    {
+                        rplidar.lane_lut[6] = false;
+                    }
+                    else
+                    {
+                        rplidar.lane_lut[6] = true;
+                    }
+
+                    count = 0;
+                }
+
+                if(distance_q6 <= 0.1)
+                {
+                    count++;
+                }
+                lane = 7;
+            }
+            else if(angle_q6>=70&&angle_q6<90)
+            {
+                if(lane == 7)
+                {
+                    if(count>data)
+                    {
+                        rplidar.lane_lut[7] = false;
+                    }
+                    else
+                    {
+                        rplidar.lane_lut[7] = true;
+                    }
+                    count = 0;
+                }
+
+                if(distance_q6 <= 0.1)
+                {
+                    count++;
+                }
+
+                lane = 8;
+            }
 
     }
-//    }
 
 
 
-    //get the angle
-    //determine the lane
-    //check if there is there is obstacle
-    //set lane bit accordingly
+
     return true;
 }
 

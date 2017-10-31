@@ -35,6 +35,7 @@
 #include "lidar_sensor.h"
 #include "tasks.hpp"
 #include "stdio.h"
+#include "can.h"
 
 
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
@@ -51,13 +52,10 @@ const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
 {
-    #if 0
-    xTaskCreate(scan_task, (const char*)"scan", STACK_BYTES(2048), 0, PRIORITY_HIGH, &scanHandle);
-    #endif
-
-    #if 0
-    xTaskCreate(receive_task, (const char*)"recv", STACK_BYTES(2048), 0, PRIORITY_HIGH, &receiveHandle);
-    #endif
+    CAN_init(can1, 100, 10, 10, NULL, NULL);
+    const can_std_id_t slist[] = { CAN_gen_sid(can1, 100), CAN_gen_sid(can1, 120)};
+    CAN_setup_filter(slist, 2, NULL, 0, NULL, 0, NULL, 0);
+    CAN_reset_bus(can1);
     return true; // Must return true upon success
 }
 
@@ -77,6 +75,7 @@ bool period_reg_tlm(void)
 void period_1Hz(uint32_t count)
 {
 
+    rplidar.update_lanes();
     /*if(rplidar.one){
             for (uint8_t i=0;i<9;i++)
                 printf("%f\n",rplidar.lookup1[i]);
@@ -89,8 +88,14 @@ void period_1Hz(uint32_t count)
 
 void period_10Hz(uint32_t count)
 {
-    static bool Lane_LUT [9];
-    rplidar.update_lanes(Lane_LUT);
+    static uint32_t prev_count = count;
+
+    //retrieve and encode update_lanes at 5Hz
+    if ((count-prev_count) == 1)
+    {
+        rplidar.update_lanes();
+        prev_count = count;
+    }
     //Lane_LUT is a 9 bit bool array containing lane data
     //pass these to your message
 
