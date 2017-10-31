@@ -96,13 +96,13 @@ public class MainActivity extends AppCompatActivity {
 
         if (!BTadpt.isEnabled()){
             setMainpage_4_Off();
-            stopSound();
+            //stopSound();
             dialog4BT.show();
         }
         else
         {
             setMainpage_4_On();
-            playSound();
+            //playSound();
         }
 
         pair.setOnClickListener(new View.OnClickListener() {
@@ -110,11 +110,11 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
 
                 if (connect2Car()){
-                    Log.e("thunderBird Bluetooth","Connected");
+                    Log.e("tata nano : Bluetooth","Connected");
                     heading.setText("Bluetooth : Connected");
                     tag.setVisibility(View.VISIBLE);
                 } else {
-                    Log.e("thunderBird Bluetooth","Unable to connect");
+                    Log.e("tata nano : Bluetooth","Unable to connect");
                     heading.setText("Bluetooth : Try again");
                     tag.setVisibility(View.INVISIBLE);
                 }
@@ -126,13 +126,13 @@ public class MainActivity extends AppCompatActivity {
         mp.stop();
     }
 
-    private void playSound() {
+    /*private void playSound() {
         if (mp != null)
             mp.release();
 
         mp = MediaPlayer.create(getApplicationContext(), R.raw.carstart);
         mp.start();
-    }
+    }*/
 
     private void setMainpage_4_On() {
         heading.setText("Bluetooth : On");
@@ -161,9 +161,9 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         else {
-            Log.e("thunderBird Bluetooth","device not found in paired devices list");
+            Log.e("tata nano : Bluetooth","device not found in paired devices list");
             if (!BTadpt.isDiscovering()){
-                Log.e("thunderBird Bluetooth","started discovering.");
+                Log.e("tata nano : Bluetooth","started discovering.");
                 BTadpt.startDiscovery();
             }
             return false;
@@ -177,7 +177,7 @@ public class MainActivity extends AppCompatActivity {
         for (BluetoothDevice tempDevice : pairedDevicesList){
             if (tempDevice.getAddress().equals("B4:CE:F6:C3:36:B0") || tempDevice.getAddress().equals("DC:6D:CD:EE:92:36")){
 
-                Log.e("thunderBird Bluetooth","Found device " +tempDevice.getName() + " in paired devices list");
+                Log.e("tata nano : Bluetooth","Found device " +tempDevice.getName() + " in paired devices list");
                 return tempDevice;
             }
         }
@@ -188,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
             for (ParcelUuid allUUIDS : bt.getUuids()){
-                Log.e("thunderBird Bluetooth",allUUIDS.toString());
+                Log.e("tata nano : Bluetooth",allUUIDS.toString());
             }
         }
 
@@ -196,12 +196,12 @@ public class MainActivity extends AppCompatActivity {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
             selectedOne = bt.getUuids();
         }
-        Log.e("thunderBird Bluetooth","Trying this. "+selectedOne[selectedOne.length-1].getUuid().toString());
+        Log.e("tata nano : Bluetooth","Trying this. "+selectedOne[selectedOne.length-1].getUuid().toString());
 
         try {
             gotSocket = bt.createRfcommSocketToServiceRecord(selectedOne[selectedOne.length-1].getUuid());
         } catch (IOException e) {
-            Log.e("thunderBird Bluetooth","Error creating Rfcomm Socket");
+            Log.e("tata nano : Bluetooth","Error creating Rfcomm Socket");
             return false;
         }
 
@@ -214,18 +214,18 @@ public class MainActivity extends AppCompatActivity {
                 gotSocket.connect();
             }
 
-            Log.e("thunderBird Bluetooth", "connected to " + bt.getName());
+            Log.e("tata nano : Bluetooth", "connected to " + bt.getName());
 
             return true;
         } catch (IOException e) {
 
-            Log.e("thunderBird Bluetooth", "unable to connect to " + bt.getName());
+            Log.e("tata nano : Bluetooth", "unable to connect to " + bt.getName());
 
             try {
                 gotSocket.close();
                 return false;
             } catch (IOException e1) {
-                Log.e("thunderBird Bluetooth", "unable to close socket.");
+                Log.e("tata nano : Bluetooth", "unable to close socket.");
                 return false;
             }
 
@@ -245,7 +245,7 @@ public class MainActivity extends AppCompatActivity {
 
                     case BluetoothAdapter.STATE_OFF:
                         setMainpage_4_Off();
-                        stopSound();
+                        //stopSound();
                         dialog4BT.show();
                         break;
 
@@ -254,7 +254,7 @@ public class MainActivity extends AppCompatActivity {
 
                     case BluetoothAdapter.STATE_ON:
                         setMainpage_4_On();
-                        playSound();
+                        //playSound();
 
                         if (dialog4BT.isShowing())
                             dialog4BT.hide();
@@ -272,7 +272,7 @@ public class MainActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
 
-            Log.e("thunderBird Bluetooth",action);
+            Log.e("tata nano : Bluetooth",action);
 
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
 
@@ -280,7 +280,7 @@ public class MainActivity extends AppCompatActivity {
                 String deviceName = device.getName();
                 String deviceHardwareAddress = device.getAddress(); // MAC address
 
-                Log.e("thunderBird Bluetooth","found new device.- "+deviceName+" "+deviceHardwareAddress);
+                Log.e("tata nano : Bluetooth","found new device.- "+deviceName+" "+deviceHardwareAddress);
 
                 if (deviceHardwareAddress.equals("B4:CE:F6:C3:36:B0") || deviceHardwareAddress.equals("DC:6D:CD:EE:92:36")) {
 
@@ -288,7 +288,7 @@ public class MainActivity extends AppCompatActivity {
                         BTadpt.cancelDiscovery();
                     }
 
-                    Log.e("thunderBird Bluetooth", "Stopped discovery.");
+                    Log.e("tata nano : Bluetooth", "Stopped discovery.");
 
                     //attempt2Connect(device);
                 }
