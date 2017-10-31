@@ -35,6 +35,8 @@
 #include "uart2.hpp"
 #include "_can_dbc/generated_can.h"
 #include "can.h"
+#include <stdio.h>
+#include "adc0.h"
 
 
 
@@ -50,8 +52,18 @@ const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
 const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
 
 enum lcd_led{Sensor, Motor, Comm, Geo};
-enum lcd_digits{Miles_covered, Miles_remaining, dest_lat, dest_long, current_lat, current_long};
-enum lcd_health{System, Battery};
+enum lcd_digits{Miles_covered, Miles_remaining, Dest_lat, Dest_long, Current_lat, Current_long};
+enum lcd_health{System, Battery, Degree0, Degree20, Degree40, Degree60, Degree80, Degree_neg20, Degree_neg40, Degree_neg60, Degree_neg80};
+enum lcd_status{Off, On};
+enum lcd_ultrasound{Ultrasound_left, Ultrasound_front, Ultrasound_right};
+
+
+float adc_read(void)
+{
+    LPC_PINCON->PINSEL1 |= (1 << 20); // ADC-3 is on P0.26, select this as ADC0.3
+    int adc3 = adc0_get_reading(3); // Read the value of ADC-3
+    return (float)adc3/(4095/3.3);
+}
 
 
 /// Called once before the RTOS is started, this is a good place to initialize things once
@@ -82,30 +94,54 @@ void period_1Hz(uint32_t count)
     /**
      * TODO-2 Receive all these messages from Can Bus before printing
      */
+
+    //Frame 0
     int value = get_random_int(20);
     char random_speed = value;
     display_speedometer(random_speed);
     display_bus_reset();
-    display_lcd_led(Sensor, 1);
-    display_LCD_health(System,0);
-    display_LCD_health(Battery,1);
+    display_LCD_health(System, Off);
+    display_LCD_health(Battery,On);
 
-    //TODO- Convert this to for loop
-    display_lidar_spectrum(5, 6);
-    display_lidar_spectrum(3, 2);
-    display_lidar_spectrum(1, 5);
-
-    /*
-     * TODO- To be verified
-     * Write a wrapper function for conversion of integer to hex values
+    /**
+     * //TODO- Convert this to for loop
+        display_lidar_spectrum(5, 6);
+        display_lidar_spectrum(3, 2);
+        display_lidar_spectrum(1, 5);
+     *
      */
 
-    display_lcd_numbers(Miles_covered, 0xFF, 0xFF);
-    display_lcd_numbers(Miles_remaining, 0xEE, 0xEE);
-    display_lcd_numbers(dest_lat, 0x44, 0x44);
-    display_lcd_numbers(dest_long, 0x22, 0x22);
-    display_lcd_numbers(current_lat, 0x32, 0x12);
-    display_lcd_numbers(current_long, 0x12, 0x34);
+
+    //Frame 2
+    //TODO- Display LCD Numbers
+/**    display_lcd_numbers(Miles_covered, 1234);
+    display_lcd_numbers(Miles_remaining, 5678);
+    display_lcd_numbers(Dest_lat, 9101);
+    display_lcd_numbers(Dest_long, 2345);
+    display_lcd_numbers(Current_lat, 6789);
+    display_lcd_numbers(Current_long, 65535);
+**/
+    //Frame 1
+    //Display Ultrasound Sensor readings
+    display_lcd_bar(Ultrasound_left, 50);
+    display_lcd_bar(Ultrasound_front, 25);
+    display_lcd_bar(Ultrasound_right, 10);
+
+    //Display Lidar
+    static int i;
+    if (i+1 == 2)
+    {
+        display_LCD_health(10, On);
+        display_LCD_health(2, Off);
+    }
+
+    else
+    {
+        display_LCD_health(i - 1, On);
+        display_LCD_health(i, Off);
+    }
+    i++;
+    if (i == 11) i = 2;
 
 }
 
