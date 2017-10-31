@@ -66,14 +66,6 @@ const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
 {
-    #if 0
-    xTaskCreate(scan_task, (const char*)"scan", STACK_BYTES(2048), 0, PRIORITY_HIGH, &scanHandle);
-    #endif
-
-    #if 0
-    xTaskCreate(receive_task, (const char*)"recv", STACK_BYTES(2048), 0, PRIORITY_HIGH, &receiveHandle);
-    #endif
-
     CAN_init(can1,100,10,10,NULL,NULL);
     const can_std_id_t slist[] = { CAN_gen_sid(can1, 100), CAN_gen_sid(can1, 120)};
     CAN_setup_filter(slist,2,NULL,0,NULL,0,NULL,0);
@@ -98,49 +90,12 @@ bool period_reg_tlm(void)
 void period_1Hz(uint32_t count)
 {
 
-    /*if(rplidar.one){
-            for (uint8_t i=0;i<9;i++)
-                printf("%f\n",rplidar.lookup1[i]);
-            rplidar.one=false;
-        }*/
-    //rplidar.stop_scan();
+    rplidar.update_lanes();
 
-//    LE.toggle(1);
 }
 
 void period_10Hz(uint32_t count)
 {
-    static bool Lane_LUT[9];
-    if(count%2==0)
-    {
-        rplidar.update_lanes(Lane_LUT);
-        //Lane_LUT is a 9 bit bool array containing lane data
-        //pass these to your message
-
-        sensor_data.LIDAR_neg80 = Lane_LUT[0];
-        sensor_data.LIDAR_neg60 = Lane_LUT[1];
-        sensor_data.LIDAR_neg40 = Lane_LUT[2];
-        sensor_data.LIDAR_neg20 = Lane_LUT[3];
-        sensor_data.LIDAR_0 = Lane_LUT[4];
-        sensor_data.LIDAR_20 = Lane_LUT[5];
-        sensor_data.LIDAR_40 = Lane_LUT[6];
-        sensor_data.LIDAR_60 = Lane_LUT[7];
-        sensor_data.LIDAR_80 = Lane_LUT[8];
-
-        sensor_data.SONAR_back = 2;
-        sensor_data.SONAR_left = 2;
-        sensor_data.SONAR_right = 2;
-
-        if(dbc_encode_and_send_SENSOR_DATA(&sensor_data))
-        {
-            LE.toggle(4);
-        }
-        else
-        {
-            LE.on(4);
-        }
-    }
-
     if(CAN_rx(can1,&rx_msg,1))
     {
         if(rx_msg.msg_id == 120)
@@ -149,7 +104,16 @@ void period_10Hz(uint32_t count)
         }
     }
 
-//    LE.toggle(2);
+    static uint32_t prev_count = count;
+
+    //retrieve and encode update_lanes at 5Hz
+    if ((count-prev_count) == 1)
+    {
+        rplidar.update_lanes();
+        prev_count = count;
+    }
+    //Lane_LUT is a 9 bit bool array containing lane data
+    //pass these to your message
 }
 
 void period_100Hz(uint32_t count)

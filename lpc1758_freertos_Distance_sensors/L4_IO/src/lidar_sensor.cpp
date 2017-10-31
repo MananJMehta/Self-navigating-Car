@@ -1,6 +1,25 @@
 #include <stdint.h>
 
 #include "lidar_sensor.hpp"
+#include "printf_lib.h"
+#include "can.h"
+#include "string.h"
+
+//extern "C"
+//{
+    #include "_can_dbc/generated_can.h"
+//}
+
+bool dbc_app_send_can_msg(uint32_t mid, uint8_t dlc, uint8_t bytes[8])
+{
+    can_msg_t can_msg = { 0 };
+    can_msg.msg_id                = mid;
+    can_msg.frame_fields.data_len = dlc;
+    memcpy(can_msg.data.bytes, bytes, dlc);
+
+    return CAN_tx(can1, &can_msg, 0);
+}
+
 
 void Lidar_Sensor::send_lidar_command(lidar_cmd_t lidar_cmd)
 {
@@ -135,33 +154,20 @@ void Lidar_Sensor::check_start_scan()
 //this task can be turnned on and off every time there is a
 //start and stop command...so in the rplidar.start_scan function enable this task
 //in rplidar.stop_scan(); turn off this task
-void Lidar_Sensor::update_lanes(bool* return_lut)
+void Lidar_Sensor::update_lanes()
 {
-    uint8_t i;
+    SENSOR_DATA_t SensorData;
 
-    /// poppulate_lut();
-    for (  i=6 ; i<9 ;i++)
-    {
-//        printf("%d ", lane_lut[i]);
-        return_lut[i] = lane_lut[i];
-    }
+    SensorData.LIDAR_neg80 = lane_lut[0];
+    SensorData.LIDAR_neg60 = lane_lut[1];
+    SensorData.LIDAR_neg40 = lane_lut[2];
+    SensorData.LIDAR_neg20 = lane_lut[3];
+    SensorData.LIDAR_0 = lane_lut[4];
+    SensorData.LIDAR_20 = lane_lut[5];
+    SensorData.LIDAR_40 = lane_lut[6];
+    SensorData.LIDAR_60 = lane_lut[7];
+    SensorData.LIDAR_80 = lane_lut[8];
 
-    for (  i=0 ; i<6 ;i++)
-    {
-//        printf("%d ", lane_lut[i]);
-        return_lut[i] = lane_lut[i];
-    }
-//    printf("\n");
-    /// poppulate_lut();
+    dbc_encode_and_send_SENSOR_DATA(&SensorData);
 
-
-    //print_lookup();
-//    for (  i=6 ; i<9 ;i++)
-//        printf("%f ", lookup1[i]);
-//
-//    for (  i=0 ; i<6 ;i++)
-//            printf("%f ", lookup1[i]);
-//
-//    printf("\n");
-    //print_lookup();
 }

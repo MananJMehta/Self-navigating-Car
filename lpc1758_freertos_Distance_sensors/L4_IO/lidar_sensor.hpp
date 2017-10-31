@@ -36,7 +36,7 @@ class Lidar_Sensor : public SingletonTemplate<Lidar_Sensor>
         void get_sample_rate(sample_rate_packet_t *sample_rate);
         void set_motor_speed(uint8_t RPM);
         void check_start_scan();
-        void update_lanes(bool* return_lut);
+        void update_lanes();
         int8_t det_smol_angle();
 
         char receive_lidar_data();
@@ -45,6 +45,7 @@ class Lidar_Sensor : public SingletonTemplate<Lidar_Sensor>
 
         bool check_start = false;
         bool lane_lut[9] ;
+        uint16_t Lane_LUT;
         bool one=true;
         float lookup1[9];
 
@@ -63,6 +64,7 @@ class Lidar_Sensor : public SingletonTemplate<Lidar_Sensor>
             {
                 lane_lut[i] = false;
             }
+            Lane_LUT = 0;
 
 
             //Create 360 Structs for Data and put the pointers to those structs
