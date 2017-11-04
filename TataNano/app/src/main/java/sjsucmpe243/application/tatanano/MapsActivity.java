@@ -69,7 +69,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         alertDialog = alertDialogBuilder.create();
 
         locMan = (LocationManager) getSystemService(LOCATION_SERVICE);
-        if (!locMan.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+        if (locMan != null && !locMan.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             alertDialog.show();
         }
 
@@ -91,7 +91,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         return;
                     }
 
-                    if (temp.isProviderEnabled(LocationManager.GPS_PROVIDER) && temp.getLastKnownLocation(LocationManager.GPS_PROVIDER) != null)
+                    if (temp != null && temp.isProviderEnabled(LocationManager.GPS_PROVIDER) && temp.getLastKnownLocation(LocationManager.GPS_PROVIDER) != null)
                         myLatLng = new LatLng(temp.getLastKnownLocation(LocationManager.GPS_PROVIDER).getLatitude()
                                 , temp.getLastKnownLocation(LocationManager.GPS_PROVIDER).getLongitude());
 
@@ -103,11 +103,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                         me = mMap.addMarker(me_Option);
 
-                        CameraPosition cameraPosition = CameraPosition.builder()
-                                .target(myLatLng)
-                                .zoom(20)
-                                .bearing(temp.getLastKnownLocation(LocationManager.GPS_PROVIDER).getBearing())
-                                .build();
+                        CameraPosition cameraPosition = null;
+                        if (temp != null) {
+                            cameraPosition = CameraPosition.builder()
+                                    .target(myLatLng)
+                                    .zoom(20)
+                                    .bearing(temp.getLastKnownLocation(LocationManager.GPS_PROVIDER).getBearing())
+                                    .build();
+                        }
 
                         mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition),
                                 500, null);
@@ -241,7 +244,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
 
-            if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
+            if (action != null && action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
                 final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,
                         BluetoothAdapter.ERROR);
                 switch (state) {

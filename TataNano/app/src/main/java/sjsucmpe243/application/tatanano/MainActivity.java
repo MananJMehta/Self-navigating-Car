@@ -9,7 +9,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
-import android.media.MediaPlayer;
+//import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.ParcelUuid;
 import android.support.v7.app.AlertDialog;
@@ -20,11 +20,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.Set;
-import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -34,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
     BluetoothSocket gotSocket;
     TextView heading,tag;
     ImageView img,gifImg;
-    MediaPlayer mp;
+    //MediaPlayer mp = MediaPlayer.create(getApplicationContext(), R.raw.startcar);
     Button pair;
 
     @Override
@@ -110,32 +108,35 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
 
                 if (connect2Car()){
-                    Log.e("tata nano : Bluetooth","Connected");
-                    heading.setText("Bluetooth : Connected");
+                    Log.e("TataNano : Bluetooth","Connected");
+                    heading.setText(R.string.BTConnected);
                     tag.setVisibility(View.VISIBLE);
                 } else {
-                    Log.e("tata nano : Bluetooth","Unable to connect");
-                    heading.setText("Bluetooth : Try again");
+                    Log.e("TataNano : Bluetooth","Unable to connect");
+                    heading.setText(R.string.BTDisconnected);
                     tag.setVisibility(View.INVISIBLE);
                 }
             }
         });
     }
 
-    private void stopSound() {
-        mp.stop();
+    /*private void stopSound() {
+        if (mp.isPlaying() && mp!=null)
+            mp.stop();
     }
 
-    /*private void playSound() {
+    private void playSound() {
         if (mp != null)
+        {
             mp.release();
+            mp.start();
+        }
 
-        mp = MediaPlayer.create(getApplicationContext(), R.raw.carstart);
-        mp.start();
+
     }*/
 
     private void setMainpage_4_On() {
-        heading.setText("Bluetooth : On");
+        heading.setText(R.string.BTOn);
         heading.setTextColor(Color.GREEN);
         gifImg.setVisibility(View.VISIBLE);
         img.setVisibility(View.INVISIBLE);
@@ -143,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void setMainpage_4_Off() {
 
-        heading.setText("Bluetooth : Off");
+        heading.setText(R.string.BTOff);
         heading.setTextColor(Color.RED);
         gifImg.setVisibility(View.INVISIBLE);
         img.setVisibility(View.VISIBLE);
@@ -154,16 +155,12 @@ public class MainActivity extends AppCompatActivity {
 
         BluetoothDevice temp = findCarInPairedDevices();
         if (temp != null) {
-            if (attempt2Connect(temp)) {
-                return true;
-            }else {
-                return false;
-            }
+            return (attempt2Connect(temp));
         }
         else {
-            Log.e("tata nano : Bluetooth","device not found in paired devices list");
+            Log.e("TataNano : Bluetooth","device not found in paired devices list");
             if (!BTadpt.isDiscovering()){
-                Log.e("tata nano : Bluetooth","started discovering.");
+                Log.e("TataNano : Bluetooth","started discovering.");
                 BTadpt.startDiscovery();
             }
             return false;
@@ -177,7 +174,7 @@ public class MainActivity extends AppCompatActivity {
         for (BluetoothDevice tempDevice : pairedDevicesList){
             if (tempDevice.getAddress().equals("B4:CE:F6:C3:36:B0") || tempDevice.getAddress().equals("DC:6D:CD:EE:92:36")){
 
-                Log.e("tata nano : Bluetooth","Found device " +tempDevice.getName() + " in paired devices list");
+                Log.e("TataNano : Bluetooth","Found device " +tempDevice.getName() + " in paired devices list");
                 return tempDevice;
             }
         }
@@ -188,7 +185,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
             for (ParcelUuid allUUIDS : bt.getUuids()){
-                Log.e("tata nano : Bluetooth",allUUIDS.toString());
+                Log.e("TataNano : Bluetooth",allUUIDS.toString());
             }
         }
 
@@ -196,12 +193,12 @@ public class MainActivity extends AppCompatActivity {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
             selectedOne = bt.getUuids();
         }
-        Log.e("tata nano : Bluetooth","Trying this. "+selectedOne[selectedOne.length-1].getUuid().toString());
+        Log.e("TataNano : Bluetooth","Trying this. "+selectedOne[selectedOne.length-1].getUuid().toString());
 
         try {
             gotSocket = bt.createRfcommSocketToServiceRecord(selectedOne[selectedOne.length-1].getUuid());
         } catch (IOException e) {
-            Log.e("tata nano : Bluetooth","Error creating Rfcomm Socket");
+            Log.e("TataNano : Bluetooth","Error creating Rfcomm Socket");
             return false;
         }
 
@@ -214,18 +211,18 @@ public class MainActivity extends AppCompatActivity {
                 gotSocket.connect();
             }
 
-            Log.e("tata nano : Bluetooth", "connected to " + bt.getName());
+            Log.e("TataNano : Bluetooth", "connected to " + bt.getName());
 
             return true;
         } catch (IOException e) {
 
-            Log.e("tata nano : Bluetooth", "unable to connect to " + bt.getName());
+            Log.e("TataNano : Bluetooth", "unable to connect to " + bt.getName());
 
             try {
                 gotSocket.close();
                 return false;
             } catch (IOException e1) {
-                Log.e("tata nano : Bluetooth", "unable to close socket.");
+                Log.e("TataNano : Bluetooth", "unable to close socket.");
                 return false;
             }
 
@@ -238,7 +235,7 @@ public class MainActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
 
-            if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
+            if (action != null && action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
                 final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,
                         BluetoothAdapter.ERROR);
                 switch (state) {
@@ -272,7 +269,7 @@ public class MainActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
 
-            Log.e("tata nano : Bluetooth",action);
+            Log.e("TataNano : Bluetooth",action);
 
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
 
@@ -280,7 +277,7 @@ public class MainActivity extends AppCompatActivity {
                 String deviceName = device.getName();
                 String deviceHardwareAddress = device.getAddress(); // MAC address
 
-                Log.e("tata nano : Bluetooth","found new device.- "+deviceName+" "+deviceHardwareAddress);
+                Log.e("TataNano : Bluetooth","found new device.- "+deviceName+" "+deviceHardwareAddress);
 
                 if (deviceHardwareAddress.equals("B4:CE:F6:C3:36:B0") || deviceHardwareAddress.equals("DC:6D:CD:EE:92:36")) {
 
@@ -288,9 +285,9 @@ public class MainActivity extends AppCompatActivity {
                         BTadpt.cancelDiscovery();
                     }
 
-                    Log.e("tata nano : Bluetooth", "Stopped discovery.");
+                    Log.e("TataNano : Bluetooth", "Stopped discovery.");
 
-                    //attempt2Connect(device);
+                    attempt2Connect(device);
                 }
             }
         }
