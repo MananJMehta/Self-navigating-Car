@@ -177,7 +177,10 @@ void period_10Hz(uint32_t count)
         prev_count = count;
     }
 
-    dbc_encode_and_send_SENSOR_DATA(&SensorData);
+    if(dbc_encode_and_send_SENSOR_DATA(&SensorData))
+    {
+        LE.toggle(4);
+    }
 }
 
 void period_100Hz(uint32_t count)

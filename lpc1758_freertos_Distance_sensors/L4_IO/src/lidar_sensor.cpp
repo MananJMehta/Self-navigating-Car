@@ -149,15 +149,15 @@ void Lidar_Sensor::update_lanes()
 {
     //SENSOR_DATA_t SensorData;
 
-    SensorData.LIDAR_neg80 = lane_lut[0];
-    SensorData.LIDAR_neg60 = lane_lut[1];
-    SensorData.LIDAR_neg40 = lane_lut[2];
-    SensorData.LIDAR_neg20 = lane_lut[3];
-    SensorData.LIDAR_0 = lane_lut[4];
-    SensorData.LIDAR_20 = lane_lut[5];
-    SensorData.LIDAR_40 = lane_lut[6];
-    SensorData.LIDAR_60 = lane_lut[7];
-    SensorData.LIDAR_80 = lane_lut[8];
+    SensorData.LIDAR_neg80 = !lane_lut[0];
+    SensorData.LIDAR_neg60 = !lane_lut[1];
+    SensorData.LIDAR_neg40 = !lane_lut[2];
+    SensorData.LIDAR_neg20 = !lane_lut[3];
+    SensorData.LIDAR_0 = !lane_lut[4];
+    SensorData.LIDAR_20 = !lane_lut[5];
+    SensorData.LIDAR_40 = !lane_lut[6];
+    SensorData.LIDAR_60 = !lane_lut[7];
+    SensorData.LIDAR_80 = !lane_lut[8];
 
     //dbc_encode_and_send_SENSOR_DATA(&SensorData);
 
