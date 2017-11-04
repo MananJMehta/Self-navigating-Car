@@ -63,6 +63,7 @@ bool period_init(void)
     //error code 2 to signal incorrect initialization of steering PWM
     if(!str.init())
         LD.setNumber(2);
+    str.setDirection(str.directionOfCar::Center);
     return true; // Must return true upon success
 }
 
@@ -95,12 +96,20 @@ CAR_CONTROL_t carControl;
 HEARTBEAT_t heartbeat;
 void period_10Hz(uint32_t count)
 {
-    spd.set(16);
-
+    static int flag =0;
+    if(flag ==1)
+        spd.set(17);
+    else
+        spd.set(15);
+    if(SW.getSwitch(1)==true)
+        flag=1;
+    if(SW.getSwitch(2)==true)
+        flag=0;
 
 
     while(CAN_rx(can1,&msg,0))
     {
+        LE.off(4);
         dbc_msg_hdr_t header;
         header.dlc = msg.frame_fields.data_len;
         header.mid = msg.msg_id;
@@ -112,7 +121,7 @@ void period_10Hz(uint32_t count)
                 break;
             case 140:
                 dbc_decode_CAR_CONTROL(&carControl,msg.data.bytes,&header);
-            LE.toggle(3);
+                LE.toggle(3);
                 break;
         }
     }
