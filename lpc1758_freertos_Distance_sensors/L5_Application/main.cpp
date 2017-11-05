@@ -83,15 +83,14 @@ bool lidar_data_acquisition::run(void* p)
                 LE.off(4);
             }
 
+            rplidar.update_lane_lut();
+
             uint16_t temp;
             uint16_t temp1;
             uint16_t angle;
             uint16_t distance;
             float angle_q6;
             float distance_q6;
-            // write boundary lookup table instead 270, 290,
-//            uint32_t lookup[9]={ 280 , 300 , 320 , 340, 0 , 20 , 40 , 60 , 80};
-//
             static const uint8_t data = 10;
             static uint8_t count=0;
             static uint8_t lane=8;
@@ -103,6 +102,7 @@ bool lidar_data_acquisition::run(void* p)
             temp = (uint16_t)(rplidar.receive_lidar_data()); //get da angle_2
 
             distance = (uint16_t)(rplidar.receive_lidar_data()); //get da distance_1
+
             temp1 = (uint16_t)(rplidar.receive_lidar_data()); //get da distance 2
 
             angle = angle>>1;
@@ -127,7 +127,7 @@ bool lidar_data_acquisition::run(void* p)
                     count = 0;
                 }
 
-                if(distance_q6 <= 0.1)
+                if(distance_q6 <= 0.3)
                 {
                     count++;
                 }
@@ -151,7 +151,7 @@ bool lidar_data_acquisition::run(void* p)
                     count = 0;
                 }
 
-                if(distance_q6 <= 0.1)
+                if(distance_q6 <= 0.3)
                 {
                     count++;
                 }
@@ -174,7 +174,7 @@ bool lidar_data_acquisition::run(void* p)
                     count = 0;
                 }
 
-                if(distance_q6 <= 0.1)
+                if(distance_q6 <= 0.3)
                 {
                     count++;
                 }
@@ -196,7 +196,7 @@ bool lidar_data_acquisition::run(void* p)
                     count = 0;
                 }
 
-                if(distance_q6 <= 0.1)
+                if(distance_q6 <= 0.3)
                 {
                     count++;
                 }
@@ -218,7 +218,7 @@ bool lidar_data_acquisition::run(void* p)
                     count = 0;
                 }
 
-                if(distance_q6 <= 0.1)
+                if(distance_q6 <= 0.3)
                 {
                     count++;
                 }
@@ -239,7 +239,7 @@ bool lidar_data_acquisition::run(void* p)
                     count = 0;
                 }
 
-                if(distance_q6 <= 0.1)
+                if(distance_q6 <= 0.3)
                 {
                     count++;
                 }
@@ -261,7 +261,7 @@ bool lidar_data_acquisition::run(void* p)
                     count = 0;
                 }
 
-                if(distance_q6 <= 0.1)
+                if(distance_q6 <= 0.3)
                 {
                     count++;
                 }
@@ -283,7 +283,7 @@ bool lidar_data_acquisition::run(void* p)
                     count = 0;
                 }
 
-                if(distance_q6 <= 0.1)
+                if(distance_q6 <= 0.3)
                 {
                     count++;
                 }
@@ -304,7 +304,7 @@ bool lidar_data_acquisition::run(void* p)
                     count = 0;
                 }
 
-                if(distance_q6 <= 0.1)
+                if(distance_q6 <= 0.3)
                 {
                     count++;
                 }

@@ -35,7 +35,7 @@
 #include "lidar_sensor.h"
 #include "tasks.hpp"
 #include "stdio.h"
-#include "can.h"
+#include "can.hf"
 
 
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
@@ -74,16 +74,7 @@ bool period_reg_tlm(void)
 
 void period_1Hz(uint32_t count)
 {
-
     rplidar.update_lanes();
-    /*if(rplidar.one){
-            for (uint8_t i=0;i<9;i++)
-                printf("%f\n",rplidar.lookup1[i]);
-            rplidar.one=false;
-        }*/
-    //rplidar.stop_scan();
-
-//    LE.toggle(1);
 }
 
 void period_10Hz(uint32_t count)
