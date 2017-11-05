@@ -99,12 +99,12 @@ void update_LCD_main_page()
 {
     /**
      * TODO - These two lines can be removed during implementation
+     * Pass the calculated speed instead
      */
     int value = get_random_int(20);
     char random_speed = value;
 
-    display_speedometer(random_speed);
-//    display_LCD_large_led(System, Off);
+    display_speedometer(random_speed); //TODO - Set this to speed
     display_LCD_large_led(Battery, On);
 }
 
@@ -114,8 +114,9 @@ void update_LCD_main_page()
 void update_LCD_distance_page()
 {
     //Display LCD Numbers
-    display_lcd_numbers(Miles_covered, 1234);
-    display_lcd_numbers(Miles_remaining, 5678);
+    //TODO - Send Miles
+    display_lcd_numbers(Miles_covered, 1234);  //Scaled by 100 (1234 will display as 12.34)
+    display_lcd_numbers(Miles_remaining, 5678); //Scaled by 100
 }
 
 /**
@@ -123,7 +124,8 @@ void update_LCD_distance_page()
  */
 void update_LCD_GPS_page()
 {
-    display_lcd_geo(Dest_lat, 132456789);
+    //TODO - Set this to dest_lat_val and other coordinate variables
+    display_lcd_geo(Dest_lat, 132456789); //Scaled by 1 million (1000000)
     display_lcd_geo(Dest_long, 223654321);
     display_lcd_geo(Current_lat, 356112789);
     display_lcd_geo(Current_long, 432345678);
