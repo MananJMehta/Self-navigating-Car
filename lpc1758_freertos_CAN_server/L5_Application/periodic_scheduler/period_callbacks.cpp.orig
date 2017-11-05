@@ -31,20 +31,21 @@
 #include <stdint.h>
 #include "io.hpp"
 #include "periodic_callback.h"
-#include <stdio.h>
-#include "eint.h"
-#include "gpio.hpp"
-#include "L4.5_Motor_Control/Steering.hpp"
-#include "L4.5_Motor_Control/Speed.hpp"
 #include "_can_dbc/generated_can.h"
 #include "can.h"
-#include "printf_lib.h"
+#include "string.h"
 
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
-Speed spd;
-Steering str;
+bool dbc_app_send_can_msg(uint32_t mid, uint8_t dlc, uint8_t bytes[8])
+{
+    can_msg_t can_msg = { 0 };
+    can_msg.msg_id                = mid;
+    can_msg.frame_fields.data_len = dlc;
+    memcpy(can_msg.data.bytes, bytes, dlc);
 
+    return CAN_tx(can1, &can_msg, 0);
+}
 /**
  * This is the stack size of the dispatcher task that triggers the period tasks to run.
  * Minimum 1500 bytes are needed in order to write a debug file if the period tasks overrun.
@@ -52,36 +53,14 @@ Steering str;
  * printf inside these functions, you need about 1500 bytes minimum
  */
 const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
-static uint8_t second_count = 0;
-static uint16_t cut_count = 0;
-static uint16_t old_count = 0;
 
-void callBack()
-{
-    cut_count++;
-    LE.toggle(1);
-}
-
-void initialize()
-{
-
-    eint3_enable_port2(5,eint_rising_edge,callBack);
-}
-
-/// Called once before the RTOS is started, this is a good place to initialize things once
+/// Called once before the RTOS is , this is a good place to initialize things once
 bool period_init(void)
 {
-initialize();
-    CAN_init(can1,100,10,10,NULL,NULL);
+    CAN_init(can1,10,10,10,NULL,NULL);
     CAN_bypass_filter_accept_all_msgs();
     CAN_reset_bus(can1);
-    //error code 1 to signal incorrect initialization of speed PWM
-    if(!spd.init())
-        LD.setNumber(1);
-    //error code 2 to signal incorrect initialization of steering PWM
-    if(!str.init())
-        LD.setNumber(2);
-    str.setDirection(CENTER); //Aditya : this part might be extra/ already set in init
+    LD.init();
     return true; // Must return true upon success
 }
 
@@ -100,80 +79,104 @@ bool period_reg_tlm(void)
 
 void period_1Hz(uint32_t count)
 {
-    second_count++;
-    printf("RPS: %d \n", (cut_count-old_count));
-    old_count = cut_count;
-
-    if(second_count == 60)
-    {
-        printf("RPM: %d \n", cut_count);
-        second_count = 0;
-        cut_count = 0;
-        old_count = 0;
-    }
-
     if(CAN_is_bus_off(can1))
     {
         CAN_reset_bus(can1);
-        LE.init();
-        LE.on(4);
     }
 }
 
-const uint32_t        CAR_CONTROL__MIA_MS=3000;
-const CAR_CONTROL_t   CAR_CONTROL__MIA_MSG={0};
-can_msg_t msg;
-CAR_CONTROL_t carControl;
-HEARTBEAT_t heartbeat;
+SENSOR_MESSAGE_t sensorMsg={0};
+ANDROID_MESSAGE_t androidMsg={0};
+GPS_MESSAGE_t gpsMsg={0};
+MOTOR_MESSAGE_t motorMsg={0};
+
+const uint32_t                             SENSOR_MESSAGE__MIA_MS=3000;
+const SENSOR_MESSAGE_t                     SENSOR_MESSAGE__MIA_MSG={0};
+const uint32_t                             MOTOR_MESSAGE__MIA_MS=3000;
+const MOTOR_MESSAGE_t                      MOTOR_MESSAGE__MIA_MSG={0};
+const uint32_t                             ANDROID_MESSAGE__MIA_MS=3000;
+const ANDROID_MESSAGE_t                    ANDROID_MESSAGE__MIA_MSG={0};
+const uint32_t                             GPS_MESSAGE__MIA_MS=3000;
+const GPS_MESSAGE_t                        GPS_MESSAGE__MIA_MSG={0};
 
 void period_10Hz(uint32_t count)
 {
-    static int flag = 0;
-    if(flag ==1)
-        spd.setSpeed(MEDIUM);
-    else
-        spd.setSpeed(STOP);
-    if(SW.getSwitch(1)==true)
-        flag=1;
-    if(SW.getSwitch(2)==true)
-        flag=0;
+    //CANtx handling
+    CAN_TEST_t masterMessage={0};
+    KILL_SWITCH_t killSwitch={0};
+    MOTOR_MOVEMENT_t motorMovement ={0};
+    masterMessage.CAN_TEST_master=0x01;
+    dbc_encode_and_send_CAN_TEST(&masterMessage);
 
 
-    while(CAN_rx(can1,&msg,0))
+    motorMovement.MOTOR_MOVEMENT_sig = SW.getSwitchValues();
+    LD.setNumber(SW.getSwitchValues());
+    dbc_encode_and_send_MOTOR_MOVEMENT(&motorMovement);
+
+
+    if(LS.getPercentValue() >=75)
     {
-        LE.off(4);
-        dbc_msg_hdr_t header;
-        header.dlc = msg.frame_fields.data_len;
-        header.mid = msg.msg_id;
-        switch(header.mid)
+        killSwitch.KILL_SWITCH_Sig=1;
+        dbc_encode_and_send_KILL_SWITCH(&killSwitch);
+    }
+    dbc_msg_hdr_t message_header;
+    can_msg_t can_msg;
+
+    //CANrx Handling
+    while(CAN_rx(can1,&can_msg,0))
+    {
+        message_header.dlc=can_msg.frame_fields.data_len;
+        message_header.mid=can_msg.msg_id;
+
+<<<<<<< HEAD
+=======
+
+>>>>>>> a9b61997adf09c1a4052fbf25bc718a064b4888f
+        switch(message_header.mid)
         {
-            case 120:
-                dbc_decode_HEARTBEAT(&heartbeat,msg.data.bytes,&header);
-    //LE.toggle(2);
+            case 300:
+                LE.toggle(1);
                 break;
-            case 140:
-                dbc_decode_CAR_CONTROL(&carControl,msg.data.bytes,&header);
+            case 301:
+                LE.toggle(2);
+                break;
+            case 302:
                 LE.toggle(3);
+                break;
+            case 303:
+                LE.toggle(4);
                 break;
         }
     }
 
-    if(dbc_handle_mia_CAR_CONTROL(&carControl,100))
-        LE.on(1);
-    else LE.off(1);
+    //MIA handling
+<<<<<<< HEAD
+    if(dbc_handle_mia_ANDROID_MESSAGE(&androidMsg,100))
+        LE.off(3);
+    if(dbc_handle_mia_GPS_MESSAGE(&gpsMsg,100))
+        LE.off(4);
+    if(dbc_handle_mia_MOTOR_MESSAGE(&motorMsg,100))
+        LE.off(2);
+    if(dbc_handle_mia_SENSOR_MESSAGE(&sensorMsg,100))
+        LE.off(1);
+=======
+    dbc_handle_mia_ANDROID_MESSAGE(&androidMsg,100);
+    dbc_handle_mia_GPS_MESSAGE(&gpsMsg,100);
+    dbc_handle_mia_MOTOR_MESSAGE(&motorMsg,100);
+    dbc_handle_mia_SENSOR_MESSAGE(&sensorMsg,100);
+    dbc_decode_SENSOR_MESSAGE(&sensorMsg,can_msg.data.bytes,&message_header);
+>>>>>>> a9b61997adf09c1a4052fbf25bc718a064b4888f
 
-    str.setDirection(CENTER);
-    u0_dbg_printf("%i\n",carControl.CAR_CONTROL_steer);
 }
 
 void period_100Hz(uint32_t count)
 {
-    //LE.toggle(3);
+
 }
 
 // 1Khz (1ms) is only run if Periodic Dispatcher was configured to run it at main():
 // scheduler_add_task(new periodicSchedulerTask(run_1Khz = true));
 void period_1000Hz(uint32_t count)
 {
-    //LE.toggle(4);
+
 }
