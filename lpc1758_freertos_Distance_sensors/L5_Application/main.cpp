@@ -26,7 +26,12 @@
 #include "tasks.hpp"
 #include "examples/examples.hpp"
 #include "stdio.h"
-#include "sensor_functions.h"
+
+extern "C"
+{
+    #include "sensor_functions.h"
+}
+
 #include "io.hpp"
 #include "printf_lib.h"
 /**
@@ -83,7 +88,7 @@ bool lidar_data_acquisition::run(void* p)
                 LE.off(4);
             }
 
-            rplidar.update_lane_lut();
+//            rplidar.update_lane_lut();
 
 
             //this stuffff can be removed
