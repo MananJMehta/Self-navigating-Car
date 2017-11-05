@@ -80,6 +80,15 @@ void convert16_to_hex(uint16_t number, uint8_t *lsb_val, uint8_t *msb_val)
     *msb_val = ((uint8_t)((number>>8) & 0xFF));
 }
 
+void display_lcd_geo(uint8_t placeholder, uint32_t geo)
+{
+    uint16_t geo_left = geo / 10000;
+    uint16_t geo_right = geo % 10000;
+
+    display_lcd_numbers(placeholder, geo_left);
+    display_lcd_numbers(placeholder + 4, geo_right);
+
+}
 void display_lcd_numbers(char display_num, uint16_t value)
 {
     uint8_t lsb, msb;
@@ -141,12 +150,13 @@ bool ack()
     }
     if(ack!=6)
     {
-        u2.getChar(&ack, portMAX_DELAY);
-        u2.getChar(&ack, portMAX_DELAY);
-        u2.getChar(&ack, portMAX_DELAY);
-        u2.getChar(&ack, portMAX_DELAY);
-        u2.getChar(&ack, portMAX_DELAY);
-        u2.getChar(&ack, portMAX_DELAY);
+        u2.getChar(&ack, 0);
+        u2.getChar(&ack, 0);
+        u2.getChar(&ack, 0);
+        u2.getChar(&ack, 0);
+        u2.getChar(&ack, 0);
+        u2.getChar(&ack, 0);
+
     }
     return status;
 }
@@ -156,15 +166,15 @@ bool getButtonState()
     static bool status;
     display_lcd_startStop();
     Uart2& u2 = Uart2::getInstance();
-    char rxChar, rxChar2 = 'a';
+    char rxChar, rxChar2, rxChar3, rxChar4 = 'a';
     char button_status = 'z';
     u2.getChar(&rxChar2, portMAX_DELAY);
-    u2.getChar(&rxChar, portMAX_DELAY);
-    u2.getChar(&rxChar, portMAX_DELAY);
+    u2.getChar(&rxChar3, portMAX_DELAY);
+    u2.getChar(&rxChar4, portMAX_DELAY);
     u2.getChar(&rxChar, portMAX_DELAY);
     u2.getChar(&button_status, portMAX_DELAY);
-    u2.getChar(&rxChar, portMAX_DELAY);
-    if (rxChar2==7)
+    u2.getChar(&button_status, portMAX_DELAY);
+    if (rxChar3==7 || (rxChar2==7 && rxChar3==30))
     {
         status = !status;
     }

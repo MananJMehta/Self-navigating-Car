@@ -22,5 +22,6 @@ char check_form();
 bool ack();
 bool getButtonState();
 void display_lcd_startStop();
+void display_lcd_geo(uint8_t placeholder, uint32_t geo);
 
 #endif /* LCD_HPP_ */

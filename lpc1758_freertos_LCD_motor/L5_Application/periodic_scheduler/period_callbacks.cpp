@@ -123,10 +123,10 @@ void update_LCD_distance_page()
  */
 void update_LCD_GPS_page()
 {
-    display_lcd_numbers(Dest_lat, 9101);
-    display_lcd_numbers(Dest_long, 2345);
-    display_lcd_numbers(Current_lat, 6789);
-    display_lcd_numbers(Current_long, 65535);
+    display_lcd_geo(Dest_lat, 132456789);
+    display_lcd_geo(Dest_long, 223654321);
+    display_lcd_geo(Current_lat, 356112789);
+    display_lcd_geo(Current_long, 432345678);
 }
 
 /**
