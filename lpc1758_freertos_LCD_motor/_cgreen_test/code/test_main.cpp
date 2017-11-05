@@ -3,6 +3,8 @@
 #include <unistd.h>
 #include <cgreen/cgreen.h>
 #include <cgreen/mocks.h>
+#include "L4.5_Motor_Control/Steering.hpp"
+#include "L4.5_Motor_Control/Speed.hpp"
 
 // Include for C++
 using namespace cgreen;
@@ -241,6 +243,10 @@ int main(int argc, char **argv)
 }
 
 #else // SHOW_SAMPLE_PASS_AND_FAIL_TESTS_ONLY
+int setSpeed(Speed::speedOfCar speed)
+{
+    return mock();
+}
 
 int main(int argc, char **argv) 
 {

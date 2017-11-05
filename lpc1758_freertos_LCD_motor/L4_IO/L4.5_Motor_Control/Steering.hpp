@@ -9,30 +9,29 @@
 #define STEERING_HPP_
 #include "lpc_pwm.hpp"
 
+#define EXTREMELEFT 11
+#define EXTREMERIGHT 19
+#define HARDLEFT 12
+#define LEFT 13
+#define SOFTLEFT 14
+#define CENTER 15
+#define SOFTRIGHT 16
+#define RIGHT 17
+#define HARDRIGHT 18
+
 class Steering: public PWM
 
 {
 public:
-    typedef enum {
-        ExtremeLeft,
-        ExtremeRight,
-        HardLeft,
-        Left,
-        SoftLeft,
-        Center,
-        SoftRight,
-        Right,
-        HardRight
-    }directionOfCar;
 
     bool init();
 
-    directionOfCar getDirection();   ///< @returns value set previously
-    void setDirection(directionOfCar value); ///< @param sets direction of car
+    int getDirection();   ///< @returns value set previously
+    void setDirection(int value); ///< @param sets direction of car
 
     ///Constructor
     Steering():PWM(pwmType::pwm1, 8){}
-    directionOfCar currentDirection;
+    int currentDirection;
 };
 
 
