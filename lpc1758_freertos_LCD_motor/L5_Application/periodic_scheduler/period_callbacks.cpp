@@ -39,7 +39,6 @@
 #include "adc0.h"
 
 
-
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
 
@@ -58,7 +57,7 @@ enum lcd_status{Off, On};
 enum lcd_ultrasound{Ultrasound_left, Ultrasound_front, Ultrasound_right};
 enum lcd_form{Main_page, Sensor_page, Distance_page, GPS_page};
 
-/*
+/**
  * Global variables to pass data for in 1 Hz scheduler from 10 Hz scheduler
  */
 uint8_t speed, us_front, us_left, us_right;
@@ -78,7 +77,7 @@ float adc_read(void)
 bool period_init(void)
 {
     Uart2& u2 = Uart2::getInstance();
-    u2.init(57600);
+    u2.init(115200);
 
     CAN_init(can1, 100, 10, 10, NULL, NULL);
     CAN_reset_bus(can1);
@@ -93,6 +92,63 @@ bool period_reg_tlm(void)
     return true; // Must return true upon success
 }
 
+/**
+ * Send readings of LCD's Main Page
+ */
+void update_LCD_main_page()
+{
+    /**
+     * TODO - These two lines can be removed during implementation
+     */
+    int value = get_random_int(20);
+    char random_speed = value;
+
+    display_speedometer(random_speed);
+//    display_LCD_large_led(System, Off);
+    display_LCD_large_led(Battery, On);
+}
+
+/**
+ * Send readings of LCD's Distance Page
+ */
+void update_LCD_distance_page()
+{
+    //Display LCD Numbers
+    display_lcd_numbers(Miles_covered, 1234);
+    display_lcd_numbers(Miles_remaining, 5678);
+}
+
+/**
+ * Send readings of LCD's GPS Page
+ */
+void update_LCD_GPS_page()
+{
+    display_lcd_numbers(Dest_lat, 9101);
+    display_lcd_numbers(Dest_long, 2345);
+    display_lcd_numbers(Current_lat, 6789);
+    display_lcd_numbers(Current_long, 65535);
+}
+
+/**
+ * Send readings of LCD's Main Page
+ */
+void update_LCD_sensor_page()
+{
+    //Display Ultrasound Sensor readings
+    display_lcd_bar(Ultrasound_left, us_left * 15); //Scaling up by 15 to display in LED
+    display_lcd_bar(Ultrasound_front, us_front * 15);
+    display_lcd_bar(Ultrasound_right, us_right * 15);
+
+    display_LCD_large_led(Degree0, deg_0);
+    display_LCD_large_led(Degree20, deg_20);
+    display_LCD_large_led(Degree40, deg_40);
+    display_LCD_large_led(Degree60, deg_60);
+    display_LCD_large_led(Degree80, deg_80);
+    display_LCD_large_led(Degree_neg20, deg_neg20);
+    display_LCD_large_led(Degree_neg40, deg_neg40);
+    display_LCD_large_led(Degree_neg60, deg_neg60);
+    display_LCD_large_led(Degree_neg80, deg_neg80);
+}
 
 /**
  * Below are your periodic functions.
@@ -101,68 +157,56 @@ bool period_reg_tlm(void)
 
 void period_1Hz(uint32_t count)
 {
-    //TODO-1 if bus if off, reset bus and print the error in log file
+    //TODO-1 if bus if off, also print the error in log file
+
+    if(CAN_is_bus_off(can1))
+    {
+        CAN_reset_bus(can1);
+        display_bus_reset();
+    }
+
+    if (getButtonState()) //Check if the startStop button is pressed in LCD
+    {
+        display_LCD_large_led(System, On);
+    }
+    else
+    {
+        display_LCD_large_led(System, Off);
+    }
+
 
     /**
-     * TODO-2 Receive all these messages from Can Bus before printing
+     * Check which form (Page) of LCD is active
      */
-
-    char ack = 'a';
-    Uart2& u2 = Uart2::getInstance();
-    u2.gets(&ack, 7, 50);
-    display_bus_reset();
-
     char form = check_form();
 
-    if (form == Main_page)
+    /**
+     * Display the information of the Active LCD Page
+     */
+    switch(form)
     {
-        int value = get_random_int(20);
-        char random_speed = value;
-        display_speedometer(random_speed);
-        display_LCD_large_led(System, Off);
-        display_LCD_large_led(Battery, On);
-    }
-
-    //Frame 2
-    else if (form == Distance_page)
-    {
-        //Display LCD Numbers
-        display_lcd_numbers(Miles_covered, 1234);
-        display_lcd_numbers(Miles_remaining, 5678);
-    }
-
-    //Frame 1
-    else if (form == Sensor_page)
-    {
-        //Display Ultrasound Sensor readings
-        display_lcd_bar(Ultrasound_left, us_left*15);
-        display_lcd_bar(Ultrasound_front, us_front*15);
-        display_lcd_bar(Ultrasound_right, us_right*15);
-
-        display_LCD_large_led(Degree0, deg_0);
-        display_LCD_large_led(Degree20, deg_20);
-        display_LCD_large_led(Degree40, deg_40);
-        display_LCD_large_led(Degree60, deg_60);
-        display_LCD_large_led(Degree80, deg_80);
-        display_LCD_large_led(Degree_neg20, deg_neg20);
-        display_LCD_large_led(Degree_neg40, deg_neg40);
-        display_LCD_large_led(Degree_neg60, deg_neg60);
-        display_LCD_large_led(Degree_neg80, deg_neg80);
-    }
-
-    //Frame 3
-    else if (form == GPS_page) {
-
-        display_lcd_numbers(Dest_lat, 9101);
-        display_lcd_numbers(Dest_long, 2345);
-        display_lcd_numbers(Current_lat, 6789);
-        display_lcd_numbers(Current_long, 65535);
+        case Main_page:
+            update_LCD_main_page();
+            break;
+        case Distance_page:
+            update_LCD_distance_page();
+            break;
+        case Sensor_page:
+            update_LCD_sensor_page();
+            break;
+        case GPS_page:
+            update_LCD_GPS_page();
+            break;
+        default:
+            //Do something to throw error
+            break;
     }
 
 }
 
 /**
- * Do not require MIA messages for LCD
+ * Do not require MIA messages for LCD explicitly
+ * as they display the old data if there is no connection
  */
 const uint32_t                             SENSOR_DATA__MIA_MS = 3000;
 const SENSOR_DATA_t                        SENSOR_DATA__MIA_MSG = {0};
@@ -175,7 +219,8 @@ const COMPASS_t                            COMPASS__MIA_MSG = {0};
 
 void period_10Hz(uint32_t count)
 {
-    static uint32_t counter;
+
+    static uint32_t counter; //Counter to for checking the period of every second
 
     SENSOR_DATA_t sensor_can_msg = { 0 };
     COMPASS_t compass_can_msg = { 0 };
@@ -190,7 +235,8 @@ void period_10Hz(uint32_t count)
      */
 
     // Empty all of the queued, and received messages within the last 10ms (100Hz callback frequency)
-    while (CAN_rx(can1, &can_msg, 0)) {
+    while (CAN_rx(can1, &can_msg, 0))
+    {
         // Form the message header from the metadata of the arriving message
         dbc_msg_hdr_t can_msg_hdr;
         can_msg_hdr.dlc = can_msg.frame_fields.data_len;
@@ -202,9 +248,12 @@ void period_10Hz(uint32_t count)
         dbc_decode_COMPASS(&compass_can_msg, can_msg.data.bytes, &can_msg_hdr);
         dbc_decode_CAR_CONTROL(&car_control_can_msg, can_msg.data.bytes, &can_msg_hdr);
 
-        //Update values from CAN every 10 iterations (1 Second)
+        //Update values from CAN every 10 iterations (every 1 Second)
         if (counter % 10 == 0) {
-            //Update Lidar values
+
+            /**
+             * Set Lidar sensor values for LCD display
+             */
             deg_0 = sensor_can_msg.LIDAR_0;
             deg_20 = sensor_can_msg.LIDAR_20;
             deg_40 = sensor_can_msg.LIDAR_40;
@@ -215,16 +264,25 @@ void period_10Hz(uint32_t count)
             deg_neg60 = sensor_can_msg.LIDAR_neg60;
             deg_neg80 = sensor_can_msg.LIDAR_neg80;
 
-            //Sonar values -- Feeding it now to the Ultrasound sensor values for LCD display
+            /**
+             * Set Ultrasound sensor values for LCD display
+             */
             us_left = sensor_can_msg.SONAR_left;
             us_right = sensor_can_msg.SONAR_right;
             us_front = sensor_can_msg.SONAR_back;
 
-            //US values
+            /**
+             * Set GPS Coordinates values for LCD Display
+             */
             current_lat_val = gps_can_msg.GPS_LATITUDE;
             current_long_val = gps_can_msg.GPS_LONGITUDE;
 
-            //TODO - Need to update the speed value, distance remaining, distance covered, destination latitude and destination longitude
+            /**
+             * TODO - Need to update the speed value, distance remaining,
+             * distance covered, destination latitude and destination
+             * longitude once the DBC file is updated
+             */
+
 
             /**
              * dest_lat_val = ;
@@ -234,17 +292,13 @@ void period_10Hz(uint32_t count)
              * distance_remaining = ;
              */
 
-
-
-
-
         }
     }
-    dbc_handle_mia_SENSOR_DATA(&sensor_can_msg, 10);
 }
 
 void period_100Hz(uint32_t count)
 {
+
 }
 
 // 1Khz (1ms) is only run if Periodic Dispatcher was configured to run it at main():

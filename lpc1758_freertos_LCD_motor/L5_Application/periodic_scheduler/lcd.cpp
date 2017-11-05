@@ -9,6 +9,7 @@
 #include <ctime>
 #include "lcd.hpp"
 #include <stdio.h>
+#include <utilities.h>
 
 enum lcd_led{Sensor, Motor, Comm, Geo};
 
@@ -35,7 +36,7 @@ void display_speedometer(char random_speed)
 
 void display_bus_reset()
 {
-    static char bus_reset_count;
+    static char bus_reset_count=0;
     Uart2& u2 = Uart2::getInstance();
     u2.putChar(0x01, portMAX_DELAY);   //Write Object
     u2.putChar(0x09, portMAX_DELAY);   //Object ID for bus_reset
@@ -46,20 +47,6 @@ void display_bus_reset()
     u2.putChar(checkSum, portMAX_DELAY);
     ack();
 }
-
-/**
-void display_lidar_spectrum(char pos, char val)
-{
-    Uart2& u2 = Uart2::getInstance();
-    u2.putChar(0x01);   //Write Object
-    u2.putChar(0x18);   //Object ID for bus_reset
-    u2.putChar(0x00);
-    u2.putChar(pos);    //MSB
-    u2.putChar(val);    //LSB
-    char checkSum = 0x01^0x18^0x00^pos^ val;
-    u2.putChar(checkSum);
-}
-**/
 
 void display_lcd_led(char led_num, char state)
 {
@@ -78,7 +65,7 @@ void display_LCD_large_led(char led_num, char state)
 {
     Uart2& u2 = Uart2::getInstance();
     u2.putChar(0x01, portMAX_DELAY);   //Write Object
-    u2.putChar(0x13, portMAX_DELAY);   //Object ID for bus_reset
+    u2.putChar(0x13, portMAX_DELAY);   //Object ID
     u2.putChar(led_num, portMAX_DELAY);
     u2.putChar(0x00, portMAX_DELAY);
     u2.putChar(state, portMAX_DELAY); //LSB
@@ -99,7 +86,7 @@ void display_lcd_numbers(char display_num, uint16_t value)
     convert16_to_hex(value, &lsb, &msb);
     Uart2& u2 = Uart2::getInstance();
     u2.putChar(0x01, portMAX_DELAY);   //Write Object
-    u2.putChar(0x0F, portMAX_DELAY);   //Object ID for bus_reset
+    u2.putChar(0x0F, portMAX_DELAY);   //Object ID
     u2.putChar(display_num, portMAX_DELAY);
     u2.putChar(msb, portMAX_DELAY);
     u2.putChar(lsb, portMAX_DELAY);    //LSB
@@ -114,7 +101,7 @@ void display_lcd_bar(char display_num, uint16_t value)
     convert16_to_hex(value, &lsb, &msb);
     Uart2& u2 = Uart2::getInstance();
     u2.putChar(0x01, portMAX_DELAY);   //Write Object
-    u2.putChar(0x0B, portMAX_DELAY);   //Object ID for bus_reset
+    u2.putChar(0x0B, portMAX_DELAY);   //Object ID
     u2.putChar(display_num, portMAX_DELAY);
     u2.putChar(msb, portMAX_DELAY);
     u2.putChar(lsb, portMAX_DELAY);    //LSB
@@ -125,33 +112,72 @@ void display_lcd_bar(char display_num, uint16_t value)
 
 char check_form()
 {
+    char rxChar = 'a';
+    char form_value = 'z';
+
     Uart2& u2 = Uart2::getInstance();
     u2.putChar(0x00);
     u2.putChar(0x0A);
     u2.putChar(0x00);
     u2.putChar(0x0A);
-    char hello[6] = {'\0'};
-    char test[1] = {'\0'};
-    char *input = hello;
-    char *form_value = test;
-    u2.getChar(input, portMAX_DELAY);
-    u2.getChar(++input, portMAX_DELAY);
-    u2.getChar(++input, portMAX_DELAY);
-    u2.getChar(++input, portMAX_DELAY);
-    u2.getChar(form_value, portMAX_DELAY);
-    u2.getChar(++input, portMAX_DELAY);
-    printf("%d\n", *form_value);
-    return test[0];
+
+    u2.getChar(&rxChar, portMAX_DELAY);
+    u2.getChar(&rxChar, portMAX_DELAY);
+    u2.getChar(&rxChar, portMAX_DELAY);
+    u2.getChar(&rxChar, portMAX_DELAY);
+    u2.getChar(&form_value, portMAX_DELAY);
+    u2.getChar(&rxChar, portMAX_DELAY);
+    return form_value;
 }
 
 
-void ack()
+bool ack()
+{
+    bool status = false;
+    Uart2& u2 = Uart2::getInstance();
+    char ack = 'a';
+    if (u2.getChar(&ack, portMAX_DELAY)){
+     status = true;
+    }
+    if(ack!=6)
+    {
+        u2.getChar(&ack, portMAX_DELAY);
+        u2.getChar(&ack, portMAX_DELAY);
+        u2.getChar(&ack, portMAX_DELAY);
+        u2.getChar(&ack, portMAX_DELAY);
+        u2.getChar(&ack, portMAX_DELAY);
+        u2.getChar(&ack, portMAX_DELAY);
+    }
+    return status;
+}
+
+bool getButtonState()
+{
+    static bool status;
+    display_lcd_startStop();
+    Uart2& u2 = Uart2::getInstance();
+    char rxChar, rxChar2 = 'a';
+    char button_status = 'z';
+    u2.getChar(&rxChar2, portMAX_DELAY);
+    u2.getChar(&rxChar, portMAX_DELAY);
+    u2.getChar(&rxChar, portMAX_DELAY);
+    u2.getChar(&rxChar, portMAX_DELAY);
+    u2.getChar(&button_status, portMAX_DELAY);
+    u2.getChar(&rxChar, portMAX_DELAY);
+    if (rxChar2==7)
+    {
+        status = !status;
+    }
+    return status;
+}
+
+void display_lcd_startStop()
 {
     Uart2& u2 = Uart2::getInstance();
-       char test[1] = {'\0'};
-        char *ack_val = test;
-        u2.getChar(ack_val, portMAX_DELAY);
-//        printf("%c", ack_val);
+    u2.putChar(0x00);   //Write Object
+    u2.putChar(0x1E);   //Object ID
+    u2.putChar(0x00);
+    u2.putChar(0x1E);
 }
 
 

@@ -19,6 +19,8 @@ void display_lcd_numbers(char display_num, uint16_t value);
 void display_lcd_bar(char display_num, uint16_t value);
 void display_lidar_led(char display_num, uint16_t value);
 char check_form();
-void ack();
+bool ack();
+bool getButtonState();
+void display_lcd_startStop();
 
 #endif /* LCD_HPP_ */
