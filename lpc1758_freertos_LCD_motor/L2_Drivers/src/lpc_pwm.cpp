@@ -19,6 +19,7 @@
 #include "lpc_pwm.hpp"
 #include "LPC17xx.h"
 #include "sys_config.h"
+#include <stdio.h>
 
 
 
@@ -67,6 +68,7 @@ PWM::~PWM()
 
 bool PWM::set(float percent)
 {
+    printf("%f\n",percent);
     if(percent > 100) {
         return false;
     }

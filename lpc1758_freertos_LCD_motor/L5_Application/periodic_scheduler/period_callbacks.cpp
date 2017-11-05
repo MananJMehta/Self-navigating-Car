@@ -39,6 +39,7 @@
 #include "_can_dbc/generated_can.h"
 #include "can.h"
 #include "printf_lib.h"
+#include "storage.hpp"
 
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
@@ -59,6 +60,7 @@ static uint16_t old_count = 0;
 void callBack()
 {
     cut_count++;
+    //interrupt clear
     LE.toggle(1);
 }
 
@@ -71,10 +73,11 @@ void initialize()
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
 {
-initialize();
+    initialize();
     CAN_init(can1,100,10,10,NULL,NULL);
     CAN_bypass_filter_accept_all_msgs();
     CAN_reset_bus(can1);
+    LD.init();
     //error code 1 to signal incorrect initialization of speed PWM
     if(!spd.init())
         LD.setNumber(1);
@@ -82,6 +85,7 @@ initialize();
     if(!str.init())
         LD.setNumber(2);
     str.setDirection(CENTER); //Aditya : this part might be extra/ already set in init
+    //  spd.set(15);
     return true; // Must return true upon success
 }
 
@@ -97,16 +101,19 @@ bool period_reg_tlm(void)
  * Below are your periodic functions.
  * The argument 'count' is the number of times each periodic task is called.
  */
-
+char buffer[16]="";
 void period_1Hz(uint32_t count)
 {
     second_count++;
-    printf("RPS: %d \n", (cut_count-old_count));
+    // printf("RPS: %d \n", (cut_count-old_count));
+    LD.setNumber((cut_count-old_count));
+    //Storage::append("1:PWM.txt",buffer, 9,0);
     old_count = cut_count;
 
     if(second_count == 60)
     {
-        printf("RPM: %d \n", cut_count);
+        // printf("RPM: %d \n", cut_count);
+
         second_count = 0;
         cut_count = 0;
         old_count = 0;
@@ -125,18 +132,25 @@ const CAR_CONTROL_t   CAR_CONTROL__MIA_MSG={0};
 can_msg_t msg;
 CAR_CONTROL_t carControl;
 HEARTBEAT_t heartbeat;
-
+bool flag=false;
+float val = 15;
 void period_10Hz(uint32_t count)
 {
-    static int flag = 0;
-    if(flag ==1)
-        spd.setSpeed(MEDIUM);
-    else
-        spd.setSpeed(STOP);
+printf("%f\n",val);
+       if(flag==false)
+            spd.setSpeed(STOP);
+
+    else if(flag==true)
+          spd.setSpeed(val);
+
     if(SW.getSwitch(1)==true)
-        flag=1;
-    if(SW.getSwitch(2)==true)
-        flag=0;
+          flag=true;
+       if(SW.getSwitch(2)==true)
+           flag=false;
+    if(SW.getSwitch(3)==true)
+        val+=0.1;
+    if(SW.getSwitch(4)==true)
+        val-=0.1;
 
 
     while(CAN_rx(can1,&msg,0))
@@ -149,7 +163,7 @@ void period_10Hz(uint32_t count)
         {
             case 120:
                 dbc_decode_HEARTBEAT(&heartbeat,msg.data.bytes,&header);
-    //LE.toggle(2);
+                //LE.toggle(2);
                 break;
             case 140:
                 dbc_decode_CAR_CONTROL(&carControl,msg.data.bytes,&header);
@@ -163,7 +177,7 @@ void period_10Hz(uint32_t count)
     else LE.off(1);
 
     str.setDirection(CENTER);
-    u0_dbg_printf("%i\n",carControl.CAR_CONTROL_steer);
+    // u0_dbg_printf("%i\n",carControl.CAR_CONTROL_steer);
 }
 
 void period_100Hz(uint32_t count)
