@@ -1,0 +1,1490 @@
+﻿Version     0.0
+Platform    uLCD-32PTU-PR
+PlatRes     240x320
+Depends
+end
+Options
+    Genie
+    Speed                        115200
+    Checksum                     No
+    ResponseSize                 2
+    Multidrop                    No
+    Destination                  2
+    DestBank                     0
+    MainForm                     0
+    SndBuf                       0
+    ButtonDisable                No
+    SignedDigits                 No
+end
+Form
+    Name                         Form0
+    Alias                        Form0
+    Bgtype                       Color
+    Color                        BLACK
+    Image                        (None)
+    Source.Height                0
+    Source.Left                  0
+    Source.Top                   0
+    Source.Width                 0
+    OnActivate                   ''
+    OnCreate                     ''
+    OnRepeat                     ''
+    OnTouchMoving                ''
+    OnTouchPressed               ''
+    OnTouchReleased              ''
+end
+StaticText
+    Name                         Statictext0
+    Alias                        Statictext0
+    Alignment                    Left
+    AutoSize                     Yes
+    Caption                      'Tata Nano'
+    Color                        BLACK
+    Font.Color                   WHITE
+    Font.Effects                 []
+    Font.Name                    Tahoma
+    Font.Size                    12
+    Font.Style                   [Bold]
+    Height                       38
+    Left                         76
+    Top                          28
+    Transparent                  Yes
+    Width                        87
+    WordWrap                     Yes
+end
+Meter
+    Name                         Meter0
+    Alias                        speed
+    Angle                        40
+    Backimage                    (None)
+    Bevel.BorderColor            clBtnFace
+    Bevel.BorderWidth            0
+    Bevel.InnerColor             BLACK
+    Bevel.InnerHighlight         clBtnHighlight
+    Bevel.InnerOutline           None
+    Bevel.InnerShadow            clBtnShadow
+    Bevel.InnerSpace             1
+    Bevel.InnerStyle             Lowered
+    Bevel.Innerwidth             2
+    Bevel.OuterColor             clBtnFace
+    Bevel.OuterHighlight         clBtnHighlight
+    Bevel.OuterOutline           Outer
+    Bevel.OuterShadow            clBtnShadow
+    Bevel.OuterSpace             0
+    Bevel.OuterStyle             Raised
+    Bevel.Outerwidth             1
+    Bevel.Visible                Yes
+    Caption                      miles/h
+    Color                        BLACK
+    Font.Color                   SILVER
+    Font.Effects                 []
+    Font.Name                    Arial
+    Font.Size                    8
+    Font.Style                   []
+    Height                       105
+    LabelOffsetX                 15
+    LabelOffsetY                 10
+    Labels                       10
+    Left                         16
+    Maxvalue                     20
+    Minvalue                     0
+    NeedleColor                  SILVER
+    NeedleWidth                  1
+    Scale.Color1                 GREEN
+    Scale.Color2                 YELLOW
+    Scale.Color3                 RED
+    Scale.Enlarge                5
+    Scale.Heightmax              8
+    Scale.Heightmin              5
+    Scale.Percent1               60
+    Scale.Percent2               25
+    Scale.Ticks                  61
+    Scale.Visible                Yes
+    Spacing                      20
+    Top                          64
+    Width                        205
+    OnChanged                    ''
+    OnTouchMoving                ''
+    OnTouchPressed               ''
+    OnTouchReleased              ''
+end
+CustomDigits
+    Name                         Customdigits0
+    Alias                        'Bus Reset'
+    Bitmap                       (None)
+    Digits                       4
+    LeadingZero                  Yes
+    Left                         104
+    Top                          280
+    OnChanged                    ''
+    OnTouchMoving                ''
+    OnTouchPressed               ''
+    OnTouchReleased              ''
+end
+StaticText
+    Name                         Statictext1
+    Alias                        Statictext1
+    Alignment                    Left
+    AutoSize                     Yes
+    Caption                      'Bus Resets'
+    Color                        BLACK
+    Font.Color                   WHITE
+    Font.Effects                 []
+    Font.Name                    Tahoma
+    Font.Size                    9
+    Font.Style                   []
+    Height                       15
+    Left                         92
+    Top                          300
+    Transparent                  Yes
+    Width                        59
+    WordWrap                     Yes
+end
+StaticText
+    Name                         Statictext2
+    Alias                        Speedometer
+    Alignment                    Left
+    AutoSize                     Yes
+    Caption                      speedometer
+    Color                        BLACK
+    Font.Color                   WHITE
+    Font.Effects                 []
+    Font.Name                    Tahoma
+    Font.Size                    9
+    Font.Style                   []
+    Height                       14
+    Left                         82
+    Top                          180
+    Transparent                  Yes
+    Width                        73
+    WordWrap                     Yes
+end
+UserLed
+    Name                         Userled0
+    Alias                        syshealth
+    Active                       No
+    Bevel.BorderColor            clBtnFace
+    Bevel.BorderWidth            0
+    Bevel.InnerColor             clBtnFace
+    Bevel.InnerHighlight         clLime
+    Bevel.InnerOutline           None
+    Bevel.InnerShadow            0x005100
+    Bevel.InnerSpace             1
+    Bevel.InnerStyle             None
+    Bevel.Innerwidth             1
+    Bevel.OuterColor             clBtnFace
+    Bevel.OuterHighlight         clBtnHighlight
+    Bevel.OuterOutline           Outer
+    Bevel.OuterShadow            clBtnShadow
+    Bevel.OuterSpace             0
+    Bevel.OuterStyle             Raised
+    Bevel.Outerwidth             1
+    Bevel.Visible                Yes
+    Height                       22
+    Left                         28
+    OutlineColor                 BLACK
+    OutlineWidth                 0
+    PaletteEx.High1              LIME
+    PaletteEx.High2              BLACK
+    PaletteEx.Low1               RED
+    PaletteEx.Low2               BLACK
+    Top                          272
+    Width                        36
+    OnChanged                    ''
+end
+StaticText
+    Name                         Statictext3
+    Alias                        'Car Status'
+    Alignment                    Left
+    AutoSize                     Yes
+    Caption                      'Car Status'
+    Color                        BLACK
+    Font.Color                   WHITE
+    Font.Effects                 []
+    Font.Name                    Tahoma
+    Font.Size                    9
+    Font.Style                   []
+    Height                       14
+    Left                         17
+    Top                          300
+    Transparent                  Yes
+    Width                        56
+    WordWrap                     Yes
+end
+UserLed
+    Name                         Userled1
+    Alias                        battery
+    Active                       No
+    Bevel.BorderColor            clBtnFace
+    Bevel.BorderWidth            0
+    Bevel.InnerColor             clBtnFace
+    Bevel.InnerHighlight         clLime
+    Bevel.InnerOutline           None
+    Bevel.InnerShadow            0x005100
+    Bevel.InnerSpace             1
+    Bevel.InnerStyle             None
+    Bevel.Innerwidth             1
+    Bevel.OuterColor             clBtnFace
+    Bevel.OuterHighlight         clBtnHighlight
+    Bevel.OuterOutline           Outer
+    Bevel.OuterShadow            clBtnShadow
+    Bevel.OuterSpace             0
+    Bevel.OuterStyle             Raised
+    Bevel.Outerwidth             1
+    Bevel.Visible                Yes
+    Height                       22
+    Left                         180
+    OutlineColor                 BLACK
+    OutlineWidth                 0
+    PaletteEx.High1              LIME
+    PaletteEx.High2              BLACK
+    PaletteEx.Low1               RED
+    PaletteEx.Low2               BLACK
+    Top                          272
+    Width                        36
+    OnChanged                    ''
+end
+StaticText
+    Name                         Statictext4
+    Alias                        Statictext4
+    Alignment                    Left
+    AutoSize                     Yes
+    Caption                      Battery
+    Color                        BLACK
+    Font.Color                   WHITE
+    Font.Effects                 []
+    Font.Name                    Tahoma
+    Font.Size                    9
+    Font.Style                   []
+    Height                       14
+    Left                         180
+    Top                          300
+    Transparent                  Yes
+    Width                        40
+    WordWrap                     Yes
+end
+UserButton
+    Name                         Userbutton3
+    Alias                        Userbutton3
+    Height                       45
+    Images                       Bluetooth-PNG-Free-Download.png
+    Left                         128
+    Matrix                       -1
+    Momentary                    Yes
+    Stretch                      No
+    Top                          216
+    Width                        50
+    OnChanged                    Form4Activate
+end
+UserButton
+    Name                         Userbutton4
+    Alias                        Userbutton4
+    Height                       35
+    Images                       ''
+    Left                         195
+    Matrix                       -1
+    Momentary                    Yes
+    Stretch                      No
+    Top                          235
+    Width                        45
+    OnChanged                    ''
+end
+UserButton
+    Name                         Userbutton5
+    Alias                        Userbutton5
+    Height                       47
+    Images                       gps_pin.png
+    Left                         184
+    Matrix                       -1
+    Momentary                    Yes
+    Stretch                      No
+    Top                          216
+    Width                        51
+    OnChanged                    Form3Activate
+end
+UserButton
+    Name                         Userbutton6
+    Alias                        Userbutton6
+    Height                       49
+    Images                       motor.png
+    Left                         72
+    Matrix                       -1
+    Momentary                    Yes
+    Stretch                      No
+    Top                          216
+    Width                        51
+    OnChanged                    Form2Activate
+end
+UserButton
+    Name                         Userbutton7
+    Alias                        Userbutton7
+    Height                       52
+    Images                       sensor.png
+    Left                         4
+    Matrix                       -1
+    Momentary                    Yes
+    Stretch                      No
+    Top                          212
+    Width                        56
+    OnChanged                    Form1Activate
+end
+4Dbutton
+    Name                         4Dbutton0
+    Alias                        StartStop
+    Height                       48
+    Left                         172
+    Matrix                       -1
+    Momentary                    Yes
+    Size                         48x48
+    Style                        Red
+    Top                          8
+    Type                         Button01
+    Width                        48
+    OnChanged                    'Report Message'
+end
+Form
+    Name                         Form1
+    Alias                        Form1
+    Bgtype                       Color
+    Color                        BLACK
+    Image                        (None)
+    Source.Height                0
+    Source.Left                  0
+    Source.Top                   0
+    Source.Width                 0
+    OnActivate                   ''
+    OnCreate                     ''
+    OnRepeat                     ''
+    OnTouchMoving                ''
+    OnTouchPressed               ''
+    OnTouchReleased              ''
+end
+StaticText
+    Name                         Statictext8
+    Alias                        Statictext8
+    Alignment                    Left
+    AutoSize                     Yes
+    Caption                      Sensor
+    Color                        BLACK
+    Font.Color                   WHITE
+    Font.Effects                 []
+    Font.Name                    Tahoma
+    Font.Size                    12
+    Font.Style                   [Bold]
+    Height                       19
+    Left                         96
+    Top                          12
+    Transparent                  Yes
+    Width                        55
+    WordWrap                     Yes
+end
+Gauge
+    Name                         Gauge0
+    Alias                        Gauge0
+    Bevel.BorderColor            clBtnFace
+    Bevel.BorderWidth            0
+    Bevel.InnerColor             BLACK
+    Bevel.InnerHighlight         clBtnHighlight
+    Bevel.InnerOutline           None
+    Bevel.InnerShadow            clBtnShadow
+    Bevel.InnerSpace             1
+    Bevel.InnerStyle             Lowered
+    Bevel.Innerwidth             2
+    Bevel.OuterColor             clBtnFace
+    Bevel.OuterHighlight         clBtnHighlight
+    Bevel.OuterOutline           Outer
+    Bevel.OuterShadow            clBtnShadow
+    Bevel.OuterSpace             0
+    Bevel.OuterStyle             Raised
+    Bevel.Outerwidth             1
+    Bevel.Visible                Yes
+    Color                        BLACK
+    Height                       100
+    Left                         16
+    Maxvalue                     50
+    Minvalue                     0
+    Orientation                  Vertical
+    Palette1.High                RED
+    Palette1.Low                 BLACK
+    Palette2.High                clYellow
+    Palette2.Low                 BLACK
+    Palette3.High                LIME
+    Palette3.Low                 BLACK
+    Percent1                     60
+    Percent2                     25
+    Spacing                      1
+    Step                         10
+    Style                        BottomLeft
+    TickHeight                   1
+    Top                          68
+    Width                        20
+    OnChanged                    ''
+    OnTouchMoving                ''
+    OnTouchPressed               ''
+    OnTouchReleased              ''
+end
+Gauge
+    Name                         Gauge1
+    Alias                        Gauge1
+    Bevel.BorderColor            clBtnFace
+    Bevel.BorderWidth            0
+    Bevel.InnerColor             BLACK
+    Bevel.InnerHighlight         clBtnHighlight
+    Bevel.InnerOutline           None
+    Bevel.InnerShadow            clBtnShadow
+    Bevel.InnerSpace             1
+    Bevel.InnerStyle             Lowered
+    Bevel.Innerwidth             2
+    Bevel.OuterColor             clBtnFace
+    Bevel.OuterHighlight         clBtnHighlight
+    Bevel.OuterOutline           Outer
+    Bevel.OuterShadow            clBtnShadow
+    Bevel.OuterSpace             0
+    Bevel.OuterStyle             Raised
+    Bevel.Outerwidth             1
+    Bevel.Visible                Yes
+    Color                        BLACK
+    Height                       100
+    Left                         112
+    Maxvalue                     50
+    Minvalue                     0
+    Orientation                  Vertical
+    Palette1.High                RED
+    Palette1.Low                 BLACK
+    Palette2.High                clYellow
+    Palette2.Low                 BLACK
+    Palette3.High                LIME
+    Palette3.Low                 BLACK
+    Percent1                     60
+    Percent2                     25
+    Spacing                      1
+    Step                         10
+    Style                        BottomLeft
+    TickHeight                   1
+    Top                          36
+    Width                        20
+    OnChanged                    ''
+    OnTouchMoving                ''
+    OnTouchPressed               ''
+    OnTouchReleased              ''
+end
+Gauge
+    Name                         Gauge2
+    Alias                        Gauge2
+    Bevel.BorderColor            clBtnFace
+    Bevel.BorderWidth            0
+    Bevel.InnerColor             BLACK
+    Bevel.InnerHighlight         clBtnHighlight
+    Bevel.InnerOutline           None
+    Bevel.InnerShadow            clBtnShadow
+    Bevel.InnerSpace             1
+    Bevel.InnerStyle             Lowered
+    Bevel.Innerwidth             2
+    Bevel.OuterColor             clBtnFace
+    Bevel.OuterHighlight         clBtnHighlight
+    Bevel.OuterOutline           Outer
+    Bevel.OuterShadow            clBtnShadow
+    Bevel.OuterSpace             0
+    Bevel.OuterStyle             Raised
+    Bevel.Outerwidth             1
+    Bevel.Visible                Yes
+    Color                        BLACK
+    Height                       100
+    Left                         204
+    Maxvalue                     50
+    Minvalue                     0
+    Orientation                  Vertical
+    Palette1.High                RED
+    Palette1.Low                 BLACK
+    Palette2.High                clYellow
+    Palette2.Low                 BLACK
+    Palette3.High                LIME
+    Palette3.Low                 BLACK
+    Percent1                     60
+    Percent2                     25
+    Spacing                      1
+    Step                         10
+    Style                        BottomLeft
+    TickHeight                   1
+    Top                          68
+    Width                        20
+    OnChanged                    ''
+    OnTouchMoving                ''
+    OnTouchPressed               ''
+    OnTouchReleased              ''
+end
+UserImages
+    Name                         Userimages0
+    Alias                        Userimages0
+    Height                       155
+    Images                       car.png
+    Left                         52
+    Stretch                      No
+    Top                          188
+    Width                        139
+    OnChanged                    ''
+end
+UserLed
+    Name                         Userled2
+    Alias                        Userled2
+    Active                       No
+    Bevel.BorderColor            clBtnFace
+    Bevel.BorderWidth            0
+    Bevel.InnerColor             clBtnFace
+    Bevel.InnerHighlight         clLime
+    Bevel.InnerOutline           None
+    Bevel.InnerShadow            0x005100
+    Bevel.InnerSpace             1
+    Bevel.InnerStyle             None
+    Bevel.Innerwidth             1
+    Bevel.OuterColor             clBtnFace
+    Bevel.OuterHighlight         clBtnHighlight
+    Bevel.OuterOutline           Outer
+    Bevel.OuterShadow            clBtnShadow
+    Bevel.OuterSpace             0
+    Bevel.OuterStyle             Raised
+    Bevel.Outerwidth             1
+    Bevel.Visible                Yes
+    Height                       12
+    Left                         111
+    OutlineColor                 BLACK
+    OutlineWidth                 0
+    PaletteEx.High1              LIME
+    PaletteEx.High2              BLACK
+    PaletteEx.Low1               0x000051
+    PaletteEx.Low2               BLACK
+    Top                          156
+    Width                        20
+    OnChanged                    ''
+end
+StaticText
+    Name                         Statictext5
+    Alias                        Statictext5
+    Alignment                    Left
+    AutoSize                     Yes
+    Caption                      0
+    Color                        BLACK
+    Font.Color                   WHITE
+    Font.Effects                 []
+    Font.Name                    Tahoma
+    Font.Size                    9
+    Font.Style                   []
+    Height                       14
+    Left                         117
+    Top                          140
+    Transparent                  Yes
+    Width                        7
+    WordWrap                     Yes
+end
+UserLed
+    Name                         Userled3
+    Alias                        Userled3
+    Active                       No
+    Bevel.BorderColor            clBtnFace
+    Bevel.BorderWidth            0
+    Bevel.InnerColor             clBtnFace
+    Bevel.InnerHighlight         clLime
+    Bevel.InnerOutline           None
+    Bevel.InnerShadow            0x005100
+    Bevel.InnerSpace             1
+    Bevel.InnerStyle             None
+    Bevel.Innerwidth             1
+    Bevel.OuterColor             clBtnFace
+    Bevel.OuterHighlight         clBtnHighlight
+    Bevel.OuterOutline           Outer
+    Bevel.OuterShadow            clBtnShadow
+    Bevel.OuterSpace             0
+    Bevel.OuterStyle             Raised
+    Bevel.Outerwidth             1
+    Bevel.Visible                Yes
+    Height                       12
+    Left                         139
+    OutlineColor                 BLACK
+    OutlineWidth                 0
+    PaletteEx.High1              LIME
+    PaletteEx.High2              BLACK
+    PaletteEx.Low1               0x000051
+    PaletteEx.Low2               BLACK
+    Top                          160
+    Width                        20
+    OnChanged                    ''
+end
+UserLed
+    Name                         Userled4
+    Alias                        Userled4
+    Active                       No
+    Bevel.BorderColor            clBtnFace
+    Bevel.BorderWidth            0
+    Bevel.InnerColor             clBtnFace
+    Bevel.InnerHighlight         clLime
+    Bevel.InnerOutline           None
+    Bevel.InnerShadow            0x005100
+    Bevel.InnerSpace             1
+    Bevel.InnerStyle             None
+    Bevel.Innerwidth             1
+    Bevel.OuterColor             clBtnFace
+    Bevel.OuterHighlight         clBtnHighlight
+    Bevel.OuterOutline           Outer
+    Bevel.OuterShadow            clBtnShadow
+    Bevel.OuterSpace             0
+    Bevel.OuterStyle             Raised
+    Bevel.Outerwidth             1
+    Bevel.Visible                Yes
+    Height                       12
+    Left                         167
+    OutlineColor                 BLACK
+    OutlineWidth                 0
+    PaletteEx.High1              LIME
+    PaletteEx.High2              BLACK
+    PaletteEx.Low1               0x000051
+    PaletteEx.Low2               BLACK
+    Top                          172
+    Width                        20
+    OnChanged                    ''
+end
+UserLed
+    Name                         Userled5
+    Alias                        Userled5
+    Active                       No
+    Bevel.BorderColor            clBtnFace
+    Bevel.BorderWidth            0
+    Bevel.InnerColor             clBtnFace
+    Bevel.InnerHighlight         clLime
+    Bevel.InnerOutline           None
+    Bevel.InnerShadow            0x005100
+    Bevel.InnerSpace             1
+    Bevel.InnerStyle             None
+    Bevel.Innerwidth             1
+    Bevel.OuterColor             clBtnFace
+    Bevel.OuterHighlight         clBtnHighlight
+    Bevel.OuterOutline           Outer
+    Bevel.OuterShadow            clBtnShadow
+    Bevel.OuterSpace             0
+    Bevel.OuterStyle             Raised
+    Bevel.Outerwidth             1
+    Bevel.Visible                Yes
+    Height                       12
+    Left                         191
+    OutlineColor                 BLACK
+    OutlineWidth                 0
+    PaletteEx.High1              LIME
+    PaletteEx.High2              BLACK
+    PaletteEx.Low1               0x000051
+    PaletteEx.Low2               BLACK
+    Top                          188
+    Width                        20
+    OnChanged                    ''
+end
+UserLed
+    Name                         Userled6
+    Alias                        Userled6
+    Active                       No
+    Bevel.BorderColor            clBtnFace
+    Bevel.BorderWidth            0
+    Bevel.InnerColor             clBtnFace
+    Bevel.InnerHighlight         clLime
+    Bevel.InnerOutline           None
+    Bevel.InnerShadow            0x005100
+    Bevel.InnerSpace             1
+    Bevel.InnerStyle             None
+    Bevel.Innerwidth             1
+    Bevel.OuterColor             clBtnFace
+    Bevel.OuterHighlight         clBtnHighlight
+    Bevel.OuterOutline           Outer
+    Bevel.OuterShadow            clBtnShadow
+    Bevel.OuterSpace             0
+    Bevel.OuterStyle             Raised
+    Bevel.Outerwidth             1
+    Bevel.Visible                Yes
+    Height                       12
+    Left                         208
+    OutlineColor                 BLACK
+    OutlineWidth                 0
+    PaletteEx.High1              LIME
+    PaletteEx.High2              BLACK
+    PaletteEx.Low1               0x000051
+    PaletteEx.Low2               BLACK
+    Top                          208
+    Width                        20
+    OnChanged                    ''
+end
+UserLed
+    Name                         Userled7
+    Alias                        Userled7
+    Active                       No
+    Bevel.BorderColor            clBtnFace
+    Bevel.BorderWidth            0
+    Bevel.InnerColor             clBtnFace
+    Bevel.InnerHighlight         clLime
+    Bevel.InnerOutline           None
+    Bevel.InnerShadow            0x005100
+    Bevel.InnerSpace             1
+    Bevel.InnerStyle             None
+    Bevel.Innerwidth             1
+    Bevel.OuterColor             clBtnFace
+    Bevel.OuterHighlight         clBtnHighlight
+    Bevel.OuterOutline           Outer
+    Bevel.OuterShadow            clBtnShadow
+    Bevel.OuterSpace             0
+    Bevel.OuterStyle             Raised
+    Bevel.Outerwidth             1
+    Bevel.Visible                Yes
+    Height                       12
+    Left                         83
+    OutlineColor                 BLACK
+    OutlineWidth                 0
+    PaletteEx.High1              LIME
+    PaletteEx.High2              BLACK
+    PaletteEx.Low1               0x000051
+    PaletteEx.Low2               BLACK
+    Top                          160
+    Width                        20
+    OnChanged                    ''
+end
+UserLed
+    Name                         Userled8
+    Alias                        Userled8
+    Active                       No
+    Bevel.BorderColor            clBtnFace
+    Bevel.BorderWidth            0
+    Bevel.InnerColor             clBtnFace
+    Bevel.InnerHighlight         clLime
+    Bevel.InnerOutline           None
+    Bevel.InnerShadow            0x005100
+    Bevel.InnerSpace             1
+    Bevel.InnerStyle             None
+    Bevel.Innerwidth             1
+    Bevel.OuterColor             clBtnFace
+    Bevel.OuterHighlight         clBtnHighlight
+    Bevel.OuterOutline           Outer
+    Bevel.OuterShadow            clBtnShadow
+    Bevel.OuterSpace             0
+    Bevel.OuterStyle             Raised
+    Bevel.Outerwidth             1
+    Bevel.Visible                Yes
+    Height                       12
+    Left                         55
+    OutlineColor                 BLACK
+    OutlineWidth                 0
+    PaletteEx.High1              LIME
+    PaletteEx.High2              BLACK
+    PaletteEx.Low1               0x000051
+    PaletteEx.Low2               BLACK
+    Top                          172
+    Width                        20
+    OnChanged                    ''
+end
+UserLed
+    Name                         Userled9
+    Alias                        Userled9
+    Active                       No
+    Bevel.BorderColor            clBtnFace
+    Bevel.BorderWidth            0
+    Bevel.InnerColor             clBtnFace
+    Bevel.InnerHighlight         clLime
+    Bevel.InnerOutline           None
+    Bevel.InnerShadow            0x005100
+    Bevel.InnerSpace             1
+    Bevel.InnerStyle             None
+    Bevel.Innerwidth             1
+    Bevel.OuterColor             clBtnFace
+    Bevel.OuterHighlight         clBtnHighlight
+    Bevel.OuterOutline           Outer
+    Bevel.OuterShadow            clBtnShadow
+    Bevel.OuterSpace             0
+    Bevel.OuterStyle             Raised
+    Bevel.Outerwidth             1
+    Bevel.Visible                Yes
+    Height                       12
+    Left                         31
+    OutlineColor                 BLACK
+    OutlineWidth                 0
+    PaletteEx.High1              LIME
+    PaletteEx.High2              BLACK
+    PaletteEx.Low1               0x000051
+    PaletteEx.Low2               BLACK
+    Top                          185
+    Width                        20
+    OnChanged                    ''
+end
+UserLed
+    Name                         Userled10
+    Alias                        Userled10
+    Active                       No
+    Bevel.BorderColor            clBtnFace
+    Bevel.BorderWidth            0
+    Bevel.InnerColor             clBtnFace
+    Bevel.InnerHighlight         clLime
+    Bevel.InnerOutline           None
+    Bevel.InnerShadow            0x005100
+    Bevel.InnerSpace             1
+    Bevel.InnerStyle             None
+    Bevel.Innerwidth             1
+    Bevel.OuterColor             clBtnFace
+    Bevel.OuterHighlight         clBtnHighlight
+    Bevel.OuterOutline           Outer
+    Bevel.OuterShadow            clBtnShadow
+    Bevel.OuterSpace             0
+    Bevel.OuterStyle             Raised
+    Bevel.Outerwidth             1
+    Bevel.Visible                Yes
+    Height                       12
+    Left                         18
+    OutlineColor                 BLACK
+    OutlineWidth                 0
+    PaletteEx.High1              LIME
+    PaletteEx.High2              BLACK
+    PaletteEx.Low1               0x000051
+    PaletteEx.Low2               BLACK
+    Top                          208
+    Width                        20
+    OnChanged                    ''
+end
+StaticText
+    Name                         Statictext20
+    Alias                        Statictext20
+    Alignment                    Left
+    AutoSize                     Yes
+    Caption                      20
+    Color                        BLACK
+    Font.Color                   WHITE
+    Font.Effects                 []
+    Font.Name                    Tahoma
+    Font.Size                    9
+    Font.Style                   []
+    Height                       14
+    Left                         143
+    Top                          144
+    Transparent                  Yes
+    Width                        14
+    WordWrap                     Yes
+end
+StaticText
+    Name                         Statictext21
+    Alias                        Statictext21
+    Alignment                    Left
+    AutoSize                     Yes
+    Caption                      40
+    Color                        BLACK
+    Font.Color                   WHITE
+    Font.Effects                 []
+    Font.Name                    Tahoma
+    Font.Size                    9
+    Font.Style                   []
+    Height                       14
+    Left                         171
+    Top                          156
+    Transparent                  Yes
+    Width                        14
+    WordWrap                     Yes
+end
+StaticText
+    Name                         Statictext22
+    Alias                        Statictext22
+    Alignment                    Left
+    AutoSize                     Yes
+    Caption                      60
+    Color                        BLACK
+    Font.Color                   WHITE
+    Font.Effects                 []
+    Font.Name                    Tahoma
+    Font.Size                    9
+    Font.Style                   []
+    Height                       14
+    Left                         194
+    Top                          172
+    Transparent                  Yes
+    Width                        14
+    WordWrap                     Yes
+end
+StaticText
+    Name                         Statictext23
+    Alias                        Statictext23
+    Alignment                    Left
+    AutoSize                     Yes
+    Caption                      80
+    Color                        BLACK
+    Font.Color                   WHITE
+    Font.Effects                 []
+    Font.Name                    Tahoma
+    Font.Size                    9
+    Font.Style                   []
+    Height                       14
+    Left                         211
+    Top                          195
+    Transparent                  Yes
+    Width                        14
+    WordWrap                     Yes
+end
+StaticText
+    Name                         Statictext24
+    Alias                        Statictext24
+    Alignment                    Left
+    AutoSize                     Yes
+    Caption                      -20
+    Color                        BLACK
+    Font.Color                   WHITE
+    Font.Effects                 []
+    Font.Name                    Tahoma
+    Font.Size                    9
+    Font.Style                   []
+    Height                       14
+    Left                         84
+    Top                          144
+    Transparent                  Yes
+    Width                        18
+    WordWrap                     Yes
+end
+StaticText
+    Name                         Statictext25
+    Alias                        Statictext25
+    Alignment                    Left
+    AutoSize                     Yes
+    Caption                      -40
+    Color                        BLACK
+    Font.Color                   WHITE
+    Font.Effects                 []
+    Font.Name                    Tahoma
+    Font.Size                    9
+    Font.Style                   []
+    Height                       14
+    Left                         55
+    Top                          156
+    Transparent                  Yes
+    Width                        18
+    WordWrap                     Yes
+end
+StaticText
+    Name                         Statictext26
+    Alias                        Statictext26
+    Alignment                    Left
+    AutoSize                     Yes
+    Caption                      -60
+    Color                        BLACK
+    Font.Color                   WHITE
+    Font.Effects                 []
+    Font.Name                    Tahoma
+    Font.Size                    9
+    Font.Style                   []
+    Height                       14
+    Left                         32
+    Top                          172
+    Transparent                  Yes
+    Width                        18
+    WordWrap                     Yes
+end
+StaticText
+    Name                         Statictext27
+    Alias                        Statictext27
+    Alignment                    Left
+    AutoSize                     Yes
+    Caption                      -80
+    Color                        BLACK
+    Font.Color                   WHITE
+    Font.Effects                 []
+    Font.Name                    Tahoma
+    Font.Size                    9
+    Font.Style                   []
+    Height                       14
+    Left                         18
+    Top                          195
+    Transparent                  Yes
+    Width                        18
+    WordWrap                     Yes
+end
+UserButton
+    Name                         Userbutton0
+    Alias                        Userbutton0
+    Height                       31
+    Images                       Home-Button.png
+    Left                         188
+    Matrix                       -1
+    Momentary                    Yes
+    Stretch                      No
+    Top                          16
+    Width                        32
+    OnChanged                    Form0Activate
+end
+Form
+    Name                         Form2
+    Alias                        Form2
+    Bgtype                       Color
+    Color                        BLACK
+    Image                        (None)
+    Source.Height                0
+    Source.Left                  0
+    Source.Top                   0
+    Source.Width                 0
+    OnActivate                   ''
+    OnCreate                     ''
+    OnRepeat                     ''
+    OnTouchMoving                ''
+    OnTouchPressed               ''
+    OnTouchReleased              ''
+end
+LedDigits
+    Name                         Leddigits0
+    Alias                        Leddigits0
+    Color                        BLACK
+    Decimals                     2
+    Digits                       4
+    Height                       35
+    LeadingZero                  Yes
+    Left                         104
+    OutlineColor                 BLACK
+    Palette.High                 clLime
+    Palette.Low                  BLACK
+    Top                          94
+    Width                        120
+    OnChanged                    ''
+    OnTouchMoving                ''
+    OnTouchPressed               ''
+    OnTouchReleased              ''
+end
+LedDigits
+    Name                         Leddigits1
+    Alias                        Leddigits1
+    Color                        BLACK
+    Decimals                     2
+    Digits                       4
+    Height                       35
+    LeadingZero                  Yes
+    Left                         104
+    OutlineColor                 BLACK
+    Palette.High                 clLime
+    Palette.Low                  BLACK
+    Top                          150
+    Width                        120
+    OnChanged                    ''
+    OnTouchMoving                ''
+    OnTouchPressed               ''
+    OnTouchReleased              ''
+end
+StaticText
+    Name                         Statictext6
+    Alias                        Statictext6
+    Alignment                    Left
+    AutoSize                     Yes
+    Caption                      'Miles Covered'
+    Color                        BLACK
+    Font.Color                   WHITE
+    Font.Effects                 []
+    Font.Name                    Tahoma
+    Font.Size                    10
+    Font.Style                   [Bold]
+    Height                       32
+    Left                         16
+    Top                          96
+    Transparent                  Yes
+    Width                        54
+    WordWrap                     Yes
+end
+StaticText
+    Name                         Statictext7
+    Alias                        Statictext7
+    Alignment                    Left
+    AutoSize                     Yes
+    Caption                      'Miles Remaining'
+    Color                        BLACK
+    Font.Color                   WHITE
+    Font.Effects                 []
+    Font.Name                    Tahoma
+    Font.Size                    10
+    Font.Style                   [Bold]
+    Height                       32
+    Left                         16
+    Top                          152
+    Transparent                  Yes
+    Width                        66
+    WordWrap                     Yes
+end
+StaticText
+    Name                         Statictext9
+    Alias                        Statictext9
+    Alignment                    Left
+    AutoSize                     Yes
+    Caption                      'Distance Measure'
+    Color                        BLACK
+    Font.Color                   WHITE
+    Font.Effects                 []
+    Font.Name                    Tahoma
+    Font.Size                    12
+    Font.Style                   [Bold]
+    Height                       19
+    Left                         48
+    Top                          60
+    Transparent                  Yes
+    Width                        144
+    WordWrap                     Yes
+end
+UserButton
+    Name                         Userbutton1
+    Alias                        Userbutton1
+    Height                       31
+    Images                       Home-Button.png
+    Left                         192
+    Matrix                       -1
+    Momentary                    Yes
+    Stretch                      No
+    Top                          20
+    Width                        32
+    OnChanged                    Form0Activate
+end
+Form
+    Name                         Form3
+    Alias                        Form3
+    Bgtype                       Color
+    Color                        BLACK
+    Image                        (None)
+    Source.Height                0
+    Source.Left                  0
+    Source.Top                   0
+    Source.Width                 0
+    OnActivate                   ''
+    OnCreate                     ''
+    OnRepeat                     ''
+    OnTouchMoving                ''
+    OnTouchPressed               ''
+    OnTouchReleased              ''
+end
+LedDigits
+    Name                         Leddigits2
+    Alias                        Leddigits2
+    Color                        BLACK
+    Decimals                     2
+    Digits                       5
+    Height                       29
+    LeadingZero                  Yes
+    Left                         65
+    OutlineColor                 BLACK
+    Palette.High                 0xFAFFF9
+    Palette.Low                  BLACK
+    Top                          88
+    Width                        91
+    OnChanged                    ''
+    OnTouchMoving                ''
+    OnTouchPressed               ''
+    OnTouchReleased              ''
+end
+LedDigits
+    Name                         Leddigits3
+    Alias                        Leddigits3
+    Color                        BLACK
+    Decimals                     2
+    Digits                       5
+    Height                       29
+    LeadingZero                  Yes
+    Left                         65
+    OutlineColor                 BLACK
+    Palette.High                 WHITE
+    Palette.Low                  BLACK
+    Top                          132
+    Width                        91
+    OnChanged                    ''
+    OnTouchMoving                ''
+    OnTouchPressed               ''
+    OnTouchReleased              ''
+end
+LedDigits
+    Name                         Leddigits4
+    Alias                        Leddigits4
+    Color                        BLACK
+    Decimals                     2
+    Digits                       5
+    Height                       29
+    LeadingZero                  Yes
+    Left                         65
+    OutlineColor                 BLACK
+    Palette.High                 WHITE
+    Palette.Low                  BLACK
+    Top                          192
+    Width                        91
+    OnChanged                    ''
+    OnTouchMoving                ''
+    OnTouchPressed               ''
+    OnTouchReleased              ''
+end
+LedDigits
+    Name                         Leddigits5
+    Alias                        Leddigits5
+    Color                        BLACK
+    Decimals                     2
+    Digits                       5
+    Height                       29
+    LeadingZero                  Yes
+    Left                         65
+    OutlineColor                 BLACK
+    Palette.High                 WHITE
+    Palette.Low                  BLACK
+    Top                          232
+    Width                        91
+    OnChanged                    ''
+    OnTouchMoving                ''
+    OnTouchPressed               ''
+    OnTouchReleased              ''
+end
+StaticText
+    Name                         Statictext12
+    Alias                        Statictext12
+    Alignment                    Left
+    AutoSize                     Yes
+    Caption                      Destination
+    Color                        BLACK
+    Font.Color                   WHITE
+    Font.Effects                 []
+    Font.Name                    Tahoma
+    Font.Size                    10
+    Font.Style                   [Bold]
+    Height                       16
+    Left                         5
+    Top                          68
+    Transparent                  Yes
+    Width                        74
+    WordWrap                     Yes
+end
+StaticText
+    Name                         Statictext13
+    Alias                        Statictext13
+    Alignment                    Left
+    AutoSize                     Yes
+    Caption                      Lat
+    Color                        BLACK
+    Font.Color                   WHITE
+    Font.Effects                 []
+    Font.Name                    Tahoma
+    Font.Size                    14
+    Font.Style                   [Bold]
+    Height                       23
+    Left                         5
+    Top                          195
+    Transparent                  Yes
+    Width                        30
+    WordWrap                     Yes
+end
+StaticText
+    Name                         Statictext14
+    Alias                        Statictext14
+    Alignment                    Left
+    AutoSize                     Yes
+    Caption                      Long
+    Color                        BLACK
+    Font.Color                   WHITE
+    Font.Effects                 []
+    Font.Name                    Tahoma
+    Font.Size                    14
+    Font.Style                   [Bold]
+    Height                       23
+    Left                         5
+    Top                          135
+    Transparent                  Yes
+    Width                        47
+    WordWrap                     Yes
+end
+StaticText
+    Name                         Statictext15
+    Alias                        Statictext15
+    Alignment                    Left
+    AutoSize                     Yes
+    Caption                      'Current Position'
+    Color                        BLACK
+    Font.Color                   WHITE
+    Font.Effects                 []
+    Font.Name                    Tahoma
+    Font.Size                    10
+    Font.Style                   [Bold]
+    Height                       19
+    Left                         5
+    Top                          172
+    Transparent                  Yes
+    Width                        132
+    WordWrap                     Yes
+end
+StaticText
+    Name                         Statictext16
+    Alias                        Statictext16
+    Alignment                    Left
+    AutoSize                     Yes
+    Caption                      Long
+    Color                        BLACK
+    Font.Color                   WHITE
+    Font.Effects                 []
+    Font.Name                    Tahoma
+    Font.Size                    14
+    Font.Style                   [Bold]
+    Height                       23
+    Left                         5
+    Top                          234
+    Transparent                  Yes
+    Width                        47
+    WordWrap                     Yes
+end
+StaticText
+    Name                         Statictext17
+    Alias                        Statictext17
+    Alignment                    Left
+    AutoSize                     Yes
+    Caption                      Lat
+    Color                        BLACK
+    Font.Color                   WHITE
+    Font.Effects                 []
+    Font.Name                    Tahoma
+    Font.Size                    14
+    Font.Style                   [Bold]
+    Height                       23
+    Left                         5
+    Top                          92
+    Transparent                  Yes
+    Width                        30
+    WordWrap                     Yes
+end
+StaticText
+    Name                         Statictext19
+    Alias                        Statictext19
+    Alignment                    Left
+    AutoSize                     Yes
+    Caption                      'GPS Info'
+    Color                        BLACK
+    Font.Color                   WHITE
+    Font.Effects                 []
+    Font.Name                    Tahoma
+    Font.Size                    14
+    Font.Style                   [Bold]
+    Height                       23
+    Left                         80
+    Top                          36
+    Transparent                  Yes
+    Width                        84
+    WordWrap                     Yes
+end
+UserButton
+    Name                         Userbutton2
+    Alias                        Userbutton2
+    Height                       31
+    Images                       Home-Button.png
+    Left                         196
+    Matrix                       -1
+    Momentary                    Yes
+    Stretch                      No
+    Top                          16
+    Width                        32
+    OnChanged                    Form0Activate
+end
+LedDigits
+    Name                         Leddigits6
+    Alias                        Leddigits6
+    Color                        BLACK
+    Decimals                     0
+    Digits                       4
+    Height                       29
+    LeadingZero                  Yes
+    Left                         156
+    OutlineColor                 BLACK
+    Palette.High                 0xFAFFF9
+    Palette.Low                  BLACK
+    Top                          88
+    Width                        77
+    OnChanged                    ''
+    OnTouchMoving                ''
+    OnTouchPressed               ''
+    OnTouchReleased              ''
+end
+LedDigits
+    Name                         Leddigits7
+    Alias                        Leddigits7
+    Color                        BLACK
+    Decimals                     0
+    Digits                       4
+    Height                       29
+    LeadingZero                  Yes
+    Left                         156
+    OutlineColor                 BLACK
+    Palette.High                 0xFAFFF9
+    Palette.Low                  BLACK
+    Top                          132
+    Width                        77
+    OnChanged                    ''
+    OnTouchMoving                ''
+    OnTouchPressed               ''
+    OnTouchReleased              ''
+end
+LedDigits
+    Name                         Leddigits8
+    Alias                        Leddigits8
+    Color                        BLACK
+    Decimals                     0
+    Digits                       4
+    Height                       29
+    LeadingZero                  Yes
+    Left                         156
+    OutlineColor                 BLACK
+    Palette.High                 0xFAFFF9
+    Palette.Low                  BLACK
+    Top                          192
+    Width                        77
+    OnChanged                    ''
+    OnTouchMoving                ''
+    OnTouchPressed               ''
+    OnTouchReleased              ''
+end
+LedDigits
+    Name                         Leddigits9
+    Alias                        Leddigits9
+    Color                        BLACK
+    Decimals                     0
+    Digits                       4
+    Height                       29
+    LeadingZero                  Yes
+    Left                         156
+    OutlineColor                 BLACK
+    Palette.High                 0xFAFFF9
+    Palette.Low                  BLACK
+    Top                          232
+    Width                        77
+    OnChanged                    ''
+    OnTouchMoving                ''
+    OnTouchPressed               ''
+    OnTouchReleased              ''
+end
+Form
+    Name                         Form4
+    Alias                        Form4
+    Bgtype                       Color
+    Color                        BLACK
+    Image                        (None)
+    Source.Height                0
+    Source.Left                  0
+    Source.Top                   0
+    Source.Width                 0
+    OnActivate                   ''
+    OnCreate                     ''
+    OnRepeat                     ''
+    OnTouchMoving                ''
+    OnTouchPressed               ''
+    OnTouchReleased              ''
+end
+UserButton
+    Name                         Userbutton8
+    Alias                        Userbutton8
+    Height                       31
+    Images                       Home-Button.png
+    Left                         196
+    Matrix                       -1
+    Momentary                    Yes
+    Stretch                      No
+    Top                          12
+    Width                        32
+    OnChanged                    Form0Activate
+end
+UserButton
+    Name                         Userbutton9
+    Alias                        Userbutton9
+    Height                       131
+    Images                       car_connected.png
+    Left                         40
+    Matrix                       -1
+    Momentary                    Yes
+    Stretch                      No
+    Top                          104
+    Width                        150
+    OnChanged                    ''
+end
