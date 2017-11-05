@@ -31,6 +31,9 @@
 #include <stdint.h>
 #include "io.hpp"
 #include "periodic_callback.h"
+#include <stdio.h>
+#include "eint.h"
+#include "gpio.hpp"
 
 
 
@@ -44,10 +47,27 @@ const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
  * printf inside these functions, you need about 1500 bytes minimum
  */
 const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
+static uint8_t second_count = 0;
+static uint16_t cut_count = 0;
+static uint16_t old_count = 0;
+
+void callBack()
+{
+    cut_count++;
+    LE.toggle(1);
+}
+
+void initialize()
+{
+//    GPIO pin2_5(P2_5);
+//    pin2_5.enablePullUp();
+    eint3_enable_port2(5,eint_rising_edge,callBack);
+}
 
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
 {
+    initialize();
     return true; // Must return true upon success
 }
 
@@ -66,22 +86,35 @@ bool period_reg_tlm(void)
 
 void period_1Hz(uint32_t count)
 {
-    LE.toggle(1);
+    second_count++;
+    printf("RPS: %d \n", (cut_count-old_count));
+    old_count = cut_count;
+
+    if(second_count == 60)
+    {
+        printf("RPM: %d \n", cut_count);
+        second_count = 0;
+        cut_count = 0;
+        old_count = 0;
+    }
+
+    //LE.toggle(1);
+
 }
 
 void period_10Hz(uint32_t count)
 {
-    LE.toggle(2);
+    //LE.toggle(2);
 }
 
 void period_100Hz(uint32_t count)
 {
-    LE.toggle(3);
+    //LE.toggle(3);
 }
 
 // 1Khz (1ms) is only run if Periodic Dispatcher was configured to run it at main():
 // scheduler_add_task(new periodicSchedulerTask(run_1Khz = true));
 void period_1000Hz(uint32_t count)
 {
-    LE.toggle(4);
+    //LE.toggle(4);
 }
