@@ -31,11 +31,11 @@
 #include <stdint.h>
 #include "io.hpp"
 #include "periodic_callback.h"
-#include "lidar_sensor.hpp"
+#include "sensor_functions.h"
 #include "lidar_sensor.h"
 #include "tasks.hpp"
 #include "stdio.h"
-#include "can.hf"
+#include "can.h"
 
 
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
@@ -81,16 +81,13 @@ void period_10Hz(uint32_t count)
 {
     static uint32_t prev_count = count;
 
-    //retrieve and encode update_lanes at 5Hz
     if ((count-prev_count) == 1)
     {
-        rplidar.update_lanes();
+//        rplidar.update_lanes();
+        update_lanes();
         prev_count = count;
     }
-    //Lane_LUT is a 9 bit bool array containing lane data
-    //pass these to your message
 
-//    LE.toggle(2);
 }
 
 void period_100Hz(uint32_t count)

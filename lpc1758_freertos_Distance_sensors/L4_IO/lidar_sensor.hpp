@@ -36,8 +36,8 @@ class Lidar_Sensor : public SingletonTemplate<Lidar_Sensor>
         void get_sample_rate(sample_rate_packet_t *sample_rate);
         void set_motor_speed(uint8_t RPM);
         void check_start_scan();
-        void update_lanes();
-        void update_lane_lut();
+        bool update_lanes();
+        bool update_lane_lut();
         int8_t det_smol_angle();
 
         char receive_lidar_data();

@@ -26,7 +26,7 @@
 #include "tasks.hpp"
 #include "examples/examples.hpp"
 #include "stdio.h"
-#include "lidar_sensor.hpp"
+#include "sensor_functions.h"
 #include "io.hpp"
 #include "printf_lib.h"
 /**
@@ -44,6 +44,8 @@
  *        there is no semaphore configured for this bus and it should be used exclusively by nordic wireless.
  */
 
+
+//change to RTOS API??
 class lidar_data_acquisition : public scheduler_task
 {
     public:
@@ -54,9 +56,7 @@ class lidar_data_acquisition : public scheduler_task
 
 bool lidar_data_acquisition::init()
 {
-    //rplidar.check_start_scan();
     rplidar.start_scan();
-    //printf("init\n");
     return true;
 }
 
@@ -85,232 +85,234 @@ bool lidar_data_acquisition::run(void* p)
 
             rplidar.update_lane_lut();
 
-            uint16_t temp;
-            uint16_t temp1;
-            uint16_t angle;
-            uint16_t distance;
-            float angle_q6;
-            float distance_q6;
-            static const uint8_t data = 10;
-            static uint8_t count=0;
-            static uint8_t lane=8;
 
-            rplidar.receive_lidar_data();// get da quality
-
-            angle = (uint16_t)(rplidar.receive_lidar_data()); //get da angle_1
-
-            temp = (uint16_t)(rplidar.receive_lidar_data()); //get da angle_2
-
-            distance = (uint16_t)(rplidar.receive_lidar_data()); //get da distance_1
-
-            temp1 = (uint16_t)(rplidar.receive_lidar_data()); //get da distance 2
-
-            angle = angle>>1;
-            angle |= temp<<7;
-            angle_q6 = (float)(angle)/64.0;
-            distance |= temp1<<8;
-            distance_q6 = (float)(distance)/4.0;
-
-            if (angle_q6>=270&&angle_q6<290)
-            {
-                if(lane == 8)
-                {
-                    if(count>data)
-                    {
-                        rplidar.lane_lut[8] = false;
-                    }
-                    else
-                    {
-                        rplidar.lane_lut[8] = true;
-                    }
-
-                    count = 0;
-                }
-
-                if(distance_q6 <= 0.3)
-                {
-                    count++;
-                }
-                lane = 0;
-
-            }
-
-            else if(angle_q6>=290&&angle_q6<310)
-            {
-                if(lane == 0)
-                {
-                    if(count>data)
-                    {
-                        rplidar.lane_lut[0] = false;
-                    }
-                    else
-                    {
-                        rplidar.lane_lut[0] = true;
-                    }
-
-                    count = 0;
-                }
-
-                if(distance_q6 <= 0.3)
-                {
-                    count++;
-                }
-                lane = 1;
-
-            }
-            else if(angle_q6>=310&&angle_q6<330)
-            {
-                if(lane == 1)
-                {
-                    if(count>data)
-                    {
-                        rplidar.lane_lut[1] = false;
-                    }
-                    else
-                    {
-                        rplidar.lane_lut[1] = true;
-                    }
-
-                    count = 0;
-                }
-
-                if(distance_q6 <= 0.3)
-                {
-                    count++;
-                }
-                lane = 2;
-            }
-            else if(angle_q6>=330&&angle_q6<350)
-            {
-                if(lane == 2)
-                {
-                    if(count>data)
-                    {
-                        rplidar.lane_lut[2] = false;
-                    }
-                    else
-                    {
-                        rplidar.lane_lut[2] = true;
-                    }
-
-                    count = 0;
-                }
-
-                if(distance_q6 <= 0.3)
-                {
-                    count++;
-                }
-                lane = 3;
-            }
-            else if((angle_q6>=350&&angle_q6<360) | (angle_q6>=0&&angle_q6<10))
-            {
-                if(lane == 3)
-                {
-                    if(count>data)
-                    {
-                        rplidar.lane_lut[3] = false;
-                    }
-                    else
-                    {
-                        rplidar.lane_lut[3] = true;
-                    }
-
-                    count = 0;
-                }
-
-                if(distance_q6 <= 0.3)
-                {
-                    count++;
-                }
-                lane = 4;
-            }
-            else if(angle_q6>=10&&angle_q6<30)
-            {
-                if(lane == 4)
-                {
-                    if(count>data)
-                    {
-                        rplidar.lane_lut[4] = false;
-                    }
-                    else
-                    {
-                        rplidar.lane_lut[4] = true;
-                    }
-                    count = 0;
-                }
-
-                if(distance_q6 <= 0.3)
-                {
-                    count++;
-                }
-                lane = 5;
-            }
-            else if(angle_q6>=30&&angle_q6<50)
-            {
-                if(lane == 5)
-                {
-                    if(count>data)
-                    {
-                        rplidar.lane_lut[5] = false;
-                    }
-                    else
-                    {
-                        rplidar.lane_lut[5] = true;
-                    }
-
-                    count = 0;
-                }
-
-                if(distance_q6 <= 0.3)
-                {
-                    count++;
-                }
-                lane = 6;
-            }
-            else if(angle_q6>=50&&angle_q6<70)
-            {
-                if(lane == 6)
-                {
-                    if(count>data)
-                    {
-                        rplidar.lane_lut[6] = false;
-                    }
-                    else
-                    {
-                        rplidar.lane_lut[6] = true;
-                    }
-
-                    count = 0;
-                }
-
-                if(distance_q6 <= 0.3)
-                {
-                    count++;
-                }
-                lane = 7;
-            }
-            else if(angle_q6>=70&&angle_q6<90)
-            {
-                if(lane == 7)
-                {
-                    if(count>data)
-                    {
-                        rplidar.lane_lut[7] = false;
-                    }
-                    else
-                    {
-                        rplidar.lane_lut[7] = true;
-                    }
-                    count = 0;
-                }
-
-                if(distance_q6 <= 0.3)
-                {
-                    count++;
-                }
-
-                lane = 8;
-            }
+            //this stuffff can be removed
+//            uint16_t temp;
+//            uint16_t temp1;
+//            uint16_t angle;
+//            uint16_t distance;
+//            float angle_q6;
+//            float distance_q6;
+//            static const uint8_t data = 10;
+//            static uint8_t count=0;
+//            static uint8_t lane=8;
+//
+//            rplidar.receive_lidar_data();// get da quality
+//
+//            angle = (uint16_t)(rplidar.receive_lidar_data()); //get da angle_1
+//
+//            temp = (uint16_t)(rplidar.receive_lidar_data()); //get da angle_2
+//
+//            distance = (uint16_t)(rplidar.receive_lidar_data()); //get da distance_1
+//
+//            temp1 = (uint16_t)(rplidar.receive_lidar_data()); //get da distance 2
+//
+//            angle = angle>>1;
+//            angle |= temp<<7;
+//            angle_q6 = (float)(angle)/64.0;
+//            distance |= temp1<<8;
+//            distance_q6 = (float)(distance)/4.0;
+//
+//            if (angle_q6>=270&&angle_q6<290)
+//            {
+//                if(lane == 8)
+//                {
+//                    if(count>data)
+//                    {
+//                        rplidar.lane_lut[8] = false;
+//                    }
+//                    else
+//                    {
+//                        rplidar.lane_lut[8] = true;
+//                    }
+//
+//                    count = 0;
+//                }
+//
+//                if(distance_q6 <= 0.3)
+//                {
+//                    count++;
+//                }
+//                lane = 0;
+//
+//            }
+//
+//            else if(angle_q6>=290&&angle_q6<310)
+//            {
+//                if(lane == 0)
+//                {
+//                    if(count>data)
+//                    {
+//                        rplidar.lane_lut[0] = false;
+//                    }
+//                    else
+//                    {
+//                        rplidar.lane_lut[0] = true;
+//                    }
+//
+//                    count = 0;
+//                }
+//
+//                if(distance_q6 <= 0.3)
+//                {
+//                    count++;
+//                }
+//                lane = 1;
+//
+//            }
+//            else if(angle_q6>=310&&angle_q6<330)
+//            {
+//                if(lane == 1)
+//                {
+//                    if(count>data)
+//                    {
+//                        rplidar.lane_lut[1] = false;
+//                    }
+//                    else
+//                    {
+//                        rplidar.lane_lut[1] = true;
+//                    }
+//
+//                    count = 0;
+//                }
+//
+//                if(distance_q6 <= 0.3)
+//                {
+//                    count++;
+//                }
+//                lane = 2;
+//            }
+//            else if(angle_q6>=330&&angle_q6<350)
+//            {
+//                if(lane == 2)
+//                {
+//                    if(count>data)
+//                    {
+//                        rplidar.lane_lut[2] = false;
+//                    }
+//                    else
+//                    {
+//                        rplidar.lane_lut[2] = true;
+//                    }
+//
+//                    count = 0;
+//                }
+//
+//                if(distance_q6 <= 0.3)
+//                {
+//                    count++;
+//                }
+//                lane = 3;
+//            }
+//            else if((angle_q6>=350&&angle_q6<360) | (angle_q6>=0&&angle_q6<10))
+//            {
+//                if(lane == 3)
+//                {
+//                    if(count>data)
+//                    {
+//                        rplidar.lane_lut[3] = false;
+//                    }
+//                    else
+//                    {
+//                        rplidar.lane_lut[3] = true;
+//                    }
+//
+//                    count = 0;
+//                }
+//
+//                if(distance_q6 <= 0.3)
+//                {
+//                    count++;
+//                }
+//                lane = 4;
+//            }
+//            else if(angle_q6>=10&&angle_q6<30)
+//            {
+//                if(lane == 4)
+//                {
+//                    if(count>data)
+//                    {
+//                        rplidar.lane_lut[4] = false;
+//                    }
+//                    else
+//                    {
+//                        rplidar.lane_lut[4] = true;
+//                    }
+//                    count = 0;
+//                }
+//
+//                if(distance_q6 <= 0.3)
+//                {
+//                    count++;
+//                }
+//                lane = 5;
+//            }
+//            else if(angle_q6>=30&&angle_q6<50)
+//            {
+//                if(lane == 5)
+//                {
+//                    if(count>data)
+//                    {
+//                        rplidar.lane_lut[5] = false;
+//                    }
+//                    else
+//                    {
+//                        rplidar.lane_lut[5] = true;
+//                    }
+//
+//                    count = 0;
+//                }
+//
+//                if(distance_q6 <= 0.3)
+//                {
+//                    count++;
+//                }
+//                lane = 6;
+//            }
+//            else if(angle_q6>=50&&angle_q6<70)
+//            {
+//                if(lane == 6)
+//                {
+//                    if(count>data)
+//                    {
+//                        rplidar.lane_lut[6] = false;
+//                    }
+//                    else
+//                    {
+//                        rplidar.lane_lut[6] = true;
+//                    }
+//
+//                    count = 0;
+//                }
+//
+//                if(distance_q6 <= 0.3)
+//                {
+//                    count++;
+//                }
+//                lane = 7;
+//            }
+//            else if(angle_q6>=70&&angle_q6<90)
+//            {
+//                if(lane == 7)
+//                {
+//                    if(count>data)
+//                    {
+//                        rplidar.lane_lut[7] = false;
+//                    }
+//                    else
+//                    {
+//                        rplidar.lane_lut[7] = true;
+//                    }
+//                    count = 0;
+//                }
+//
+//                if(distance_q6 <= 0.3)
+//                {
+//                    count++;
+//                }
+//
+//                lane = 8;
+//            }
 
     }
 
