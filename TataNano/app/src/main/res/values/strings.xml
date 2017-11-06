@@ -5,4 +5,6 @@
     <string name="BTDisconnected">Bluetooth : Try again</string>
     <string name="BTOff">Bluetooth : Off</string>
     <string name="BTOn">Bluetooth : On</string>
+    <string name="TapOnCar">Tap on Car</string>
+    <string name="pair">Pair</string>
 </resources>

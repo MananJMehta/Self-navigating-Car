@@ -109,10 +109,12 @@ public class MainActivity extends AppCompatActivity {
 
                 if (connect2Car()){
                     Log.e("TataNano : Bluetooth","Connected");
+                    heading.setTextColor(Color.GREEN);
                     heading.setText(R.string.BTConnected);
                     tag.setVisibility(View.VISIBLE);
                 } else {
                     Log.e("TataNano : Bluetooth","Unable to connect");
+                    heading.setTextColor(Color.RED);
                     heading.setText(R.string.BTDisconnected);
                     tag.setVisibility(View.INVISIBLE);
                 }

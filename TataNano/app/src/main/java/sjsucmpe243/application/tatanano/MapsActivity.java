@@ -9,14 +9,18 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.provider.Settings;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -30,15 +34,21 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import java.util.ArrayList;
+import java.util.Vector;
+
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
+    FloatingActionButton SendLocation,SendStart,SendStop;//,bluetooth;
     LocationManager locMan;
     LocationListener locLis;
     LatLng myLatLng;
     static LatLng prevLatLng = new LatLng(0, 0);
     Marker me;
     MarkerOptions me_Option;
+    ArrayList<LatLng> checkpoints = new ArrayList<LatLng>();
+    static int Checkpoint_num = 0;
 
     boolean flag = true;
 
@@ -49,6 +59,72 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+        /*bluetooth = findViewById(R.id.bluetooth);
+                bluetooth.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if (SendStart.isShown()) {
+                    SendStart.setVisibility(View.INVISIBLE);
+                }
+                else
+                {
+                    SendStart.setVisibility(View.VISIBLE);
+                }
+
+                if (SendStop.isShown()) {
+                    SendStop.setVisibility(View.INVISIBLE);
+                }
+                else
+                {
+                    SendStop.setVisibility(View.VISIBLE);
+                }
+
+                if (SendLocation.isShown()) {
+                    SendLocation.setVisibility(View.INVISIBLE);
+                }
+                else
+                {
+                    SendLocation.setVisibility(View.VISIBLE);
+                }
+            }
+        });*/
+
+
+        SendLocation = findViewById(R.id.SendLocation);
+        SendLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //LatLng temp = new LatLng(0,0);
+
+                Log.e("TataNano : Bluetooth", " Total check points are "+ Checkpoint_num );
+                for (LatLng temp : checkpoints) {
+                    Log.e("TataNano : Bluetooth", "(" + temp.latitude + "," + temp.longitude+")");
+                }
+            }
+        });
+
+        SendStart = findViewById(R.id.SendStart);
+        SendStart.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SendStart.setVisibility(View.INVISIBLE);
+                SendStop.setVisibility(View.VISIBLE);
+                Log.e("TataNano : Bluetooth", " Start command sent" );
+            }
+        });
+
+
+        SendStop = findViewById(R.id.SendStop);
+        SendStop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SendStart.setVisibility(View.VISIBLE);
+                SendStop.setVisibility(View.INVISIBLE);
+                Log.e("TataNano : Bluetooth", " Stop command sent" );
+            }
+        });
 
         IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
         registerReceiver(mReceiver, filter);
@@ -210,8 +286,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 MarkerOptions marker = new MarkerOptions().position(new LatLng(point.latitude, point.longitude));
                 mMap.addMarker(marker);
-
-                Toast.makeText(MapsActivity.this, "Next stop at " + point.latitude + "," + point.longitude, Toast.LENGTH_SHORT).show();
+                //checkpoints[Checkpoint_num] = point;
+                checkpoints.add(Checkpoint_num,point);
+                Checkpoint_num ++;
+                //Toast.makeText(MapsActivity.this, "Next stop at " + point.latitude + "," + point.longitude, Toast.LENGTH_SHORT).show();
+                Log.e("TataNano : Bluetooth", "onMapClick: point number= "+ Checkpoint_num + " (" + point.latitude + "," + point.longitude+")");
             }
         });
 
