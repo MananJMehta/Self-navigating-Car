@@ -151,14 +151,14 @@ void Lidar_Sensor::update_lanes(bool* return_lut)
 
 
     //print_lookup();
-//    for (  i=0 ; i<9 ;i++)
-//            printf("%f ", lookup1[i]);
-//
-//    printf("\n");
-//
-//    for (  i=0 ; i<9 ;i++)
-//            printf("%f ", diss[i]);
-//
-//    printf("\n");
+    for (  i=0 ; i<9 ;i++)
+            printf("%f ", lookup1[i]);
+
+    printf("\n");
+
+    for (  i=0 ; i<9 ;i++)
+            printf("%f ", diss[i]);
+
+    printf("\n");
     //print_lookup();
 }

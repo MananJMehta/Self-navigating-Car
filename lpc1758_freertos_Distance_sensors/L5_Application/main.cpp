@@ -116,24 +116,16 @@ bool lidar_data_acquisition::run(void* p)
 
         if(abs(lookup[count_for_lut_in_this_function]-angle_q6) <= 1)
         {
-            if(distance_q6 <= 20)
-                lane_lut_in_this_function[count_for_lut_in_this_function]=false;
+            if(distance_q6 <= 20.0)
+                rplidar.lane_lut[count_for_rplidar_lut] = false;
             else
-                lane_lut_in_this_function[count_for_lut_in_this_function]=true;
+                rplidar.lane_lut[count_for_rplidar_lut] = true;
             count_that_checks_threshold++;
             count_for_lut_in_this_function++;
+            if(count_that_checks_threshold == 3)
+                count_for_rplidar_lut++;
         }
-        if(count_that_checks_threshold == 3)
-        {
-            count_that_checks_threshold=0;
-            if(lane_lut_in_this_function[count_for_lut_in_this_function -2] && lane_lut_in_this_function[count_for_lut_in_this_function -1] && lane_lut_in_this_function[count_for_lut_in_this_function - 3])
-                rplidar.lane_lut[count_for_rplidar_lut] = true;
-            else
-                rplidar.lane_lut[count_for_rplidar_lut] = false;
-            rplidar.lookup1[count_for_rplidar_lut]=angle_q6;
-            rplidar.diss[count_for_rplidar_lut]= distance_q6;
-            count_for_rplidar_lut++;
-        }
+
         count_for_lut_in_this_function=count_for_lut_in_this_function > 26 ? 0 :count_for_lut_in_this_function;
         count_for_rplidar_lut=count_for_rplidar_lut > 8 ? 0 : count_for_rplidar_lut;
 
