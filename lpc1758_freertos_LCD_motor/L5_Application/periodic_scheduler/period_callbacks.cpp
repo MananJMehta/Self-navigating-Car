@@ -39,7 +39,6 @@
 #include "_can_dbc/generated_can.h"
 #include "can.h"
 #include "printf_lib.h"
-#include "storage.hpp"
 
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
@@ -56,24 +55,31 @@ const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
 static uint8_t second_count = 0;
 static uint16_t cut_count = 0;
 static uint16_t old_count = 0;
+static uint16_t old_countms = 0;
+static float speed =0.0;
+static uint16_t rps = 0.0;
+static uint16_t rpms = 0.0;
+
+const uint16_t ref_count_slow = 0; //2.63kmph
+const uint16_t ref_count_low = 0;  //5kmph
+const uint16_t ref_count_medium = 12; //8kmph
+const uint16_t ref_count_high = 0; //left for future
 
 void callBack()
 {
     cut_count++;
-    //interrupt clear
     LE.toggle(1);
 }
 
-void initialize()
+void initialize_motor_feedback()
 {
-
     eint3_enable_port2(5,eint_rising_edge,callBack);
 }
 
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
 {
-    initialize();
+    initialize_motor_feedback();
     CAN_init(can1,100,10,10,NULL,NULL);
     CAN_bypass_filter_accept_all_msgs();
     CAN_reset_bus(can1);
@@ -84,8 +90,8 @@ bool period_init(void)
     //error code 2 to signal incorrect initialization of steering PWM
     if(!str.init())
         LD.setNumber(2);
+    spd.setSpeed(STOP);
     str.setDirection(CENTER); //Aditya : this part might be extra/ already set in init
-    //  spd.set(15);
     return true; // Must return true upon success
 }
 
@@ -101,13 +107,41 @@ bool period_reg_tlm(void)
  * Below are your periodic functions.
  * The argument 'count' is the number of times each periodic task is called.
  */
-char buffer[16]="";
-void period_1Hz(uint32_t count)
+void maintain_speed()
+{
+    if((rpms*10 - ref_count_medium) > 2)
+    {
+        spd.setSpeed(MEDIUM - 0.2);
+        LE.on(3);
+    }else
+    if((ref_count_medium - rpms*10) > 2)
+    {
+        spd.setSpeed(MEDIUM + 0.2);
+        LE.on(4);
+    }
+    else
+    {
+        LE.off(3);
+        LE.off(4);
+    }
+}
+
+void check_bus()
+{
+    if(CAN_is_bus_off(can1))
+    {
+        CAN_reset_bus(can1);
+        //LE.init();
+        //LE.on(4);
+    }
+}
+
+void rpm_meter()
 {
     second_count++;
-    // printf("RPS: %d \n", (cut_count-old_count));
-    LD.setNumber((cut_count-old_count));
-    //Storage::append("1:PWM.txt",buffer, 9,0);
+    rps = cut_count - old_count;
+    speed = rps/2*36.5*3600/(100*1000);
+    printf("RPS: %d Speed: %f\n", rps, speed);
     old_count = cut_count;
 
     if(second_count == 60)
@@ -118,13 +152,12 @@ void period_1Hz(uint32_t count)
         cut_count = 0;
         old_count = 0;
     }
+}
 
-    if(CAN_is_bus_off(can1))
-    {
-        CAN_reset_bus(can1);
-        LE.init();
-        LE.on(4);
-    }
+void period_1Hz(uint32_t count)
+{
+    rpm_meter();
+    check_bus();
 }
 
 const uint32_t        CAR_CONTROL__MIA_MS=3000;
@@ -134,8 +167,19 @@ CAR_CONTROL_t carControl;
 HEARTBEAT_t heartbeat;
 bool flag=false;
 float val = 15;
+void speed_check()
+{
+    rpms = cut_count - old_countms;
+    old_countms = cut_count;
+    if(rpms!=0)
+    {
+        maintain_speed();
+    }
+}
+
 void period_10Hz(uint32_t count)
 {
+    speed_check();
 printf("%f\n",val);
        if(flag==false)
             spd.setSpeed(STOP);
@@ -183,6 +227,7 @@ printf("%f\n",val);
 void period_100Hz(uint32_t count)
 {
     //LE.toggle(3);
+
 }
 
 // 1Khz (1ms) is only run if Periodic Dispatcher was configured to run it at main():
