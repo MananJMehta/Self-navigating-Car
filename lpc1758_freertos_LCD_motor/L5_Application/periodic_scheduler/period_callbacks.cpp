@@ -44,7 +44,8 @@
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
 Speed spd;
 Steering str;
-
+float val = MEDIUM;
+bool flag=false;
 /**
  * This is the stack size of the dispatcher task that triggers the period tasks to run.
  * Minimum 1500 bytes are needed in order to write a debug file if the period tasks overrun.
@@ -111,12 +112,12 @@ void maintain_speed()
 {
     if((rpms*10 - ref_count_medium) > 2)
     {
-        spd.setSpeed(MEDIUM - 0.2);
+        val=spd.getSpeed() - 0.2;
         LE.on(3);
-    }else
-    if((ref_count_medium - rpms*10) > 2)
+    }
+    else if((ref_count_medium - rpms*10) > 2)
     {
-        spd.setSpeed(MEDIUM + 0.2);
+        val=spd.getSpeed() + 0.2;
         LE.on(4);
     }
     else
@@ -124,6 +125,8 @@ void maintain_speed()
         LE.off(3);
         LE.off(4);
     }
+    if(spd.getSpeed()>18)
+        flag=false;
 }
 
 void check_bus()
@@ -142,12 +145,11 @@ void rpm_meter()
     rps = cut_count - old_count;
     speed = rps/2*36.5*3600/(100*1000);
     printf("RPS: %d Speed: %f\n", rps, speed);
+    LD.setNumber(rps);
     old_count = cut_count;
 
     if(second_count == 60)
     {
-        // printf("RPM: %d \n", cut_count);
-
         second_count = 0;
         cut_count = 0;
         old_count = 0;
@@ -165,32 +167,32 @@ const CAR_CONTROL_t   CAR_CONTROL__MIA_MSG={0};
 can_msg_t msg;
 CAR_CONTROL_t carControl;
 HEARTBEAT_t heartbeat;
-bool flag=false;
-float val = 15;
+
 void speed_check()
 {
-    rpms = cut_count - old_countms;
-    old_countms = cut_count;
-    if(rpms!=0)
+    if(flag == true)
     {
-        maintain_speed();
+        rpms = cut_count - old_countms;
+        old_countms = cut_count;
+        if(rpms!=0)
+            maintain_speed();
     }
 }
 
 void period_10Hz(uint32_t count)
 {
     speed_check();
-printf("%f\n",val);
-       if(flag==false)
-            spd.setSpeed(STOP);
+    printf("%f\n",spd.getSpeed());
+    if(flag==false)
+        spd.setSpeed(STOP);
 
     else if(flag==true)
-          spd.setSpeed(val);
+        spd.setSpeed(val);
 
     if(SW.getSwitch(1)==true)
-          flag=true;
-       if(SW.getSwitch(2)==true)
-           flag=false;
+        flag=true;
+    if(SW.getSwitch(2)==true)
+        flag=false;
     if(SW.getSwitch(3)==true)
         val+=0.1;
     if(SW.getSwitch(4)==true)
@@ -211,7 +213,7 @@ printf("%f\n",val);
                 break;
             case 140:
                 dbc_decode_CAR_CONTROL(&carControl,msg.data.bytes,&header);
-                LE.toggle(3);
+                // LE.toggle(3);
                 break;
         }
     }
@@ -221,7 +223,6 @@ printf("%f\n",val);
     else LE.off(1);
 
     str.setDirection(CENTER);
-    // u0_dbg_printf("%i\n",carControl.CAR_CONTROL_steer);
 }
 
 void period_100Hz(uint32_t count)
