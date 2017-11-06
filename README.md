@@ -30,23 +30,23 @@ To start working on this project follow the steps mentioned below:
    - If you use ls command now then you'll see the directories in that branch.
    
    Initial situation of repository :
-   - Master branch - README, ThunderBird (android application code)
-   - Android branch - README, ThunderBird (android application code) because both branches were merged before inviting you.
-   - Embedded branch - Module wise 5 projects, README, ThunderBird (android application code)
+   - Master branch - README
+   - Android branch - README, TataNano (android application code)
+   - Embedded branch - Module wise 5 projects, README, TataNano (android application code)
 
 4) Read, edit it and make some changes in related files while working on project. After this you have to upload the changes on remote
    repository.
 
    Follow this steps every time you make a change.
    - git add . (. means everything) "OR" git add -A  (-A means all. This will stage your changes ready to commit.)
-   - git add <file/folder name> works too.
+   - git add <file OR folder name> works too.
 
    - git commit -m "write comments and mention your changes and why did you change it here. - your name." ( this will make it easy to see versions of our code and what new was added at what commit)
 
-   - Make sure you change to the branch before you add and commit any change.
-
    - Use git checkout "branch name you want to work on"  
 "OR" git checkout -b "branch name" in case of creating new branch.
+
+   - Make sure you are in the same branch you made changes before you add and commit any change.
 
    - git push origin <branch name>
 
