@@ -31,19 +31,15 @@
 #include <stdint.h>
 #include "io.hpp"
 #include "periodic_callback.h"
-<<<<<<< HEAD
 #include <stdio.h>
 #include "eint.h"
 #include "gpio.hpp"
-
-
-=======
 #include "L4.5_Motor_Control/Steering.hpp"
 #include "L4.5_Motor_Control/Speed.hpp"
 #include "_can_dbc/generated_can.h"
 #include "can.h"
 #include "printf_lib.h"
->>>>>>> Lab3/Motor/Manan
+#include "storage.hpp"
 
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
@@ -60,17 +56,25 @@ const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
 static uint8_t second_count = 0;
 static uint16_t cut_count = 0;
 static uint16_t old_count = 0;
+static uint16_t old_countms = 0;
+static float speed =0.0;
+static uint16_t rps = 0.0;
+static uint16_t rpms = 0.0;
+
+const uint16_t ref_count_slow = 0; //2.63kmph
+const uint16_t ref_count_low = 0;  //5kmph
+const uint16_t ref_count_medium = 12; //8kmph
+const uint16_t ref_count_high = 0; //left for future
 
 void callBack()
 {
     cut_count++;
+    //interrupt clear
     LE.toggle(1);
 }
 
-void initialize()
+void initialize_motor_feedback()
 {
-//    GPIO pin2_5(P2_5);
-//    pin2_5.enablePullUp();
     eint3_enable_port2(5,eint_rising_edge,callBack);
 }
 
@@ -80,18 +84,21 @@ bool period_init(void)
 <<<<<<< HEAD
     initialize();
 =======
-
+    initialize_motor_feedback();
+>>>>>>> fb984fe966fc758b6bd6df47f1caa560b235c07a
     CAN_init(can1,100,10,10,NULL,NULL);
     CAN_bypass_filter_accept_all_msgs();
     CAN_reset_bus(can1);
+    LD.init();
     //error code 1 to signal incorrect initialization of speed PWM
     if(!spd.init())
         LD.setNumber(1);
     //error code 2 to signal incorrect initialization of steering PWM
     if(!str.init())
         LD.setNumber(2);
+    spd.setSpeed(STOP);
     str.setDirection(CENTER); //Aditya : this part might be extra/ already set in init
->>>>>>> Lab3/Motor/Manan
+    //  spd.set(15);
     return true; // Must return true upon success
 }
 
@@ -107,32 +114,67 @@ bool period_reg_tlm(void)
  * Below are your periodic functions.
  * The argument 'count' is the number of times each periodic task is called.
  */
-
+<<<<<<< HEAD
+char buffer[16]="";
 void period_1Hz(uint32_t count)
 {
-<<<<<<< HEAD
     second_count++;
-    printf("RPS: %d \n", (cut_count-old_count));
+    // printf("RPS: %d \n", (cut_count-old_count));
+    LD.setNumber((cut_count-old_count));
+    //Storage::append("1:PWM.txt",buffer, 9,0);
+=======
+void maintain_speed()
+{
+    if((rpms*10 - ref_count_medium) > 2)
+    {
+        spd.setSpeed(MEDIUM - 0.2);
+        LE.on(3);
+    }else
+    if((ref_count_medium - rpms*10) > 2)
+    {
+        spd.setSpeed(MEDIUM + 0.2);
+        LE.on(4);
+    }
+    else
+    {
+        LE.off(3);
+        LE.off(4);
+    }
+}
+
+void check_bus()
+{
+    if(CAN_is_bus_off(can1))
+    {
+        CAN_reset_bus(can1);
+        //LE.init();
+        //LE.on(4);
+    }
+}
+
+void rpm_meter()
+{
+    second_count++;
+    rps = cut_count - old_count;
+    speed = rps/2*36.5*3600/(100*1000);
+    printf("RPS: %d Speed: %f\n", rps, speed);
+>>>>>>> fb984fe966fc758b6bd6df47f1caa560b235c07a
     old_count = cut_count;
 
     if(second_count == 60)
     {
-        printf("RPM: %d \n", cut_count);
+        // printf("RPM: %d \n", cut_count);
+
         second_count = 0;
         cut_count = 0;
         old_count = 0;
     }
+}
 
-    //LE.toggle(1);
-
-=======
-    if(CAN_is_bus_off(can1))
-    {
-        CAN_reset_bus(can1);
-        LE.init();
-        LE.on(4);
-    }
->>>>>>> Lab3/Motor/Manan
+void period_1Hz(uint32_t count)
+{
+    rpm_meter();
+    check_bus();
 }
 
 const uint32_t        CAR_CONTROL__MIA_MS=3000;
@@ -140,21 +182,47 @@ const CAR_CONTROL_t   CAR_CONTROL__MIA_MSG={0};
 can_msg_t msg;
 CAR_CONTROL_t carControl;
 HEARTBEAT_t heartbeat;
+<<<<<<< HEAD
+bool flag=false;
+float val = 15;
+void period_10Hz(uint32_t count)
+{
+printf("%f\n",val);
+       if(flag==false)
+            spd.setSpeed(STOP);
+
+    else if(flag==true)
+          spd.setSpeed(val);
+
+=======
+
+void speed_check()
+{
+    rpms = cut_count - old_countms;
+    old_countms = cut_count;
+    if(rpms!=0)
+    {
+        maintain_speed();
+    }
+}
 
 void period_10Hz(uint32_t count)
 {
-<<<<<<< HEAD
-    //LE.toggle(2);
-=======
+    speed_check();
     static int flag = 0;
     if(flag ==1)
         spd.setSpeed(MEDIUM);
     else
         spd.setSpeed(STOP);
+>>>>>>> fb984fe966fc758b6bd6df47f1caa560b235c07a
     if(SW.getSwitch(1)==true)
-        flag=1;
-    if(SW.getSwitch(2)==true)
-        flag=0;
+          flag=true;
+       if(SW.getSwitch(2)==true)
+           flag=false;
+    if(SW.getSwitch(3)==true)
+        val+=0.1;
+    if(SW.getSwitch(4)==true)
+        val-=0.1;
 
 
     while(CAN_rx(can1,&msg,0))
@@ -167,7 +235,7 @@ void period_10Hz(uint32_t count)
         {
             case 120:
                 dbc_decode_HEARTBEAT(&heartbeat,msg.data.bytes,&header);
-                LE.toggle(2);
+                //LE.toggle(2);
                 break;
             case 140:
                 dbc_decode_CAR_CONTROL(&carControl,msg.data.bytes,&header);
@@ -181,26 +249,22 @@ void period_10Hz(uint32_t count)
     else LE.off(1);
 
     str.setDirection(CENTER);
-    u0_dbg_printf("%i\n",carControl.CAR_CONTROL_steer);
->>>>>>> Lab3/Motor/Manan
+<<<<<<< HEAD
+    // u0_dbg_printf("%i\n",carControl.CAR_CONTROL_steer);
+=======
+    //u0_dbg_printf("%i\n",carControl.CAR_CONTROL_steer);
+>>>>>>> fb984fe966fc758b6bd6df47f1caa560b235c07a
 }
 
 void period_100Hz(uint32_t count)
 {
-<<<<<<< HEAD
     //LE.toggle(3);
-=======
 
->>>>>>> Lab3/Motor/Manan
 }
 
 // 1Khz (1ms) is only run if Periodic Dispatcher was configured to run it at main():
 // scheduler_add_task(new periodicSchedulerTask(run_1Khz = true));
 void period_1000Hz(uint32_t count)
 {
-<<<<<<< HEAD
     //LE.toggle(4);
-=======
-
->>>>>>> Lab3/Motor/Manan
 }
