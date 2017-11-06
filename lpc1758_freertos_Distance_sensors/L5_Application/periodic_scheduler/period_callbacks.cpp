@@ -74,7 +74,7 @@ bool period_reg_tlm(void)
 
 void period_1Hz(uint32_t count)
 {
-    rplidar.update_lanes();
+
 }
 
 void period_10Hz(uint32_t count)
@@ -83,8 +83,7 @@ void period_10Hz(uint32_t count)
 
     if ((count-prev_count) == 1)
     {
-//        rplidar.update_lanes();
-        update_lanes();
+        send_lidar_sonar_data();
         prev_count = count;
     }
 

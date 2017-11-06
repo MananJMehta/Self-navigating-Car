@@ -154,7 +154,7 @@ void Lidar_Sensor::check_start_scan()
 //this task can be turnned on and off every time there is a
 //start and stop command...so in the rplidar.start_scan function enable this task
 //in rplidar.stop_scan(); turn off this task
-bool Lidar_Sensor::update_lanes()
+bool Lidar_Sensor::update_lanes()//this function is obsolete<<<<<<
 {
     SENSOR_DATA_t SensorData;
 

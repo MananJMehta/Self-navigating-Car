@@ -10,11 +10,14 @@
 
 #include "lidar_sensor.hpp"
 #include "_can_dbc/generated_can.h"
-//#include "sonar_sensor.cpp"
+#include "sonar_sensor.hpp"
+
+//Sonar_Sensor* sonar;
+
 
 //this function will send lane data ad sonar sensor data should
 //be renamed appropriately
-void update_lanes()
+void send_lidar_sonar_data()
 {
     SENSOR_DATA_t SensorData;
 
