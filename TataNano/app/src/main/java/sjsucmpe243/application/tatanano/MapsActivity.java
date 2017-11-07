@@ -61,38 +61,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
-        /*bluetooth = findViewById(R.id.bluetooth);
-                bluetooth.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                if (SendStart.isShown()) {
-                    SendStart.setVisibility(View.INVISIBLE);
-                }
-                else
-                {
-                    SendStart.setVisibility(View.VISIBLE);
-                }
-
-                if (SendStop.isShown()) {
-                    SendStop.setVisibility(View.INVISIBLE);
-                }
-                else
-                {
-                    SendStop.setVisibility(View.VISIBLE);
-                }
-
-                if (SendLocation.isShown()) {
-                    SendLocation.setVisibility(View.INVISIBLE);
-                }
-                else
-                {
-                    SendLocation.setVisibility(View.VISIBLE);
-                }
-            }
-        });*/
-
-
         SendLocation = findViewById(R.id.SendLocation);
         SendLocation.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -105,7 +73,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                     for (LatLng temp : checkpoints) {
                         Log.e("TataNano : Bluetooth", "(" + temp.latitude + "," + temp.longitude+")");
-                        BTdata = "(" + temp.latitude + "," + temp.longitude+")";
+                        BTdata = "(" + temp.latitude + "," + temp.longitude+")\n";
                         rx_data.write(BTdata.getBytes());
                     }
 
@@ -125,7 +93,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 try {
                     OutputStream rx_data = MainActivity.gotSocket.getOutputStream();
                     Log.e("TataNano : Bluetooth", " Start command sent" );
-                        BTdata = "start";
+                        BTdata = "start\n";
                         rx_data.write(BTdata.getBytes());
                 } catch (IOException e) {
                     Log.e("TataNano : Bluetooth", "Socket is not connected yet. ");
@@ -144,7 +112,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 try {
                     OutputStream rx_data = MainActivity.gotSocket.getOutputStream();
                     Log.e("TataNano : Bluetooth", " Stop command sent" );
-                    BTdata = "stop";
+                    BTdata = "stop\n";
                     rx_data.write(BTdata.getBytes());
                 } catch (IOException e) {
                     Log.e("TataNano : Bluetooth", "Socket is not connected yet. ");
