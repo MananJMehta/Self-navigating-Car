@@ -32,6 +32,7 @@ extern "C"
     #include "sensor_functions.h"
 }
 
+#include "lidar_sensor.hpp"
 #include "io.hpp"
 #include "printf_lib.h"
 /**
