@@ -2,6 +2,7 @@ package sjsucmpe243.application.tatanano;
 
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -9,7 +10,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -34,8 +34,9 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Vector;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -47,10 +48,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     static LatLng prevLatLng = new LatLng(0, 0);
     Marker me;
     MarkerOptions me_Option;
-    ArrayList<LatLng> checkpoints = new ArrayList<LatLng>();
+    ArrayList<LatLng> checkpoints = new ArrayList<>();
     static int Checkpoint_num = 0;
-
     boolean flag = true;
+    String BTdata;
 
     AlertDialog.Builder alertDialogBuilder;
     AlertDialog alertDialog;
@@ -98,9 +99,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onClick(View v) {
                 //LatLng temp = new LatLng(0,0);
 
-                Log.e("TataNano : Bluetooth", " Total check points are "+ Checkpoint_num );
-                for (LatLng temp : checkpoints) {
-                    Log.e("TataNano : Bluetooth", "(" + temp.latitude + "," + temp.longitude+")");
+                try {
+                    OutputStream rx_data = MainActivity.gotSocket.getOutputStream();
+                    Log.e("TataNano : Bluetooth", " Total check points are "+ Checkpoint_num );
+
+                    for (LatLng temp : checkpoints) {
+                        Log.e("TataNano : Bluetooth", "(" + temp.latitude + "," + temp.longitude+")");
+                        BTdata = "(" + temp.latitude + "," + temp.longitude+")";
+                        rx_data.write(BTdata.getBytes());
+                    }
+
+                } catch (IOException e) {
+                    Log.e("TataNano : Bluetooth", "Socket is not connected yet. ");
                 }
             }
         });
@@ -111,7 +121,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onClick(View v) {
                 SendStart.setVisibility(View.INVISIBLE);
                 SendStop.setVisibility(View.VISIBLE);
-                Log.e("TataNano : Bluetooth", " Start command sent" );
+
+                try {
+                    OutputStream rx_data = MainActivity.gotSocket.getOutputStream();
+                    Log.e("TataNano : Bluetooth", " Start command sent" );
+                        BTdata = "start";
+                        rx_data.write(BTdata.getBytes());
+                } catch (IOException e) {
+                    Log.e("TataNano : Bluetooth", "Socket is not connected yet. ");
+                }
             }
         });
 
@@ -122,7 +140,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onClick(View v) {
                 SendStart.setVisibility(View.VISIBLE);
                 SendStop.setVisibility(View.INVISIBLE);
-                Log.e("TataNano : Bluetooth", " Stop command sent" );
+
+                try {
+                    OutputStream rx_data = MainActivity.gotSocket.getOutputStream();
+                    Log.e("TataNano : Bluetooth", " Stop command sent" );
+                    BTdata = "stop";
+                    rx_data.write(BTdata.getBytes());
+                } catch (IOException e) {
+                    Log.e("TataNano : Bluetooth", "Socket is not connected yet. ");
+                }
             }
         });
 

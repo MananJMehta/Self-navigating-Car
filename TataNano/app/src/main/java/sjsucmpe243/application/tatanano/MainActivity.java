@@ -29,10 +29,11 @@ public class MainActivity extends AppCompatActivity {
     AlertDialog.Builder alertBuilder4BT;
     AlertDialog dialog4BT;
     BluetoothAdapter BTadpt = BluetoothAdapter.getDefaultAdapter();
-    BluetoothSocket gotSocket;
+    static BluetoothSocket gotSocket;
     TextView heading,tag;
     ImageView img,gifImg;
     //MediaPlayer mp = MediaPlayer.create(getApplicationContext(), R.raw.startcar);
+    static BluetoothDevice tatanano;
     Button pair;
 
     @Override
@@ -155,9 +156,9 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean connect2Car() {
 
-        BluetoothDevice temp = findCarInPairedDevices();
-        if (temp != null) {
-            return (attempt2Connect(temp));
+        tatanano = findCarInPairedDevices();
+        if (tatanano != null) {
+            return (attempt2Connect(tatanano));
         }
         else {
             Log.e("TataNano : Bluetooth","device not found in paired devices list");
@@ -174,7 +175,7 @@ public class MainActivity extends AppCompatActivity {
         Set<BluetoothDevice> pairedDevicesList = BTadpt.getBondedDevices();
 
         for (BluetoothDevice tempDevice : pairedDevicesList){
-            if (tempDevice.getAddress().equals("B4:CE:F6:C3:36:B0") || tempDevice.getAddress().equals("DC:6D:CD:EE:92:36")){
+            if (tempDevice.getAddress().equals("98:D3:33:80:67:F9") || tempDevice.getAddress().equals("DC:6D:CD:EE:92:36")){
 
                 Log.e("TataNano : Bluetooth","Found device " +tempDevice.getName() + " in paired devices list");
                 return tempDevice;
@@ -281,7 +282,7 @@ public class MainActivity extends AppCompatActivity {
 
                 Log.e("TataNano : Bluetooth","found new device.- "+deviceName+" "+deviceHardwareAddress);
 
-                if (deviceHardwareAddress.equals("B4:CE:F6:C3:36:B0") || deviceHardwareAddress.equals("DC:6D:CD:EE:92:36")) {
+                if (deviceHardwareAddress.equals("98:D3:33:80:67:F9") || deviceHardwareAddress.equals("DC:6D:CD:EE:92:36")) {
 
                     if (BTadpt.isDiscovering()) {
                         BTadpt.cancelDiscovery();
@@ -313,6 +314,7 @@ public class MainActivity extends AppCompatActivity {
     public void onBackPressed() {
         unregisterReceiver(mReceiver);
         unregisterReceiver(mReceiver1);
+        unregisterReceiver(mReceiver2);
         this.finish();
     }
 
