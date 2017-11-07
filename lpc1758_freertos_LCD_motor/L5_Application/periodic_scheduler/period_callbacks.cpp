@@ -63,7 +63,7 @@ static uint16_t rpms = 0.0;
 
 const uint16_t ref_count_slow = 0; //2.63kmph
 const uint16_t ref_count_low = 0;  //5kmph
-const uint16_t ref_count_medium = 12; //8kmph
+const uint16_t ref_count_medium = 2; //8kmph
 const uint16_t ref_count_high = 0; //left for future
 
 void callBack()
@@ -110,23 +110,24 @@ bool period_reg_tlm(void)
  */
 void maintain_speed()
 {
-    if((rpms*10 - ref_count_medium) > 2)
+    if((rpms - ref_count_medium) > 1)
     {
-        val=spd.getSpeed() - 0.2;
+        val=spd.getSpeed() - 0.1;
         LE.on(3);
     }
-    else if((ref_count_medium - rpms*10) > 2)
+    else if((ref_count_medium - rpms) > 1)
     {
-        val=spd.getSpeed() + 0.2;
+        val=spd.getSpeed() + 0.1;
         LE.on(4);
     }
     else
     {
-        LE.off(3);
-        LE.off(4);
+        //        LE.off(3);
+        //        LE.off(4);
     }
     if(spd.getSpeed()>18)
         flag=false;
+
 }
 
 void check_bus()
@@ -144,8 +145,8 @@ void rpm_meter()
     second_count++;
     rps = cut_count - old_count;
     speed = rps/2*36.5*3600/(100*1000);
-    printf("RPS: %d Speed: %f\n", rps, speed);
-    LD.setNumber(rps);
+    // printf("RPS: %d Speed: %f\n", rps, speed);
+    //LD.setNumber(rps);
     old_count = cut_count;
 
     if(second_count == 60)
@@ -153,6 +154,7 @@ void rpm_meter()
         second_count = 0;
         cut_count = 0;
         old_count = 0;
+        old_countms=0;
     }
 }
 
@@ -174,14 +176,16 @@ void speed_check()
     {
         rpms = cut_count - old_countms;
         old_countms = cut_count;
-        if(rpms!=0)
-            maintain_speed();
+        LD.setNumber(rpms);
+
+           maintain_speed();
     }
 }
 
 void period_10Hz(uint32_t count)
 {
-    speed_check();
+    if(count%3==0)
+        speed_check();
     printf("%f\n",spd.getSpeed());
     if(flag==false)
         spd.setSpeed(STOP);

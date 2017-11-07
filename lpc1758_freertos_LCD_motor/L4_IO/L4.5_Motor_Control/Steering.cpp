@@ -14,7 +14,7 @@ bool Steering::init()
 {
     this->setDirection(CENTER);
     this->currentDirection=CENTER;
-    LE.on(4);
+   // LE.on(4);
     return true;
 }
 
