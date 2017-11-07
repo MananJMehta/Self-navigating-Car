@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "C:\\Autonomous-car\\TataNano\\app\\build\\intermediates\\res\\merged\\debug\\mipmap-mdpi-v4\\ic_launcher_round.png",
+        "source": "C:\\Autonomous-car\\TataNano\\app\\src\\main\\res\\mipmap-mdpi\\ic_launcher_round.png"
+    },
+    {
+        "merged": "C:\\Autonomous-car\\TataNano\\app\\build\\intermediates\\res\\merged\\debug\\mipmap-mdpi-v4\\ic_launcher.png",
+        "source": "C:\\Autonomous-car\\TataNano\\app\\src\\main\\res\\mipmap-mdpi\\ic_launcher.png"
+    }
+]
