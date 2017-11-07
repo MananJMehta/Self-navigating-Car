@@ -1,0 +1,153 @@
+-- Merging decision tree log ---
+manifest
+ADDED from C:\TataNano\app\src\main\AndroidManifest.xml:2:1-52:12
+	package
+		ADDED from C:\TataNano\app\src\main\AndroidManifest.xml:3:5-47
+		INJECTED from C:\TataNano\app\src\main\AndroidManifest.xml
+		INJECTED from C:\TataNano\app\src\main\AndroidManifest.xml
+	android:versionName
+		INJECTED from C:\TataNano\app\src\main\AndroidManifest.xml
+		INJECTED from C:\TataNano\app\src\main\AndroidManifest.xml
+	xmlns:android
+		ADDED from C:\TataNano\app\src\main\AndroidManifest.xml:2:11-69
+	android:versionCode
+		INJECTED from C:\TataNano\app\src\main\AndroidManifest.xml
+		INJECTED from C:\TataNano\app\src\main\AndroidManifest.xml
+uses-permission#android.permission.ACCESS_FINE_LOCATION
+ADDED from C:\TataNano\app\src\main\AndroidManifest.xml:10:5-79
+	android:name
+		ADDED from C:\TataNano\app\src\main\AndroidManifest.xml:10:22-76
+uses-permission#android.permission.INTERNET
+ADDED from C:\TataNano\app\src\main\AndroidManifest.xml:11:5-67
+MERGED from [com.google.android.gms:play-services-maps:11.0.4] C:\Users\ashis\.android\build-cache\16074efc6c7744aadc1f58c3f0947a5b58fb47a2\output\AndroidManifest.xml:20:5-66
+	android:name
+		ADDED from C:\TataNano\app\src\main\AndroidManifest.xml:11:22-64
+uses-permission#android.permission.ACCESS_COARSE_LOCATION
+ADDED from C:\TataNano\app\src\main\AndroidManifest.xml:12:5-81
+	android:name
+		ADDED from C:\TataNano\app\src\main\AndroidManifest.xml:12:22-78
+uses-permission#android.permission.BLUETOOTH
+ADDED from C:\TataNano\app\src\main\AndroidManifest.xml:13:5-68
+	android:name
+		ADDED from C:\TataNano\app\src\main\AndroidManifest.xml:13:22-65
+uses-permission#android.permission.BLUETOOTH_ADMIN
+ADDED from C:\TataNano\app\src\main\AndroidManifest.xml:14:5-74
+	android:name
+		ADDED from C:\TataNano\app\src\main\AndroidManifest.xml:14:22-71
+application
+ADDED from C:\TataNano\app\src\main\AndroidManifest.xml:16:5-50:19
+MERGED from [com.android.support:appcompat-v7:26.0.0-alpha1] C:\Users\ashis\.android\build-cache\ca384bf5de6008cb1e7162d1f73ba42c0ff746ed\output\AndroidManifest.xml:29:5-20
+MERGED from [com.android.support:animated-vector-drawable:26.0.0-alpha1] C:\Users\ashis\.android\build-cache\cdf9743444ff7623272b95733cb910b1c240e775\output\AndroidManifest.xml:26:5-20
+MERGED from [com.android.support:support-vector-drawable:26.0.0-alpha1] C:\Users\ashis\.android\build-cache\2fc86505e5ed8c3bd207b8f0b3d936c4cd329ef9\output\AndroidManifest.xml:26:5-20
+MERGED from [com.google.android.gms:play-services-maps:11.0.4] C:\Users\ashis\.android\build-cache\16074efc6c7744aadc1f58c3f0947a5b58fb47a2\output\AndroidManifest.xml:24:5-19
+MERGED from [com.google.android.gms:play-services-base:11.0.4] C:\Users\ashis\.android\build-cache\6c7d6b44ef3b79b5d02e929f4c2faeb411fc4a5f\output\AndroidManifest.xml:18:5-20:19
+MERGED from [com.google.android.gms:play-services-tasks:11.0.4] C:\Users\ashis\.android\build-cache\ff369d04b5578e2f7c97691ce4ca26e5309aae6a\output\AndroidManifest.xml:4:5-19
+MERGED from [com.google.android.gms:play-services-basement:11.0.4] C:\Users\ashis\.android\build-cache\a6e59fccc368913a5d9a0cce439dce5fa75a1eb3\output\AndroidManifest.xml:19:5-21:19
+MERGED from [com.android.support:support-v4:26.0.0-alpha1] C:\Users\ashis\.android\build-cache\c3faa903b7e98e8741821640fbeb2c423250e0df\output\AndroidManifest.xml:29:5-20
+MERGED from [com.android.support:support-media-compat:26.0.0-alpha1] C:\Users\ashis\.android\build-cache\2a870c17bc463b03843262fa3716a2e84e4b30b7\output\AndroidManifest.xml:29:5-20
+MERGED from [com.android.support:support-fragment:26.0.0-alpha1] C:\Users\ashis\.android\build-cache\795feb7c51f2a043744fb2813b1bd05f19c37501\output\AndroidManifest.xml:29:5-20
+MERGED from [com.android.support:support-core-ui:26.0.0-alpha1] C:\Users\ashis\.android\build-cache\54c39e79330ff80d11506232ae4b4086366082fb\output\AndroidManifest.xml:29:5-20
+MERGED from [com.android.support:support-core-utils:26.0.0-alpha1] C:\Users\ashis\.android\build-cache\339e08f770bdd9ec95d769ffc2d0e171e42202f7\output\AndroidManifest.xml:29:5-20
+MERGED from [com.android.support:support-compat:26.0.0-alpha1] C:\Users\ashis\.android\build-cache\4b1c60254530c28bd044c40522657f5648915944\output\AndroidManifest.xml:29:5-20
+MERGED from [com.android.support.constraint:constraint-layout:1.0.2] C:\Users\ashis\.android\build-cache\d8e0c2094e2deb33c741e3679d05b21515b1588a\output\AndroidManifest.xml:9:5-20
+	android:label
+		ADDED from C:\TataNano\app\src\main\AndroidManifest.xml:19:9-41
+	android:supportsRtl
+		ADDED from C:\TataNano\app\src\main\AndroidManifest.xml:21:9-35
+	android:roundIcon
+		ADDED from C:\TataNano\app\src\main\AndroidManifest.xml:20:9-54
+	android:allowBackup
+		ADDED from C:\TataNano\app\src\main\AndroidManifest.xml:17:9-35
+	android:icon
+		ADDED from C:\TataNano\app\src\main\AndroidManifest.xml:18:9-43
+	android:theme
+		ADDED from C:\TataNano\app\src\main\AndroidManifest.xml:22:9-40
+meta-data#com.google.android.geo.API_KEY
+ADDED from C:\TataNano\app\src\main\AndroidManifest.xml:32:9-34:55
+	android:value
+		ADDED from C:\TataNano\app\src\main\AndroidManifest.xml:34:13-52
+	android:name
+		ADDED from C:\TataNano\app\src\main\AndroidManifest.xml:33:13-58
+activity#sjsucmpe243.application.tatanano.MapsActivity
+ADDED from C:\TataNano\app\src\main\AndroidManifest.xml:36:9-42:20
+	android:label
+		ADDED from C:\TataNano\app\src\main\AndroidManifest.xml:38:13-56
+	android:name
+		ADDED from C:\TataNano\app\src\main\AndroidManifest.xml:37:13-41
+action#android.intent.action.MAIN
+ADDED from C:\TataNano\app\src\main\AndroidManifest.xml:39:17-69
+	android:name
+		ADDED from C:\TataNano\app\src\main\AndroidManifest.xml:39:25-66
+category#android.intent.category.LAUNCHER
+ADDED from C:\TataNano\app\src\main\AndroidManifest.xml:41:17-77
+	android:name
+		ADDED from C:\TataNano\app\src\main\AndroidManifest.xml:41:27-74
+activity#sjsucmpe243.application.tatanano.MainActivity
+ADDED from C:\TataNano\app\src\main\AndroidManifest.xml:43:9-49:20
+	android:name
+		ADDED from C:\TataNano\app\src\main\AndroidManifest.xml:43:19-47
+intent-filter#android.intent.action.MAIN+android.intent.category.LAUNCHER
+ADDED from C:\TataNano\app\src\main\AndroidManifest.xml:44:13-48:29
+uses-sdk
+INJECTED from C:\TataNano\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
+MERGED from [com.android.support:appcompat-v7:26.0.0-alpha1] C:\Users\ashis\.android\build-cache\ca384bf5de6008cb1e7162d1f73ba42c0ff746ed\output\AndroidManifest.xml:21:5-23:78
+MERGED from [com.android.support:animated-vector-drawable:26.0.0-alpha1] C:\Users\ashis\.android\build-cache\cdf9743444ff7623272b95733cb910b1c240e775\output\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:support-vector-drawable:26.0.0-alpha1] C:\Users\ashis\.android\build-cache\2fc86505e5ed8c3bd207b8f0b3d936c4cd329ef9\output\AndroidManifest.xml:20:5-44
+MERGED from [com.google.android.gms:play-services-maps:11.0.4] C:\Users\ashis\.android\build-cache\16074efc6c7744aadc1f58c3f0947a5b58fb47a2\output\AndroidManifest.xml:23:5-43
+MERGED from [com.google.android.gms:play-services-base:11.0.4] C:\Users\ashis\.android\build-cache\6c7d6b44ef3b79b5d02e929f4c2faeb411fc4a5f\output\AndroidManifest.xml:17:5-43
+MERGED from [com.google.android.gms:play-services-tasks:11.0.4] C:\Users\ashis\.android\build-cache\ff369d04b5578e2f7c97691ce4ca26e5309aae6a\output\AndroidManifest.xml:3:5-43
+MERGED from [com.google.android.gms:play-services-basement:11.0.4] C:\Users\ashis\.android\build-cache\a6e59fccc368913a5d9a0cce439dce5fa75a1eb3\output\AndroidManifest.xml:17:5-43
+MERGED from [com.android.support:support-v4:26.0.0-alpha1] C:\Users\ashis\.android\build-cache\c3faa903b7e98e8741821640fbeb2c423250e0df\output\AndroidManifest.xml:21:5-23:54
+MERGED from [com.android.support:support-media-compat:26.0.0-alpha1] C:\Users\ashis\.android\build-cache\2a870c17bc463b03843262fa3716a2e84e4b30b7\output\AndroidManifest.xml:21:5-23:63
+MERGED from [com.android.support:support-fragment:26.0.0-alpha1] C:\Users\ashis\.android\build-cache\795feb7c51f2a043744fb2813b1bd05f19c37501\output\AndroidManifest.xml:21:5-23:60
+MERGED from [com.android.support:support-core-ui:26.0.0-alpha1] C:\Users\ashis\.android\build-cache\54c39e79330ff80d11506232ae4b4086366082fb\output\AndroidManifest.xml:21:5-23:58
+MERGED from [com.android.support:support-core-utils:26.0.0-alpha1] C:\Users\ashis\.android\build-cache\339e08f770bdd9ec95d769ffc2d0e171e42202f7\output\AndroidManifest.xml:21:5-23:61
+MERGED from [com.android.support:support-compat:26.0.0-alpha1] C:\Users\ashis\.android\build-cache\4b1c60254530c28bd044c40522657f5648915944\output\AndroidManifest.xml:21:5-23:58
+MERGED from [com.android.support.constraint:constraint-layout:1.0.2] C:\Users\ashis\.android\build-cache\d8e0c2094e2deb33c741e3679d05b21515b1588a\output\AndroidManifest.xml:5:5-7:41
+MERGED from [pl.droidsonroids.gif:android-gif-drawable:1.2.8] C:\Users\ashis\.android\build-cache\bba5fb59f52c9bfe0c3443b50594b17a7f9accba\output\AndroidManifest.xml:7:5-9:41
+	tools:overrideLibrary
+		ADDED from [com.android.support:appcompat-v7:26.0.0-alpha1] C:\Users\ashis\.android\build-cache\ca384bf5de6008cb1e7162d1f73ba42c0ff746ed\output\AndroidManifest.xml:23:9-75
+	android:targetSdkVersion
+		INJECTED from C:\TataNano\app\src\main\AndroidManifest.xml
+		INJECTED from C:\TataNano\app\src\main\AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from C:\TataNano\app\src\main\AndroidManifest.xml
+		INJECTED from C:\TataNano\app\src\main\AndroidManifest.xml
+meta-data#android.support.VERSION
+ADDED from [com.android.support:appcompat-v7:26.0.0-alpha1] C:\Users\ashis\.android\build-cache\ca384bf5de6008cb1e7162d1f73ba42c0ff746ed\output\AndroidManifest.xml:25:5-27:41
+MERGED from [com.android.support:animated-vector-drawable:26.0.0-alpha1] C:\Users\ashis\.android\build-cache\cdf9743444ff7623272b95733cb910b1c240e775\output\AndroidManifest.xml:22:5-24:41
+MERGED from [com.android.support:support-vector-drawable:26.0.0-alpha1] C:\Users\ashis\.android\build-cache\2fc86505e5ed8c3bd207b8f0b3d936c4cd329ef9\output\AndroidManifest.xml:22:5-24:41
+MERGED from [com.android.support:support-v4:26.0.0-alpha1] C:\Users\ashis\.android\build-cache\c3faa903b7e98e8741821640fbeb2c423250e0df\output\AndroidManifest.xml:25:5-27:41
+MERGED from [com.android.support:support-media-compat:26.0.0-alpha1] C:\Users\ashis\.android\build-cache\2a870c17bc463b03843262fa3716a2e84e4b30b7\output\AndroidManifest.xml:25:5-27:41
+MERGED from [com.android.support:support-fragment:26.0.0-alpha1] C:\Users\ashis\.android\build-cache\795feb7c51f2a043744fb2813b1bd05f19c37501\output\AndroidManifest.xml:25:5-27:41
+MERGED from [com.android.support:support-core-ui:26.0.0-alpha1] C:\Users\ashis\.android\build-cache\54c39e79330ff80d11506232ae4b4086366082fb\output\AndroidManifest.xml:25:5-27:41
+MERGED from [com.android.support:support-core-utils:26.0.0-alpha1] C:\Users\ashis\.android\build-cache\339e08f770bdd9ec95d769ffc2d0e171e42202f7\output\AndroidManifest.xml:25:5-27:41
+MERGED from [com.android.support:support-compat:26.0.0-alpha1] C:\Users\ashis\.android\build-cache\4b1c60254530c28bd044c40522657f5648915944\output\AndroidManifest.xml:25:5-27:41
+	android:value
+		ADDED from [com.android.support:appcompat-v7:26.0.0-alpha1] C:\Users\ashis\.android\build-cache\ca384bf5de6008cb1e7162d1f73ba42c0ff746ed\output\AndroidManifest.xml:27:9-38
+	android:name
+		ADDED from [com.android.support:appcompat-v7:26.0.0-alpha1] C:\Users\ashis\.android\build-cache\ca384bf5de6008cb1e7162d1f73ba42c0ff746ed\output\AndroidManifest.xml:26:9-47
+uses-permission#android.permission.ACCESS_NETWORK_STATE
+ADDED from [com.google.android.gms:play-services-maps:11.0.4] C:\Users\ashis\.android\build-cache\16074efc6c7744aadc1f58c3f0947a5b58fb47a2\output\AndroidManifest.xml:19:5-78
+	android:name
+		ADDED from [com.google.android.gms:play-services-maps:11.0.4] C:\Users\ashis\.android\build-cache\16074efc6c7744aadc1f58c3f0947a5b58fb47a2\output\AndroidManifest.xml:19:22-76
+uses-feature#0x00020000
+ADDED from [com.google.android.gms:play-services-maps:11.0.4] C:\Users\ashis\.android\build-cache\16074efc6c7744aadc1f58c3f0947a5b58fb47a2\output\AndroidManifest.xml:21:5-77
+	android:glEsVersion
+		ADDED from [com.google.android.gms:play-services-maps:11.0.4] C:\Users\ashis\.android\build-cache\16074efc6c7744aadc1f58c3f0947a5b58fb47a2\output\AndroidManifest.xml:21:19-51
+	android:required
+		ADDED from [com.google.android.gms:play-services-maps:11.0.4] C:\Users\ashis\.android\build-cache\16074efc6c7744aadc1f58c3f0947a5b58fb47a2\output\AndroidManifest.xml:21:52-75
+activity#com.google.android.gms.common.api.GoogleApiActivity
+ADDED from [com.google.android.gms:play-services-base:11.0.4] C:\Users\ashis\.android\build-cache\6c7d6b44ef3b79b5d02e929f4c2faeb411fc4a5f\output\AndroidManifest.xml:19:9-172
+	android:exported
+		ADDED from [com.google.android.gms:play-services-base:11.0.4] C:\Users\ashis\.android\build-cache\6c7d6b44ef3b79b5d02e929f4c2faeb411fc4a5f\output\AndroidManifest.xml:19:146-170
+	android:theme
+		ADDED from [com.google.android.gms:play-services-base:11.0.4] C:\Users\ashis\.android\build-cache\6c7d6b44ef3b79b5d02e929f4c2faeb411fc4a5f\output\AndroidManifest.xml:19:86-145
+	android:name
+		ADDED from [com.google.android.gms:play-services-base:11.0.4] C:\Users\ashis\.android\build-cache\6c7d6b44ef3b79b5d02e929f4c2faeb411fc4a5f\output\AndroidManifest.xml:19:19-85
+meta-data#com.google.android.gms.version
+ADDED from [com.google.android.gms:play-services-basement:11.0.4] C:\Users\ashis\.android\build-cache\a6e59fccc368913a5d9a0cce439dce5fa75a1eb3\output\AndroidManifest.xml:20:9-121
+	android:value
+		ADDED from [com.google.android.gms:play-services-basement:11.0.4] C:\Users\ashis\.android\build-cache\a6e59fccc368913a5d9a0cce439dce5fa75a1eb3\output\AndroidManifest.xml:20:66-119
+	android:name
+		ADDED from [com.google.android.gms:play-services-basement:11.0.4] C:\Users\ashis\.android\build-cache\a6e59fccc368913a5d9a0cce439dce5fa75a1eb3\output\AndroidManifest.xml:20:20-65

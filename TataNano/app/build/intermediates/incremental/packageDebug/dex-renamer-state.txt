@@ -1,0 +1,7 @@
+#Tue Oct 31 14:27:47 PDT 2017
+base.0=C\:\\TataNano\\app\\build\\intermediates\\transforms\\dex\\debug\\folders\\1000\\10000\\instant-run-bootstrap_c08ee7a77b6fa18a188484b08ef1605a835b59f7
+renamed.1=classes.dex
+renamed.0=classes2.dex
+file.1=C\:\\TataNano\\app\\build\\intermediates\\transforms\\dex\\debug\\folders\\1000\\10000\\instant-run_c4e65b9373f8e67514424b2eef6856228e531e2c\\classes.dex
+base.1=C\:\\TataNano\\app\\build\\intermediates\\transforms\\dex\\debug\\folders\\1000\\10000\\instant-run_c4e65b9373f8e67514424b2eef6856228e531e2c
+file.0=C\:\\TataNano\\app\\build\\intermediates\\transforms\\dex\\debug\\folders\\1000\\10000\\instant-run-bootstrap_c08ee7a77b6fa18a188484b08ef1605a835b59f7\\classes.dex
