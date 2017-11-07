@@ -13,8 +13,8 @@ bool Bluetooth::getGPS(int length,int timeout) {
     char rx[length];
     if(u2.gets(rx, length, timeout))
         printf("\nChar: %s",rx);
-    else
-        printf(".");
+    /*else
+        printf(".");*/
     //rxBuffer = "";
     return true;
 }

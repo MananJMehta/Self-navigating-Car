@@ -87,7 +87,7 @@ void period_1Hz(uint32_t count)
 void period_10Hz(uint32_t count)
 {
     //RxString();
-    b.getGPS(15,0);
+    b.getGPS(50,0);
     LE.toggle(2);
 }
 
