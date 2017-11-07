@@ -31,9 +31,17 @@
 #include <stdint.h>
 #include "io.hpp"
 #include "periodic_callback.h"
+#include "can.h"
+#include "_can_dbc/generated_can.h"
+#include "utilities.h"
+#include "stdio.h"
+#include "Bluetooth.hpp"
+#include "uart2.hpp"
 
-
-
+//Uart2 &u2 = Uart2::getInstance();
+//char rx[15];
+//char *p = rx;
+Bluetooth b;
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
 
@@ -48,6 +56,7 @@ const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
 {
+    b.init(9600,100,100);
     return true; // Must return true upon success
 }
 
@@ -63,6 +72,12 @@ bool period_reg_tlm(void)
  * Below are your periodic functions.
  * The argument 'count' is the number of times each periodic task is called.
  */
+/*
+void RxString() {
+    u2.gets(p,15,0);
+    printf("Char: %s\n",rx);
+}
+*/
 
 void period_1Hz(uint32_t count)
 {
@@ -71,6 +86,8 @@ void period_1Hz(uint32_t count)
 
 void period_10Hz(uint32_t count)
 {
+    //RxString();
+    b.getGPS(15,0);
     LE.toggle(2);
 }
 
