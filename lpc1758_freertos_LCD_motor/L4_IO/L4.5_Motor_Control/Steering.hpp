@@ -27,7 +27,7 @@ public:
     bool init();
 
     int getDirection();   ///< @returns value set previously
-    void setDirection(int value); ///< @param sets direction of car
+    void setDirection(float value); ///< @param sets direction of car
 
     ///Constructor
     Steering():PWM(pwmType::pwm1, 8){}

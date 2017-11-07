@@ -39,36 +39,38 @@
 #include "_can_dbc/generated_can.h"
 #include "can.h"
 #include "printf_lib.h"
+#include "eint.h"
+#include "string.h"
 
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
+const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
+
+bool dbc_app_send_can_msg(uint32_t mid, uint8_t dlc, uint8_t bytes[8])
+{
+    can_msg_t can_msg = { 0 };
+    can_msg.msg_id                = mid;
+    can_msg.frame_fields.data_len = dlc;
+    memcpy(can_msg.data.bytes, bytes, dlc);
+
+    return CAN_tx(can1, &can_msg, 0);
+}
+
 Speed spd;
 Steering str;
-float val = MEDIUM;
+float val = SLOW;
 bool flag=false;
+MOTOR_TELEMETRY_t telemetry;
 /**
  * This is the stack size of the dispatcher task that triggers the period tasks to run.
  * Minimum 1500 bytes are needed in order to write a debug file if the period tasks overrun.
  * This stack size is also used while calling the period_init() and period_reg_tlm(), and if you use
  * printf inside these functions, you need about 1500 bytes minimum
  */
-const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
-static uint8_t second_count = 0;
-static uint16_t cut_count = 0;
-static uint16_t old_count = 0;
-static uint16_t old_countms = 0;
-static float speed =0.0;
-static uint16_t rps = 0.0;
-static uint16_t rpms = 0.0;
-
-const uint16_t ref_count_slow = 0; //2.63kmph
-const uint16_t ref_count_low = 0;  //5kmph
-const uint16_t ref_count_medium = 2; //8kmph
-const uint16_t ref_count_high = 0; //left for future
 
 void callBack()
 {
-    cut_count++;
+    spd.rpm_s.cut_count++;
     LE.toggle(1);
 }
 
@@ -76,6 +78,7 @@ void initialize_motor_feedback()
 {
     eint3_enable_port2(5,eint_rising_edge,callBack);
 }
+
 
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
@@ -108,59 +111,19 @@ bool period_reg_tlm(void)
  * Below are your periodic functions.
  * The argument 'count' is the number of times each periodic task is called.
  */
-void maintain_speed()
-{
-    if((rpms - ref_count_medium) > 1)
-    {
-        val=spd.getSpeed() - 0.1;
-        LE.on(3);
-    }
-    else if((ref_count_medium - rpms) > 1)
-    {
-        val=spd.getSpeed() + 0.1;
-        LE.on(4);
-    }
-    else
-    {
-        //        LE.off(3);
-        //        LE.off(4);
-    }
-    if(spd.getSpeed()>18)
-        flag=false;
-
-}
 
 void check_bus()
 {
     if(CAN_is_bus_off(can1))
-    {
         CAN_reset_bus(can1);
-        //LE.init();
-        //LE.on(4);
-    }
 }
 
-void rpm_meter()
-{
-    second_count++;
-    rps = cut_count - old_count;
-    speed = rps/2*36.5*3600/(100*1000);
-    // printf("RPS: %d Speed: %f\n", rps, speed);
-    //LD.setNumber(rps);
-    old_count = cut_count;
 
-    if(second_count == 60)
-    {
-        second_count = 0;
-        cut_count = 0;
-        old_count = 0;
-        old_countms=0;
-    }
-}
 
 void period_1Hz(uint32_t count)
 {
-    rpm_meter();
+    telemetry.MOTOR_TELEMETRY_kph= spd.rpm_meter();
+    printf("%f\n",telemetry.MOTOR_TELEMETRY_kph);
     check_bus();
 }
 
@@ -168,24 +131,13 @@ const uint32_t        CAR_CONTROL__MIA_MS=3000;
 const CAR_CONTROL_t   CAR_CONTROL__MIA_MSG={0};
 can_msg_t msg;
 CAR_CONTROL_t carControl;
+
 HEARTBEAT_t heartbeat;
-
-void speed_check()
-{
-    if(flag == true)
-    {
-        rpms = cut_count - old_countms;
-        old_countms = cut_count;
-        LD.setNumber(rpms);
-
-           maintain_speed();
-    }
-}
 
 void period_10Hz(uint32_t count)
 {
-    if(count%3==0)
-        speed_check();
+    if(count%2==0)
+    val=spd.speed_check(flag,val);
     printf("%f\n",spd.getSpeed());
     if(flag==false)
         spd.setSpeed(STOP);
@@ -222,11 +174,24 @@ void period_10Hz(uint32_t count)
         }
     }
 
+    telemetry.MOTOR_TELEMETRY_pwm=val;
+    dbc_encode_and_send_MOTOR_TELEMETRY(&telemetry);
+
     if(dbc_handle_mia_CAR_CONTROL(&carControl,100))
         LE.on(1);
     else LE.off(1);
 
-    str.setDirection(CENTER);
+    //    if(SW.getSwitch(3))
+    //        str.setDirection(HARDRIGHT);
+    //    else if(SW.getSwitch(4))
+    //        str.setDirection(HARDLEFT);
+    //else
+    if(carControl.CAR_CONTROL_steer==8)
+        str.setDirection(HARDRIGHT);
+    else if(carControl.CAR_CONTROL_steer==2)
+        str.setDirection(HARDLEFT);
+    else
+        str.setDirection(CENTER);
 }
 
 void period_100Hz(uint32_t count)

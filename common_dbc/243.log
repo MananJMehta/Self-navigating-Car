@@ -12,6 +12,9 @@ MSG_ID: 140 	MSG_TYPE: S 	MSG_NAME: CAR_CONTROL
 	SIG_NAME: CAR_CONTROL_speed, STATUS: Invalid Max or Min value., ACTION: Value Set to default
 	SIG_NAME: CAR_CONTROL_steer, STATUS: Invalid Max or Min value., ACTION: Value Set to default
 
+MSG_ID: 190 	MSG_TYPE: S 	MSG_NAME: MOTOR_TELEMETRY
+	SIG_NAME: MOTOR_TELEMETRY_kph, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+
 MSG_ID: 170 	MSG_TYPE: S 	MSG_NAME: COMPASS
 	SIG_NAME: CMP_HEADING, STATUS: Invalid Max or Min value., ACTION: Value Set to default
 	SIG_NAME: CMP_BEARING, STATUS: Invalid Max or Min value., ACTION: Value Set to default

@@ -9,6 +9,8 @@
 #ifndef SPEED_HPP_
 #define SPEED_HPP_
 #include "lpc_pwm.hpp"
+#include "rpm_Check.hpp"
+
 
 #define VERYFAST    18.0  //Avoid Using.
 #define FAST        17.0
@@ -25,13 +27,18 @@ class Speed: public PWM
 public:
 
     bool init();
-
+    RPM_s rpm_s;
+    ReferenceCounts RefCts;
     float getSpeed();   ///< @returns floating-point reading of feedback rpm sensor
     void setSpeed(float speed); ///< @param sets speed of motor
     float FixedSpeed=0.0;
+    float maintain_speed(float val);
+    float rpm_meter();
+    float speed_check(bool flag,float val);
     ///Constructor of this Singleton class
     Speed():PWM(pwmType::pwm2, 8){}
 };
+
 
 
 

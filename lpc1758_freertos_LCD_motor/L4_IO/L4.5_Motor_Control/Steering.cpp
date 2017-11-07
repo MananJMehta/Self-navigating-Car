@@ -23,7 +23,7 @@ int Steering::getDirection()
     return this->currentDirection;
 }
 
-void Steering::setDirection(int value)
+void Steering::setDirection(float value)
 {
     this->set(value);
     this->currentDirection= value;
