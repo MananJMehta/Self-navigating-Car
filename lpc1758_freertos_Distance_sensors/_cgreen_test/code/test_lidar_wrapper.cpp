@@ -16,10 +16,12 @@ using namespace cgreen;
 
 
 
-Ensure(char_stream_returns_true)
+Ensure(test_update_lanes)
 {
-	expect(check_start_scan, will_return(true));
-    int x = getMotorPWM();
+	expect(get_quality_value, will_return(9.0));
+    expect(get_angle_value, will_return(0.0));
+    expect(get_distance_value, will_return(5.0));
+    expect(receive_lidar_data, will_return(9.0));
     assert_that(x, is_equal_to(-1));
 }
 
@@ -27,7 +29,7 @@ Ensure(char_stream_returns_true)
 TestSuite *start_scan_tests() 
 {
     TestSuite *suite = create_test_suite();
-    add_test(suite, char_stream_returns_true);
+    add_test(suite, test_update_lanes);
     return suite;
 }
 

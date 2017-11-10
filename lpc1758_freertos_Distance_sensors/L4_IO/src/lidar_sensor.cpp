@@ -173,34 +173,54 @@ bool Lidar_Sensor::update_lanes()//this function is obsolete<<<<<<
 
 }
 
-bool Lidar_Sensor::update_lane_lut()
+float Lidar_Sensor::get_quality_value()
 {
+    float quality = rplidar.receive_lidar_data;
+    return quality;
+}
 
+float Lidar_Sensor::get_angle_value()
+{
+    uint16_t angle;
+    float angle_q6;
     uint16_t temp;
+    angle = (uint16_t)(rplidar.receive_lidar_data()); //get da angle_1
+    temp = (uint16_t)(rplidar.receive_lidar_data()); //get da angle_2
+    angle = angle>>1;
+    angle |= temp<<7;
+    angle_q6 = (float)(angle)/64.0;
+    return angle_q6;
+}
+
+float Lidar_Sensor::get_distance_value()
+{
     uint16_t temp1;
     uint16_t angle;
     uint16_t distance;
-    float angle_q6;
     float distance_q6;
+
+    distance = (uint16_t)(rplidar.receive_lidar_data()); //get da distance_1
+    temp1 = (uint16_t)(rplidar.receive_lidar_data()); //get da distance 2
+    distance |= temp1<<8;
+    distance_q6 = (float)(distance)/4.0;
+    return distance_q6;
+}
+
+bool Lidar_Sensor::update_lane_lut()
+{
+
     static const uint8_t data = 10;
     static uint8_t count=0;
     static uint8_t lane=8;
 
-    rplidar.receive_lidar_data();// get da quality
+    float quality;
+    float angle_q6;
+    float distance_q6;
 
-    angle = (uint16_t)(rplidar.receive_lidar_data()); //get da angle_1
 
-    temp = (uint16_t)(rplidar.receive_lidar_data()); //get da angle_2
-
-    distance = (uint16_t)(rplidar.receive_lidar_data()); //get da distance_1
-
-    temp1 = (uint16_t)(rplidar.receive_lidar_data()); //get da distance 2
-
-    angle = angle>>1;
-    angle |= temp<<7;
-    angle_q6 = (float)(angle)/64.0;
-    distance |= temp1<<8;
-    distance_q6 = (float)(distance)/4.0;
+    quality = get_quality_value;
+    angle_q6 = get_angle_value;
+    distance_q6 = get_distance_value;
 
     if (angle_q6>=270&&angle_q6<290)
     {
