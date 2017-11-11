@@ -38,18 +38,52 @@
 #include <stdio.h>
 #include "adc0.h"
 
+#include "eint.h"
+#include "gpio.hpp"
+#include "L4.5_Motor_Control/Steering.hpp"
+#include "L4.5_Motor_Control/Speed.hpp"
+#include "_can_dbc/generated_can.h"
+#include "can.h"
+#include "printf_lib.h"
+#include "eint.h"
+#include "string.h"
 
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
+const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3); ///check
 
+bool dbc_app_send_can_msg(uint32_t mid, uint8_t dlc, uint8_t bytes[8])
+{
+    can_msg_t can_msg = { 0 };
+    can_msg.msg_id                = mid;
+    can_msg.frame_fields.data_len = dlc;
+    memcpy(can_msg.data.bytes, bytes, dlc);
+
+    return CAN_tx(can1, &can_msg, 0);
+}
+
+Speed spd;
+Steering str;
+float val = SLOW;
+bool flag=false;
+MOTOR_TELEMETRY_t telemetry;
 /**
  * This is the stack size of the dispatcher task that triggers the period tasks to run.
  * Minimum 1500 bytes are needed in order to write a debug file if the period tasks overrun.
  * This stack size is also used while calling the period_init() and period_reg_tlm(), and if you use
  * printf inside these functions, you need about 1500 bytes minimum
  */
-const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
 
+void callBack()
+{
+    spd.rpm_s.cut_count++;
+    LE.toggle(1);
+}
+
+void initialize_motor_feedback()
+{
+    eint3_enable_port2(5,eint_rising_edge,callBack);
+}
 //enum lcd_led{Sensor, Motor, Comm, Geo};
 enum lcd_digits{Miles_covered, Miles_remaining, Dest_lat, Dest_long, Current_lat, Current_long};
 enum lcd_health{System, Battery, Degree0, Degree20, Degree40, Degree60, Degree80, Degree_neg20, Degree_neg40, Degree_neg60, Degree_neg80};
@@ -76,12 +110,26 @@ float adc_read(void)
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
 {
-    Uart2& u2 = Uart2::getInstance();
+    initialize_motor_feedback();
+    CAN_init(can1,100,10,10,NULL,NULL);
+    CAN_bypass_filter_accept_all_msgs();
+    CAN_reset_bus(can1);
+    LD.init();
+    //error code 1 to signal incorrect initialization of speed PWM
+    if(!spd.init())
+        LD.setNumber(1);
+    //error code 2 to signal incorrect initialization of steering PWM
+    if(!str.init())
+        LD.setNumber(2);
+    spd.setSpeed(STOP);
+    str.setDirection(CENTER); //Aditya : this part might be extra/ already set in init
+	  Uart2& u2 = Uart2::getInstance();
     u2.init(115200);
 
     CAN_init(can1, 100, 10, 10, NULL, NULL);
     CAN_reset_bus(can1);
     CAN_bypass_filter_accept_all_msgs();
+    return true; // Must return true upon success
     return true; // Must return true upon success
 }
 
@@ -157,13 +205,19 @@ void update_LCD_sensor_page()
  * The argument 'count' is the number of times each periodic task is called.
  */
 
+void check_bus()
+{
+    if(CAN_is_bus_off(can1))
+        CAN_reset_bus(can1);
+}
+
+
+
 void period_1Hz(uint32_t count)
 {
-    //TODO-1 if bus if off, also print the error in log file
-
-    if(CAN_is_bus_off(can1))
-    {
-        CAN_reset_bus(can1);
+    telemetry.MOTOR_TELEMETRY_kph= spd.rpm_meter();
+    printf("%f\n",telemetry.MOTOR_TELEMETRY_kph);
+    check_bus();
         display_bus_reset();
     }
 
@@ -206,51 +260,72 @@ void period_1Hz(uint32_t count)
 
 }
 
-/**
- * Do not require MIA messages for LCD explicitly
- * as they display the old data if there is no connection
- */
-const uint32_t                             SENSOR_DATA__MIA_MS = 3000;
-const SENSOR_DATA_t                        SENSOR_DATA__MIA_MSG = {0};
-const uint32_t                             HEARTBEAT__MIA_MS = 3000;
-const CAR_CONTROL_t                        CAR_CONTROL__MIA_MSG = {0};
-const uint32_t                             GPS_DATA__MIA_MS = 3000;
-const GPS_DATA_t                           GPS_DATA__MIA_MSG = {0};
-const uint32_t                             COMPASS__MIA_MS = 3000;
-const COMPASS_t                            COMPASS__MIA_MSG = {0};
+const uint32_t        CAR_CONTROL__MIA_MS=3000;
+const CAR_CONTROL_t   CAR_CONTROL__MIA_MSG={0};
+can_msg_t msg;
+CAR_CONTROL_t carControl;
+
+HEARTBEAT_t heartbeat;
 
 void period_10Hz(uint32_t count)
 {
+    if(count%2==0)
+    val=spd.speed_check(flag,val);
+    printf("%f\n",spd.getSpeed());
+    if(flag==false)
+        spd.setSpeed(STOP);
 
-    static uint32_t counter; //Counter to for checking the period of every second
+    else if(flag==true)
+        spd.setSpeed(val);
 
-    SENSOR_DATA_t sensor_can_msg = { 0 };
-    COMPASS_t compass_can_msg = { 0 };
-    GPS_DATA_t gps_can_msg = { 0 };
-    CAR_CONTROL_t car_control_can_msg = { 0 };
+    if(SW.getSwitch(1)==true)
+        flag=true;
+    if(SW.getSwitch(2)==true)
+        flag=false;
+    if(SW.getSwitch(3)==true)
+        val+=0.1;
+    if(SW.getSwitch(4)==true)
+        val-=0.1;
 
-    can_msg_t can_msg;
-    counter++;
 
-    /**
-     * Counter to make sure that the values for LED are updated only once a second
-     */
-
-    // Empty all of the queued, and received messages within the last 10ms (100Hz callback frequency)
-    while (CAN_rx(can1, &can_msg, 0))
+    while(CAN_rx(can1,&msg,0))
     {
-        // Form the message header from the metadata of the arriving message
-        dbc_msg_hdr_t can_msg_hdr;
-        can_msg_hdr.dlc = can_msg.frame_fields.data_len;
-        can_msg_hdr.mid = can_msg.msg_id;
+        LE.off(4);
+        dbc_msg_hdr_t header;
+        header.dlc = msg.frame_fields.data_len;
+        header.mid = msg.msg_id;
+        switch(header.mid)
+        {
+            case 120:
+                dbc_decode_HEARTBEAT(&heartbeat,msg.data.bytes,&header);
+                //LE.toggle(2);
+                break;
+            case 140:
+                dbc_decode_CAR_CONTROL(&carControl,msg.data.bytes,&header);
+                // LE.toggle(3);
+                break;
+        }
+    }
 
-        // Attempt to decode the message (brute force, but should use switch/case with MID)
-        dbc_decode_SENSOR_DATA(&sensor_can_msg, can_msg.data.bytes, &can_msg_hdr);
-        dbc_decode_GPS_DATA(&gps_can_msg, can_msg.data.bytes, &can_msg_hdr);
-        dbc_decode_COMPASS(&compass_can_msg, can_msg.data.bytes, &can_msg_hdr);
-        dbc_decode_CAR_CONTROL(&car_control_can_msg, can_msg.data.bytes, &can_msg_hdr);
+    telemetry.MOTOR_TELEMETRY_pwm=val;
+    dbc_encode_and_send_MOTOR_TELEMETRY(&telemetry);
 
-        //Update values from CAN every 10 iterations (every 1 Second)
+    if(dbc_handle_mia_CAR_CONTROL(&carControl,100))
+        LE.on(1);
+    else LE.off(1);
+
+    //    if(SW.getSwitch(3))
+    //        str.setDirection(HARDRIGHT);
+    //    else if(SW.getSwitch(4))
+    //        str.setDirection(HARDLEFT);
+    //else
+    if(carControl.CAR_CONTROL_steer==8)
+        str.setDirection(HARDRIGHT);
+    else if(carControl.CAR_CONTROL_steer==2)
+        str.setDirection(HARDLEFT);
+    else
+        str.setDirection(CENTER);
+  //Update values from CAN every 10 iterations (every 1 Second)
         if (counter % 10 == 0) {
 
             /**
@@ -293,13 +368,11 @@ void period_10Hz(uint32_t count)
              * distance_covered = ;
              * distance_remaining = ;
              */
-
-        }
-    }
 }
 
 void period_100Hz(uint32_t count)
 {
+
 
 }
 
