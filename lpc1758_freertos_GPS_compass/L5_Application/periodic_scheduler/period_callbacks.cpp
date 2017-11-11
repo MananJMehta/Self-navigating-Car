@@ -31,6 +31,9 @@
 #include <stdint.h>
 #include "io.hpp"
 #include "periodic_callback.h"
+#include "io.hpp"
+//#include <iostream>
+#include "stdio.h"
 
 
 
@@ -66,22 +69,33 @@ bool period_reg_tlm(void)
 
 void period_1Hz(uint32_t count)
 {
-    LE.toggle(1);
+    //LE.toggle(1);
+    uint8_t buffer[256] = { 0 };
+    int addr = 0xc0;
+    int reg = 0x01;
+    int num_val_to_read = 1;
+
+    bool ok = I2C2::getInstance().readRegisters(addr, reg, &buffer[0], num_val_to_read);
+    printf("Read status from device %d: %s: \n", addr, ok ? "OK" : "ERROR");
+    for (unsigned int i = 0; i < num_val_to_read; i++) {
+        printf("    %#2X: %d\n", (reg + i), (buffer[i] & 0xFF));
+    }
 }
 
 void period_10Hz(uint32_t count)
 {
-    LE.toggle(2);
+    //LE.toggle(2);
+
 }
 
 void period_100Hz(uint32_t count)
 {
-    LE.toggle(3);
+    //LE.toggle(3);
 }
 
 // 1Khz (1ms) is only run if Periodic Dispatcher was configured to run it at main():
 // scheduler_add_task(new periodicSchedulerTask(run_1Khz = true));
 void period_1000Hz(uint32_t count)
 {
-    LE.toggle(4);
+    //LE.toggle(4);
 }
