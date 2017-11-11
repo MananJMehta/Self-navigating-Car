@@ -18,11 +18,19 @@ using namespace cgreen;
 
 Ensure(test_update_lanes)
 {
-	expect(get_quality_value, will_return(9.0));
-    expect(get_angle_value, will_return(0.0));
-    expect(get_distance_value, will_return(5.0));
-    expect(receive_lidar_data, will_return(9.0));
-    assert_that(x, is_equal_to(-1));
+    bool lane_check[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+    int angle[362];
+    float integer = -1.0;
+
+    for(int i = 0; i < 362; i++)
+    {
+        expect(get_quality_value, will_return(9.0);
+        expect(get_angle_value, will_return(integer));//this will go around -1 to 361
+        expect(get_distance_value, will_return(10.0));//this is within th range
+        integer++;
+    }
+
+    assert_that(x, is_equal_to(lane_check));
 }
 
 

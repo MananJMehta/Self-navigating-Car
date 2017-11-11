@@ -182,14 +182,14 @@ float Lidar_Sensor::get_quality_value()
 float Lidar_Sensor::get_angle_value()
 {
     uint16_t angle;
-    float angle_q6;
+    float angle_deg;
     uint16_t temp;
     angle = (uint16_t)(rplidar.receive_lidar_data()); //get da angle_1
     temp = (uint16_t)(rplidar.receive_lidar_data()); //get da angle_2
     angle = angle>>1;
     angle |= temp<<7;
-    angle_q6 = (float)(angle)/64.0;
-    return angle_q6;
+    angle_deg = (float)(angle)/64.0;
+    return angle_deg;
 }
 
 float Lidar_Sensor::get_distance_value()
@@ -203,42 +203,44 @@ float Lidar_Sensor::get_distance_value()
     temp1 = (uint16_t)(rplidar.receive_lidar_data()); //get da distance 2
     distance |= temp1<<8;
     distance_q6 = (float)(distance)/4.0;
-    return distance_q6;
+    return (distance_q6*100.0);
 }
 
 bool Lidar_Sensor::update_lane_lut()
 {
 
+    static const float object_range = 30.0;
     static const uint8_t data = 10;
-    static uint8_t count=0;
-    static uint8_t lane=8;
+    static uint8_t count = 0;
+    static uint8_t lane = 8;
+    static bool local_lanes [9];
 
     float quality;
-    float angle_q6;
-    float distance_q6;
+    float angle_deg;
+    float distance_cm;
 
 
     quality = get_quality_value;
-    angle_q6 = get_angle_value;
-    distance_q6 = get_distance_value;
+    angle_deg = get_angle_value;//return angle in degrees
+    distance_cm = get_distance_value;//return distance in cm
 
-    if (angle_q6>=270&&angle_q6<290)
+    if (angle_deg>=270&&angle_deg<290)
     {
         if(lane == 8)
         {
             if(count>data)
             {
-                rplidar.lane_lut[8] = false;
+                local_lanes[8] = false;
             }
             else
             {
-                rplidar.lane_lut[8] = true;
+                local_lanes[8] = true;
             }
 
             count = 0;
         }
 
-        if(distance_q6 <= 0.3)
+        if(distance_cm <= object_range)
         {
             count++;
         }
@@ -246,182 +248,185 @@ bool Lidar_Sensor::update_lane_lut()
 
     }
 
-    else if(angle_q6>=290&&angle_q6<310)
+    else if(angle_deg>=290&&angle_deg<310)
     {
         if(lane == 0)
         {
             if(count>data)
             {
-                rplidar.lane_lut[0] = false;
+                local_lanes[0] = false;
             }
             else
             {
-                rplidar.lane_lut[0] = true;
+                local_lanes[0] = true;
             }
 
             count = 0;
         }
 
-        if(distance_q6 <= 0.3)
+        if(distance_cm <= object_range)
         {
             count++;
         }
         lane = 1;
 
     }
-    else if(angle_q6>=310&&angle_q6<330)
+    else if(angle_deg>=310&&angle_deg<330)
     {
         if(lane == 1)
         {
             if(count>data)
             {
-                rplidar.lane_lut[1] = false;
+                local_lanes[1] = false;
             }
             else
             {
-                rplidar.lane_lut[1] = true;
+                local_lanes[1] = true;
             }
 
             count = 0;
         }
 
-        if(distance_q6 <= 0.3)
+        if(distance_cm <= object_range)
         {
             count++;
         }
         lane = 2;
     }
-    else if(angle_q6>=330&&angle_q6<350)
+    else if(angle_deg>=330&&angle_deg<350)
     {
         if(lane == 2)
         {
             if(count>data)
             {
-                rplidar.lane_lut[2] = false;
+                local_lanes[2] = false;
             }
             else
             {
-                rplidar.lane_lut[2] = true;
+                local_lanes[2] = true;
             }
 
             count = 0;
         }
 
-        if(distance_q6 <= 0.3)
+        if(distance_cm <= object_range)
         {
             count++;
         }
         lane = 3;
     }
-    else if((angle_q6>=350&&angle_q6<360) | (angle_q6>=0&&angle_q6<10))
+    else if((angle_deg>=350&&angle_deg<360) | (angle_deg>=0&&angle_deg<10))
     {
         if(lane == 3)
         {
             if(count>data)
             {
-                rplidar.lane_lut[3] = false;
+                local_lanes[3] = false;
             }
             else
             {
-                rplidar.lane_lut[3] = true;
+                local_lanes[3] = true;
             }
 
             count = 0;
         }
 
-        if(distance_q6 <= 0.3)
+        if(distance_cm <= object_range)
         {
             count++;
         }
         lane = 4;
     }
-    else if(angle_q6>=10&&angle_q6<30)
+    else if(angle_deg>=10&&angle_deg<30)
     {
         if(lane == 4)
         {
             if(count>data)
             {
-                rplidar.lane_lut[4] = false;
+                local_lanes[4] = false;
             }
             else
             {
-                rplidar.lane_lut[4] = true;
+                local_lanes[4] = true;
             }
             count = 0;
         }
 
-        if(distance_q6 <= 0.3)
+        if(distance_cm <= object_range)
         {
             count++;
         }
         lane = 5;
     }
-    else if(angle_q6>=30&&angle_q6<50)
+    else if(angle_deg>=30&&angle_deg<50)
     {
         if(lane == 5)
         {
             if(count>data)
             {
-                rplidar.lane_lut[5] = false;
+                local_lanes[5] = false;
             }
             else
             {
-                rplidar.lane_lut[5] = true;
+                local_lanes[5] = true;
             }
 
             count = 0;
         }
 
-        if(distance_q6 <= 0.3)
+        if(distance_cm <= object_range)
         {
             count++;
         }
         lane = 6;
     }
-    else if(angle_q6>=50&&angle_q6<70)
+    else if(angle_deg>=50&&angle_deg<70)
     {
         if(lane == 6)
         {
             if(count>data)
             {
-                rplidar.lane_lut[6] = false;
+                local_lanes[6] = false;
             }
             else
             {
-                rplidar.lane_lut[6] = true;
+                local_lanes[6] = true;
             }
 
             count = 0;
         }
 
-        if(distance_q6 <= 0.3)
+        if(distance_cm <= object_range)
         {
             count++;
         }
         lane = 7;
     }
-    else if(angle_q6>=70&&angle_q6<90)
+    else if(angle_deg>=70&&angle_deg<90)
     {
         if(lane == 7)
         {
             if(count>data)
             {
-                rplidar.lane_lut[7] = false;
+                local_lanes[7] = false;
             }
             else
             {
-                rplidar.lane_lut[7] = true;
+                local_lanes[7] = true;
             }
             count = 0;
         }
 
-        if(distance_q6 <= 0.3)
+        if(distance_cm <= object_range)
         {
             count++;
         }
 
         lane = 8;
     }
+
+    rplidar.lane_lut = local_lanes;
+
 
     return true;
 }
