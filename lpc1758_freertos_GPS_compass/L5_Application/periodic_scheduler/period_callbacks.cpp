@@ -29,10 +29,11 @@
  */
 
 #include <stdint.h>
+#include <stdio.h>
 #include "io.hpp"
 #include "periodic_callback.h"
-
-
+#include "storage.hpp"
+#include "printf_lib.h"
 
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
@@ -48,6 +49,7 @@ const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
 {
+
     return true; // Must return true upon success
 }
 
@@ -64,8 +66,15 @@ bool period_reg_tlm(void)
  * The argument 'count' is the number of times each periodic task is called.
  */
 
+char buffer[8] = "";
+
 void period_1Hz(uint32_t count)
 {
+    static uint8_t x = 0;
+    sprintf(buffer, "%3i\n", x);
+    Storage::append("1:PWM.txt", buffer, 4, 0);
+    x++;
+
     LE.toggle(1);
 }
 
