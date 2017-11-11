@@ -35,7 +35,6 @@
 #include "periodic_callback.h"
 #include "can.h"
 #include "_can_dbc/generated_can.h"
-#include "io.hpp"
 #include "printf_lib.h"
 #include "map"
 #include <cmath>
@@ -43,7 +42,7 @@
 
 using namespace std;
 
-#define SONAR_CODE          //Uncomment to include SONAR code
+#define SONAR_CODE  0        //Uncomment to include SONAR code
 //#define SONAR_ALERT         //Uncomment to include SONAR_ALERT code
 
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
@@ -138,13 +137,13 @@ bool period_init(void)
     arr[7]='E'; //extreme right
     arr[8]='F'; //extreme left
 
-    //map that updates the array
+    //map that updates the array arr
     //@params correction
     m_update_lanes[0] = "crlRLHIEF";
-    m_update_lanes[1] = "rRcHrELcc";
-    m_update_lanes[-1]= "lLcIrFRss";
-    m_update_lanes[2] = "RrHcEssss";
-    m_update_lanes[-2] ="LlIcFssss";
+    m_update_lanes[1] = "rcRHrELcc";
+    m_update_lanes[-1]= "lcLIrFRss";
+    m_update_lanes[2] = "RrcHEssss";
+    m_update_lanes[-2] ="LlcIFssss";
     m_update_lanes[3] = "HRErcssss";
     m_update_lanes[-3] ="ILFlcssss";
     m_update_lanes[4] = "EHRrcssss";
@@ -152,14 +151,14 @@ bool period_init(void)
 
     //std::map for steering control
     m_dir['c']=Center;//center
-    m_dir['r']=SoftRight;//soft right
-    m_dir['R']=Right;//right
+    m_dir['r']=HardRight;//soft right
+    m_dir['R']=HardRight;//right
     m_dir['H']=HardRight;//hard right
-    m_dir['E']=ExtremeRight;//extreme right
-    m_dir['l']=SoftLeft;//soft left
-    m_dir['L']=Left;//left
+    m_dir['E']=HardRight;//extreme right
+    m_dir['l']=HardLeft;//soft left
+    m_dir['L']=HardLeft;//left
     m_dir['I']=HardLeft;//hard left
-    m_dir['F']=ExtremeLeft;//extreme left
+    m_dir['F']=HardLeft;//extreme left
     m_dir['s']=Center;
 
 
@@ -210,23 +209,42 @@ void update_map_lane(int8_t correction, bool sign)
 
 }
 
+
+
 //turns the steering if an obstacle is deteted
 //@params received can message from the sonar sensor
 //@returns steering rotation and car speed
 pair<uint8_t, uint8_t> update_lanes(SENSOR_DATA_t x)
 {
-    static int8_t previous = 0;
+    u0_dbg_printf("\n");
     uint8_t i;
     for (i=0; map_get_value(arr[i], x)== 1 && i<9; i++){}
+    u0_dbg_printf("%d ", x.LIDAR_0);
+    u0_dbg_printf("%d ", x.LIDAR_20);
+    u0_dbg_printf("%d ", x.LIDAR_40);
+    u0_dbg_printf("%d ", x.LIDAR_60);
+    u0_dbg_printf("%d ", x.LIDAR_80);
+    u0_dbg_printf("%d ", x.LIDAR_neg20);
+    u0_dbg_printf("%d ", x.LIDAR_neg40);
+    u0_dbg_printf("%d ", x.LIDAR_neg60);
+    u0_dbg_printf("%d ", x.LIDAR_neg80);
+    u0_dbg_printf("\n");
+    for(uint8_t j=0 ; j<9; j++)
+        u0_dbg_printf("%c",arr[j]);
 
+    u0_dbg_printf("i %d\n",i);
     if(arr[i] == 's')
         return make_pair(Center, Stop);
 
-    int8_t correction = previous - m[arr[i]]; //calculating the magnitude and direction of turn needed to realign the car
-    update_map_lane(correction, signbit(correction));
+    //int8_t correction = -1*m[arr[i]]; //the magnitude and direction of turn needed to realign the car
+    //u0_dbg_printf("C %d\n", correction);
+    //update_map_lane(correction, signbit(correction));
 
-    previous = correction;
-    return make_pair(m_dir[arr[0]], Forward_L1);
+    u0_dbg_printf("\nUpdated\n");
+    for(uint8_t j=0 ; j<9; j++)
+        u0_dbg_printf("%c",arr[j]);
+
+    return make_pair(m_dir[arr[i]], Forward_L1);
 }
 
 /// Register any telemetry variables
@@ -260,10 +278,10 @@ void period_10Hz(uint32_t count)
         dbc_msg_hdr_t can_header;
         can_header.dlc = can_msg.frame_fields.data_len;
         can_header.mid = can_msg.msg_id;
-        u0_dbg_printf("in while");
+        //u0_dbg_printf("in while");
         switch(can_msg.msg_id)
         {
-            u0_dbg_printf("in switch");
+            //u0_dbg_printf("in switch");
             case 150:
 
                 /*Sonar Priorities are higher than LIDAR as LIDAR's range will be larger*/
