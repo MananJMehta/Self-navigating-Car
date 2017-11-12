@@ -233,13 +233,6 @@ bool Lidar_Sensor::update_lane_lut()
     angle_deg = get_angle_value();//return angle in degrees
     distance_cm = get_distance_value();//return distance in cm
 
-    //if (angle_count == 10)
-//    if (angle_deg > 10&&angle_deg<30)
-//    {
-//        test_distance((int)distance_cm, (int)angle_deg, (int)quality);
-//        angle_count = 0;
-//    }
-
 
     if (angle_deg>=270&&angle_deg<290)
     {
