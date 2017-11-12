@@ -23,5 +23,6 @@ bool ack();
 bool getButtonState();
 void display_lcd_startStop();
 void display_lcd_geo(uint8_t placeholder, uint32_t geo);
+void convert16_to_hex(uint16_t number, uint8_t *lsb_val, uint8_t *msb_val);
 
 #endif /* LCD_HPP_ */
