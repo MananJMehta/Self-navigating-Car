@@ -3,7 +3,7 @@ CXX = g++
 CXXFLAGS = -Wall -g
 
 # Points to the root of cgreen test files
-CGREEN_DIR = ../../../cgreen
+CGREEN_DIR = ../cgreen
 
 # Google Test headers
 CGREEN_HEADERS = -I$(CGREEN_DIR)/include -I$(CGREEN_DIR)/include/cgreen/internal
@@ -27,6 +27,7 @@ HEADER_DIR = -I$(PROJ_DIR)/L0_LowLevel \
                -I$(PROJ_DIR)/L1_FreeRTOS/portable \
                -I$(PROJ_DIR)/L1_FreeRTOS/portable/mpu \
                -I$(PROJ_DIR)/L2_Drivers/base \
+               -I$(PROJ_DIR)/L2_Drivers \
                -I$(PROJ_DIR)/L3_Utils \
                -I$(PROJ_DIR)/L3_Utils/tlm \
                -I$(PROJ_DIR)/L4_IO \
