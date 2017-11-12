@@ -153,26 +153,26 @@ void period_10Hz(uint32_t count)
                 if (dbc_decode_SENSOR_DATA(&sensor_msg, can_msg.data.bytes, &can_header))
                 {
 #ifdef SONAR_CODE
-                    if (sensor_msg.SONAR_left == sonar_critical && sensor_msg.SONAR_left == sonar_critical && sensor_msg.SONAR_right == sonar_critical)
+                    if (sensor_msg.SONAR_left == sonar_critical && sensor_msg.SONAR_back == sonar_critical && sensor_msg.SONAR_right == sonar_critical)
                     {
                         master_motor_msg.CAR_CONTROL_speed = Stop;
                     }
-                    if (sensor_msg.SONAR_left == sonar_critical)
+                    else if (sensor_msg.SONAR_left == sonar_critical && sensor_msg.SONAR_back == sonar_critical)
                     {
                         LE.off(2);
                         LE.off(3);
                         LE.on(4);
                         master_motor_msg.CAR_CONTROL_steer = HardRight;
-                        master_motor_msg.CAR_CONTROL_speed = Forward_L1;
+                        master_motor_msg.CAR_CONTROL_speed = Forward_L3;
                         dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
                     }
-                    else if (sensor_msg.SONAR_right == sonar_critical)
+                    else if (sensor_msg.SONAR_right == sonar_critical && sensor_msg.SONAR_back == sonar_critical)
                     {
                         LE.off(2);
                         LE.off(4);
                         LE.on(3);
                         master_motor_msg.CAR_CONTROL_steer = HardLeft;
-                        master_motor_msg.CAR_CONTROL_speed = Forward_L1;
+                        master_motor_msg.CAR_CONTROL_speed = Forward_L3;
                         dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
                     }
                     //Back Sonar currently not being used for LAB2

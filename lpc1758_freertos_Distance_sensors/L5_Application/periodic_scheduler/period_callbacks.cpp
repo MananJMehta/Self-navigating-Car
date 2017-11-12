@@ -46,11 +46,14 @@ float left_start, dist_in_left, left_stop;
 float back_start, dist_in_back, back_stop;
 float right_start, dist_in_right, right_stop;
 
+/*
 enum {
     sonar_safe = 0,
     sonar_alert = 1,
     sonar_critical = 2
 };
+*/
+
 
 can_msg_t rx_msg;
 SENSOR_DATA_t SensorData;
@@ -113,69 +116,24 @@ void period_1Hz(uint32_t count)
 
 void period_10Hz(uint32_t count)
 {
-    if(CAN_rx(can1,&rx_msg,1))
+    if(CAN_rx(can1,&rx_msg,1) && (rx_msg.msg_id == 120))
     {
-        if(rx_msg.msg_id == 120)
-        {
             LE.toggle(3);
-        }
     }
-
 
     if(xSemaphoreTake(sonar_mutex,1))
     {
         sonar->start_operation();
 //--------------------- for Left sonar sensor ---------------------//
-        if(dist_in_left >= 25)
-        {
-            SensorData.SONAR_left = sonar_safe;
-        }
-        else if(dist_in_left >= 15)
-        {
-            SensorData.SONAR_left = sonar_alert;
-        }
-        else
-        {
-            SensorData.SONAR_left = sonar_critical;
-        }
+        SensorData.SONAR_left = dist_in_left;
 
 //--------------------- for Right sonar sensor ---------------------//
-        if(dist_in_right >= 25)
-        {
-            SensorData.SONAR_right = sonar_safe;
-        }
-        else if(dist_in_right >= 15)
-        {
-            SensorData.SONAR_right = sonar_alert;
-        }
-        else
-        {
-            SensorData.SONAR_right = sonar_critical;
-        }
+        SensorData.SONAR_right = dist_in_right;
 
 //--------------------- for Back sonar sensor ---------------------//
-        if(dist_in_back >= 25)
-        {
-            SensorData.SONAR_back = sonar_safe;
-        }
-        else if(dist_in_back >= 15)
-        {
-            SensorData.SONAR_back = sonar_alert;
-        }
-        else
-        {
-            SensorData.SONAR_back = sonar_critical;
-        }
+        SensorData.SONAR_back = dist_in_back;
     }
 
-    static uint32_t prev_count = count;
-
-    //retrieve and encode update_lanes at 5Hz
-    if ((count-prev_count) == 1)
-    {
-        rplidar.update_lanes();
-        prev_count = count;
-    }
 
     if(dbc_encode_and_send_SENSOR_DATA(&SensorData))
     {
