@@ -55,19 +55,14 @@ enum {
 };
 
 
-// Enum for Motor Steer
-enum {
-    ExtremeLeft,
-    ExtremeRight,
-    HardLeft,
-    Left,
-    SoftLeft,
-    Center,
-    SoftRight,
-    Right,
-    HardRight
-};
-
+// Define for Motor Steer
+#define HARDLEFT 12
+#define LEFT 13
+#define SOFTLEFT 14
+#define CENTER 15
+#define SOFTRIGHT 16
+#define RIGHT 17
+#define HARDRIGHT 18
 
 // Enum for Motor Speed
 enum {
@@ -111,15 +106,17 @@ bool period_init(void)
     CAN_reset_bus(canTest);
 
     //array for steering control
-    arr[0]=Center;//center
-    arr[1]=HardRight;//soft right
-    arr[3]=HardRight;//right
-    arr[5]=HardRight;//hard right
-    arr[7]=HardRight;//extreme right
-    arr[2]=HardLeft;//soft left
-    arr[4]=HardLeft;//left
-    arr[6]=HardLeft;//hard left
-    arr[8]=HardLeft;//extreme left
+    arr[0]=15;//center
+
+    arr[1]=SOFTRIGHT;//soft right
+    arr[3]=RIGHT;//right
+    arr[5]=HARDRIGHT;//hard right
+    arr[7]=HARDRIGHT;//extreme right
+
+    arr[2]=SOFTLEFT;//soft left
+    arr[4]=LEFT;//left
+    arr[6]=HARDLEFT;//hard left
+    arr[8]=HARDLEFT;//extreme left
 
     return true; // Must return true upon success
 }
@@ -128,23 +125,23 @@ bool period_init(void)
 //@returns the bit with highest priority
 uint8_t map_get_value(SENSOR_DATA_t y)
 {
-    if(!y.LIDAR_0)
+    if(y.LIDAR_0 == 0)
         return 0;
-    else if (!y.LIDAR_20)
+    else if (y.LIDAR_20 == 0)
         return 1;
-    else if (!y.LIDAR_40)
-        return 3;
-    else if (!y.LIDAR_60)
-        return 5;
-    else if (!y.LIDAR_80)
-        return 7;
-    else if (!y.LIDAR_neg20)
+    else if (y.LIDAR_neg20 == 0)
         return 2;
-    else if (!y.LIDAR_neg40)
+    else if (y.LIDAR_40 == 0)
+        return 3;
+    else if (y.LIDAR_neg40 == 0)
         return 4;
-    else if (!y.LIDAR_neg60)
+    else if (y.LIDAR_60 == 0)
+        return 5;
+    else if (y.LIDAR_neg60 == 0)
         return 6;
-    else if (!y.LIDAR_neg80)
+    else if (y.LIDAR_80 == 0)
+        return 7;
+    else if (y.LIDAR_neg80 == 0)
         return 8;
     return 9;
 }
@@ -155,7 +152,7 @@ uint8_t map_get_value(SENSOR_DATA_t y)
 pair<uint8_t, uint8_t> update_lanes(SENSOR_DATA_t x)
 {
     static pair<uint8_t , uint8_t> return_value;
-    return_value.first=Center;
+    return_value.first=CENTER;
     return_value.second=Stop;
 
     uint8_t i=map_get_value(x);
@@ -206,7 +203,7 @@ void period_10Hz(uint32_t count)
             case 150:
 
                 /*Sonar Priorities are higher than LIDAR as LIDAR's range will be larger*/
-                if (dbc_decode_SENSOR_DATA(&sensor_msg, can_msg.data.bytes, &can_header))
+                /*if (dbc_decode_SENSOR_DATA(&sensor_msg, can_msg.data.bytes, &can_header))
                 {
 #ifdef SONAR_CODE
                     if (sensor_msg.SONAR_left == sonar_critical)
@@ -214,7 +211,7 @@ void period_10Hz(uint32_t count)
                         LE.off(2);
                         LE.off(3);
                         LE.on(4);
-                        master_motor_msg.CAR_CONTROL_steer = HardRight;
+                        master_motor_msg.CAR_CONTROL_steer = HARDRIGHT;
                         master_motor_msg.CAR_CONTROL_speed = Forward_L1;
                         dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
                     }
@@ -223,7 +220,7 @@ void period_10Hz(uint32_t count)
                         LE.off(2);
                         LE.off(4);
                         LE.on(3);
-                        master_motor_msg.CAR_CONTROL_steer = HardLeft;
+                        master_motor_msg.CAR_CONTROL_steer = HARDLEFT;
                         master_motor_msg.CAR_CONTROL_speed = Forward_L1;
                         dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
                     }
@@ -254,15 +251,16 @@ void period_10Hz(uint32_t count)
                         dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
                     }
 #endif
-#endif
+#endif*/
+
                     //If any of LIDAR right values set, take HardLeft
                     pair<uint8_t , uint8_t> son;
                     son = update_lanes(sensor_msg);
                     master_motor_msg.CAR_CONTROL_steer = son.first;
                     master_motor_msg.CAR_CONTROL_speed = son.second;
                     dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
-                }
-                break;
+
+                    break;
         }
     }
 }
