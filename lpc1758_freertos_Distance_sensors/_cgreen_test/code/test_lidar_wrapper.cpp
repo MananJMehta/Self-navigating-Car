@@ -24,7 +24,7 @@ Ensure(test_update_lanes)
 
     for(int i = 0; i < 362; i++)
     {
-        expect(get_quality_value, will_return(9.0);
+        expect(get_quality_value, will_return(9.0));
         expect(get_angle_value, will_return(integer));//this will go around -1 to 361
         expect(get_distance_value, will_return(10.0));//this is within th range
         integer++;

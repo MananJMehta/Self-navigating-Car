@@ -40,6 +40,19 @@ void send_lidar_sonar_data()
 
 }
 
+void send_distance_values()
+{
+    SENSOR_VALUES_t SensorValue;
+
+    SensorValue.LIDAR_DISTANCE_CM = rplidar.distance_value_cm;
+    SensorValue.LIDAR_ANGLE_DEG = rplidar.angle_value_deg;
+
+
+    //add the Sonar Sensor code here
+    dbc_encode_and_send_SENSOR_VALUES(&SensorValue);
+
+}
+
 
 
 

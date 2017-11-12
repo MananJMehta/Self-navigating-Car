@@ -202,26 +202,44 @@ float Lidar_Sensor::get_distance_value()
     temp1 = (uint16_t)(rplidar.receive_lidar_data()); //get da distance 2
     distance |= temp1<<8;
     distance_q6 = (float)(distance)/4.0;
-    return (distance_q6*100.0);
+    return (distance_q6/10);
 }
+
+void Lidar_Sensor::test_distance(int distance_cm, int angle_deg)
+{
+    //check every 11th item
+
+        angle_value_deg = angle_deg;
+        distance_value_cm = distance_cm;
+}
+
 
 bool Lidar_Sensor::update_lane_lut()
 {
 
-    static const float object_range = 30.0;
-    static const uint8_t data = 10;
+    static const float object_range = 200.0;
+    static const uint8_t data = 5;
     static uint8_t count = 0;
     static uint8_t lane = 8;
     static bool local_lanes [9];
+    static uint16_t angle_count = 0;
 
     float quality;
     float angle_deg;
     float distance_cm;
 
-
+    angle_count++;
     quality = get_quality_value();
     angle_deg = get_angle_value();//return angle in degrees
     distance_cm = get_distance_value();//return distance in cm
+
+    //if (angle_count == 10)
+    if (angle_deg == 0)
+    {
+        test_distance((int)distance_cm, (int)angle_deg);
+        angle_count = 0;
+    }
+
 
     if (angle_deg>=270&&angle_deg<290)
     {
