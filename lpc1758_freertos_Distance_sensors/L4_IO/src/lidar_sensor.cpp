@@ -205,10 +205,10 @@ float Lidar_Sensor::get_distance_value()
     return (distance_q6/10);
 }
 
-void Lidar_Sensor::test_distance(int distance_cm, int angle_deg)
+void Lidar_Sensor::test_distance(int distance_cm, int angle_deg, int quality)
 {
     //check every 11th item
-
+        quality_value = quality;
         angle_value_deg = angle_deg;
         distance_value_cm = distance_cm;
 }
@@ -217,7 +217,7 @@ void Lidar_Sensor::test_distance(int distance_cm, int angle_deg)
 bool Lidar_Sensor::update_lane_lut()
 {
 
-    static const float object_range = 200.0;
+    static const float object_range = 100.0;
     static const uint8_t data = 5;
     static uint8_t count = 0;
     static uint8_t lane = 8;
@@ -234,11 +234,11 @@ bool Lidar_Sensor::update_lane_lut()
     distance_cm = get_distance_value();//return distance in cm
 
     //if (angle_count == 10)
-    if (angle_deg == 0)
-    {
-        test_distance((int)distance_cm, (int)angle_deg);
-        angle_count = 0;
-    }
+//    if (angle_deg > 10&&angle_deg<30)
+//    {
+//        test_distance((int)distance_cm, (int)angle_deg, (int)quality);
+//        angle_count = 0;
+//    }
 
 
     if (angle_deg>=270&&angle_deg<290)
@@ -257,8 +257,9 @@ bool Lidar_Sensor::update_lane_lut()
             count = 0;
         }
 
-        if(distance_cm <= object_range)
+        if(distance_cm <= object_range&&distance_cm>1)
         {
+            test_distance((int)distance_cm, (int)angle_deg, (int)quality);
             count++;
         }
         lane = 0;
@@ -281,8 +282,9 @@ bool Lidar_Sensor::update_lane_lut()
             count = 0;
         }
 
-        if(distance_cm <= object_range)
+        if(distance_cm <= object_range&&distance_cm>1)
         {
+            test_distance((int)distance_cm, (int)angle_deg, (int)quality);
             count++;
         }
         lane = 1;
@@ -304,8 +306,9 @@ bool Lidar_Sensor::update_lane_lut()
             count = 0;
         }
 
-        if(distance_cm <= object_range)
+        if(distance_cm <= object_range&&distance_cm>1)
         {
+            test_distance((int)distance_cm, (int)angle_deg, (int)quality);
             count++;
         }
         lane = 2;
@@ -326,8 +329,9 @@ bool Lidar_Sensor::update_lane_lut()
             count = 0;
         }
 
-        if(distance_cm <= object_range)
+        if(distance_cm <= object_range&&distance_cm>1)
         {
+            test_distance((int)distance_cm, (int)angle_deg, (int)quality);
             count++;
         }
         lane = 3;
@@ -348,8 +352,9 @@ bool Lidar_Sensor::update_lane_lut()
             count = 0;
         }
 
-        if(distance_cm <= object_range)
+        if(distance_cm <= object_range&&distance_cm>1)
         {
+            test_distance((int)distance_cm, (int)angle_deg, (int)quality);
             count++;
         }
         lane = 4;
@@ -369,8 +374,9 @@ bool Lidar_Sensor::update_lane_lut()
             count = 0;
         }
 
-        if(distance_cm <= object_range)
+        if(distance_cm <= object_range&&distance_cm>1)
         {
+            test_distance((int)distance_cm, (int)angle_deg, (int)quality);
             count++;
         }
         lane = 5;
@@ -391,8 +397,9 @@ bool Lidar_Sensor::update_lane_lut()
             count = 0;
         }
 
-        if(distance_cm <= object_range)
+        if(distance_cm <= object_range&&distance_cm>1)
         {
+            test_distance((int)distance_cm, (int)angle_deg, (int)quality);
             count++;
         }
         lane = 6;
@@ -413,8 +420,9 @@ bool Lidar_Sensor::update_lane_lut()
             count = 0;
         }
 
-        if(distance_cm <= object_range)
+        if(distance_cm <= object_range&&distance_cm>1)
         {
+            test_distance((int)distance_cm, (int)angle_deg, (int)quality);
             count++;
         }
         lane = 7;
@@ -434,8 +442,9 @@ bool Lidar_Sensor::update_lane_lut()
             count = 0;
         }
 
-        if(distance_cm <= object_range)
+        if(distance_cm <= object_range&&distance_cm>1)
         {
+            test_distance((int)distance_cm, (int)angle_deg, (int)quality);
             count++;
         }
 

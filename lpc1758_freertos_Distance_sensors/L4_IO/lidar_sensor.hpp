@@ -44,6 +44,7 @@ class Lidar_Sensor : public SingletonTemplate<Lidar_Sensor>
 
         scan_data_packet_t data_packet [360];
 
+        int quality_value = 0;
         int distance_value_cm = 0;
         int angle_value_deg = 0;
         bool check_start = false;
@@ -53,7 +54,7 @@ class Lidar_Sensor : public SingletonTemplate<Lidar_Sensor>
         float lookup1[9];
 
     private:
-        void test_distance(int distance, int angle_deg);
+        void test_distance(int distance, int angle_deg, int quality);
         float get_quality_value();
         float get_angle_value();//return angle in degrees
         float get_distance_value();//return distance in cm

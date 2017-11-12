@@ -46,6 +46,7 @@ void send_distance_values()
 
     SensorValue.LIDAR_DISTANCE_CM = rplidar.distance_value_cm;
     SensorValue.LIDAR_ANGLE_DEG = rplidar.angle_value_deg;
+    SensorValue.LIDAR_QUALITY_DEG = rplidar.quality_value;
 
 
     //add the Sonar Sensor code here
