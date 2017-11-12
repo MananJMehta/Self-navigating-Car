@@ -101,17 +101,15 @@ void period_1000Hz(uint32_t count)
     static uint32_t prev_count = count;
     static LIDAR_DATA_VALUES_t Data;
 
-    if ((count-prev_count) == 3)
+    if ((count-prev_count)%3 == 0)
     {
-        send_values(&Data);
+        add_some_data_to_msg(&Data);
+    }
+    if ((count-prev_count) == 9)
+    {
+        send_three_values(&Data);
         prev_count = count;
     }
-    //every
-
-    //read 3 values
-    //send out every 10ms
-
-
 
 //    LE.toggle(4);
 }
