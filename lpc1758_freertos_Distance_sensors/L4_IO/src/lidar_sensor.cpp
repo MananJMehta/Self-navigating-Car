@@ -20,6 +20,10 @@ bool dbc_app_send_can_msg(uint32_t mid, uint8_t dlc, uint8_t bytes[8])
     return CAN_tx(can1, &can_msg, 0);
 }
 
+void Lidar_Sensor::send_angles()
+{
+
+}
 
 void Lidar_Sensor::send_lidar_command(lidar_cmd_t lidar_cmd)
 {
@@ -222,17 +226,17 @@ bool Lidar_Sensor::update_lane_lut()
     static uint8_t count = 0;
     static uint8_t lane = 8;
     static bool local_lanes [9];
-    static uint16_t angle_count = 0;
+
 
     float quality;
     float angle_deg;
     float distance_cm;
 
-    angle_count++;
     quality = get_quality_value();
     angle_deg = get_angle_value();//return angle in degrees
     distance_cm = get_distance_value();//return distance in cm
 
+    lane_algorithm(distance_cm, angle_deg, quality);
 
     if (angle_deg>=270&&angle_deg<290)
     {
@@ -448,6 +452,228 @@ bool Lidar_Sensor::update_lane_lut()
 
 
     return true;
+}
+void Lidar_Sensor::lane_algorithm(int distance_cm, int angle_deg, int quality)
+{
+
+    static uint8_t count = 0;
+    static bool local_lanes [9];
+    static const float object_range = 100.0;
+    static const uint8_t data = 5;
+    static uint8_t lane = 8;
+
+    if (angle_deg>=270&&angle_deg<290)
+        {
+            if(lane == 8)
+            {
+                if(count>data)
+                {
+                    local_lanes[8] = false;
+                }
+                else
+                {
+                    local_lanes[8] = true;
+                }
+
+                count = 0;
+            }
+
+            if(distance_cm <= object_range&&distance_cm>1)
+            {
+                test_distance((int)distance_cm, (int)angle_deg, (int)quality);
+                count++;
+            }
+            lane = 0;
+
+        }
+
+        else if(angle_deg>=290&&angle_deg<310)
+        {
+            if(lane == 0)
+            {
+                if(count>data)
+                {
+                    local_lanes[0] = false;
+                }
+                else
+                {
+                    local_lanes[0] = true;
+                }
+
+                count = 0;
+            }
+
+            if(distance_cm <= object_range&&distance_cm>1)
+            {
+                test_distance((int)distance_cm, (int)angle_deg, (int)quality);
+                count++;
+            }
+            lane = 1;
+
+        }
+        else if(angle_deg>=310&&angle_deg<330)
+        {
+            if(lane == 1)
+            {
+                if(count>data)
+                {
+                    local_lanes[1] = false;
+                }
+                else
+                {
+                    local_lanes[1] = true;
+                }
+
+                count = 0;
+            }
+
+            if(distance_cm <= object_range&&distance_cm>1)
+            {
+                test_distance((int)distance_cm, (int)angle_deg, (int)quality);
+                count++;
+            }
+            lane = 2;
+        }
+        else if(angle_deg>=330&&angle_deg<350)
+        {
+            if(lane == 2)
+            {
+                if(count>data)
+                {
+                    local_lanes[2] = false;
+                }
+                else
+                {
+                    local_lanes[2] = true;
+                }
+
+                count = 0;
+            }
+
+            if(distance_cm <= object_range&&distance_cm>1)
+            {
+                test_distance((int)distance_cm, (int)angle_deg, (int)quality);
+                count++;
+            }
+            lane = 3;
+        }
+        else if((angle_deg>=350&&angle_deg<360) | (angle_deg>=0&&angle_deg<10))
+        {
+            if(lane == 3)
+            {
+                if(count>data)
+                {
+                    local_lanes[3] = false;
+                }
+                else
+                {
+                    local_lanes[3] = true;
+                }
+
+                count = 0;
+            }
+
+            if(distance_cm <= object_range&&distance_cm>1)
+            {
+                test_distance((int)distance_cm, (int)angle_deg, (int)quality);
+                count++;
+            }
+            lane = 4;
+        }
+        else if(angle_deg>=10&&angle_deg<30)
+        {
+            if(lane == 4)
+            {
+                if(count>data)
+                {
+                    local_lanes[4] = false;
+                }
+                else
+                {
+                    local_lanes[4] = true;
+                }
+                count = 0;
+            }
+
+            if(distance_cm <= object_range&&distance_cm>1)
+            {
+                test_distance((int)distance_cm, (int)angle_deg, (int)quality);
+                count++;
+            }
+            lane = 5;
+        }
+        else if(angle_deg>=30&&angle_deg<50)
+        {
+            if(lane == 5)
+            {
+                if(count>data)
+                {
+                    local_lanes[5] = false;
+                }
+                else
+                {
+                    local_lanes[5] = true;
+                }
+
+                count = 0;
+            }
+
+            if(distance_cm <= object_range&&distance_cm>1)
+            {
+                test_distance((int)distance_cm, (int)angle_deg, (int)quality);
+                count++;
+            }
+            lane = 6;
+        }
+        else if(angle_deg>=50&&angle_deg<70)
+        {
+            if(lane == 6)
+            {
+                if(count>data)
+                {
+                    local_lanes[6] = false;
+                }
+                else
+                {
+                    local_lanes[6] = true;
+                }
+
+                count = 0;
+            }
+
+            if(distance_cm <= object_range&&distance_cm>1)
+            {
+                test_distance((int)distance_cm, (int)angle_deg, (int)quality);
+                count++;
+            }
+            lane = 7;
+        }
+        else if(angle_deg>=70&&angle_deg<90)
+        {
+            if(lane == 7)
+            {
+                if(count>data)
+                {
+                    local_lanes[7] = false;
+                }
+                else
+                {
+                    local_lanes[7] = true;
+                }
+                count = 0;
+            }
+
+            if(distance_cm <= object_range&&distance_cm>1)
+            {
+                test_distance((int)distance_cm, (int)angle_deg, (int)quality);
+                count++;
+            }
+
+            lane = 8;
+        }
+
+        memcpy(rplidar.lane_lut, local_lanes, sizeof(rplidar.lane_lut));
+
 }
 
 

@@ -47,11 +47,38 @@ void send_distance_values()
     SensorValue.LIDAR_DISTANCE_CM = rplidar.distance_value_cm;
     SensorValue.LIDAR_ANGLE_DEG = rplidar.angle_value_deg;
     SensorValue.LIDAR_QUALITY_DEG = rplidar.quality_value;
-
-
     //add the Sonar Sensor code here
     dbc_encode_and_send_SENSOR_VALUES(&SensorValue);
 
+}
+
+void add_some_data_to_msg(LIDAR_DATA_VALUES_t *from)
+{
+    static uint8_t count = 0;
+
+    if (count == 0)
+    {
+        from->LIDAR_DISTANCE_CM_1 = rplidar.distance_value_cm;
+        from->LIDAR_ANGLE_DEG_1 = rplidar.distance_value_cm;
+        count++;
+    }
+    else if (count == 1)
+    {
+        from->LIDAR_DISTANCE_CM_2 = rplidar.distance_value_cm;
+        from->LIDAR_ANGLE_DEG_2 = rplidar.distance_value_cm;
+        count++;
+    }
+    else if (count == 2)
+    {
+        from->LIDAR_DISTANCE_CM_3 = rplidar.distance_value_cm;
+        from->LIDAR_ANGLE_DEG_3 = rplidar.distance_value_cm;
+        count = 0;
+    }
+}
+
+void send_three_values(LIDAR_DATA_VALUES_t *from)
+{
+    dbc_encode_and_send_LIDAR_DATA_VALUES(from);
 }
 
 
