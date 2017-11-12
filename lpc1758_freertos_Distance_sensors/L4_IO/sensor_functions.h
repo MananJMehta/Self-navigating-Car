@@ -53,6 +53,20 @@ void send_distance_values()
 
 }
 
+void send_values(LIDAR_DATA_VALUES_t *from)
+{
+    LIDAR_DATA_VALUES_t AngleNDistance;
+
+    AngleNDistance.LIDAR_DISTANCE_CM_1;             ///< B9:0  Min: 0 Max: 600   Destination: MASTER,MOTOR,ANDROID
+    AngleNDistance.LIDAR_ANGLE_DEG_1;               ///< B18:10  Min: 0 Max: 360   Destination: MASTER,MOTOR,ANDROID
+    AngleNDistance.LIDAR_DISTANCE_CM_2;             ///< B28:19  Min: 0 Max: 600   Destination: MASTER,MOTOR,ANDROID
+    AngleNDistance.LIDAR_ANGLE_DEG_2;               ///< B37:29  Min: 0 Max: 360   Destination: MASTER,MOTOR,ANDROID
+    AngleNDistance.LIDAR_DISTANCE_CM_3;             ///< B47:38  Min: 0 Max: 600   Destination: MASTER,MOTOR,ANDROID
+    AngleNDistance.LIDAR_ANGLE_DEG_3;
+
+    dbc_encode_and_send_LIDAR_DATA_VALUES(&AngleNDistance);
+}
+
 
 
 

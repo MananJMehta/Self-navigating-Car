@@ -98,8 +98,19 @@ void period_100Hz(uint32_t count)
 // scheduler_add_task(new periodicSchedulerTask(run_1Khz = true));
 void period_1000Hz(uint32_t count)
 {
+    static uint32_t prev_count = count;
+    static LIDAR_DATA_VALUES_t Data;
+
+    if ((count-prev_count) == 3)
+    {
+        send_values(&Data);
+        prev_count = count;
+    }
+    //every
+
     //read 3 values
     //send out every 10ms
+
 
 
 //    LE.toggle(4);
