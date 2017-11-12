@@ -34,8 +34,6 @@ void send_lidar_sonar_data()
 
     //add the Sonar Sensor code here
 
-
-
     dbc_encode_and_send_SENSOR_DATA(&SensorData);
 
 }

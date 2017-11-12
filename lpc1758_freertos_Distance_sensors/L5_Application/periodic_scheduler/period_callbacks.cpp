@@ -74,7 +74,7 @@ bool period_reg_tlm(void)
 
 void period_1Hz(uint32_t count)
 {
-
+    send_distance_values();
 }
 
 void period_10Hz(uint32_t count)
@@ -84,7 +84,6 @@ void period_10Hz(uint32_t count)
     if ((count-prev_count) == 1)
     {
         send_lidar_sonar_data();
-        send_distance_values();
         prev_count = count;
     }
 
