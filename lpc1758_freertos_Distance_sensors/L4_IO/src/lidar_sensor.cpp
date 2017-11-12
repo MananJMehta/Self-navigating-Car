@@ -175,7 +175,7 @@ bool Lidar_Sensor::update_lanes()//this function is obsolete<<<<<<
 
 float Lidar_Sensor::get_quality_value()
 {
-    float quality = rplidar.receive_lidar_data;
+    float quality = (float)rplidar.receive_lidar_data();
     return quality;
 }
 
@@ -195,7 +195,6 @@ float Lidar_Sensor::get_angle_value()
 float Lidar_Sensor::get_distance_value()
 {
     uint16_t temp1;
-    uint16_t angle;
     uint16_t distance;
     float distance_q6;
 
@@ -220,9 +219,9 @@ bool Lidar_Sensor::update_lane_lut()
     float distance_cm;
 
 
-    quality = get_quality_value;
-    angle_deg = get_angle_value;//return angle in degrees
-    distance_cm = get_distance_value;//return distance in cm
+    quality = get_quality_value();
+    angle_deg = get_angle_value();//return angle in degrees
+    distance_cm = get_distance_value();//return distance in cm
 
     if (angle_deg>=270&&angle_deg<290)
     {
@@ -425,7 +424,7 @@ bool Lidar_Sensor::update_lane_lut()
         lane = 8;
     }
 
-    rplidar.lane_lut = local_lanes;
+    memcpy(rplidar.lane_lut, local_lanes, sizeof(rplidar.lane_lut));
 
 
     return true;

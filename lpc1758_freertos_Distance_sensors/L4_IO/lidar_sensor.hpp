@@ -52,6 +52,9 @@ class Lidar_Sensor : public SingletonTemplate<Lidar_Sensor>
 
     private:
 
+        float get_quality_value();
+        float get_angle_value();//return angle in degrees
+        float get_distance_value();//return distance in cm
 
         char arr[8] = { 0xa5 , 0x5a , 0x05 , 0x00 , 0x00 , 0x40 , 0x81};
 
