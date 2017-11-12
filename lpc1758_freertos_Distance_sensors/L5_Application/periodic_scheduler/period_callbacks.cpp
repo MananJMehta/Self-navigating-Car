@@ -98,5 +98,9 @@ void period_100Hz(uint32_t count)
 // scheduler_add_task(new periodicSchedulerTask(run_1Khz = true));
 void period_1000Hz(uint32_t count)
 {
+    //read 3 values
+    //send out every 10ms
+
+
 //    LE.toggle(4);
 }

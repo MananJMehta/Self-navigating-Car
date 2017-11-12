@@ -39,6 +39,7 @@ class Lidar_Sensor : public SingletonTemplate<Lidar_Sensor>
         bool update_lanes();
         bool update_lane_lut();
         int8_t det_smol_angle();
+        void send_angles();
 
         char receive_lidar_data();
 
@@ -53,6 +54,7 @@ class Lidar_Sensor : public SingletonTemplate<Lidar_Sensor>
         float lookup1[9];
 
     private:
+        void lane_algorithm(int distance, int angle_deg);
         void test_distance(int distance, int angle_deg);
         float get_quality_value();
         float get_angle_value();//return angle in degrees
