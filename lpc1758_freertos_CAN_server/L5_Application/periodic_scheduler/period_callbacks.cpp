@@ -29,14 +29,12 @@
  */
 
 #include "string.h"
-#include "string"
 #include <stdint.h>
 #include "io.hpp"
 #include "periodic_callback.h"
 #include "can.h"
 #include "_can_dbc/generated_can.h"
 #include "printf_lib.h"
-#include "map"
 #include <cmath>
 #include <utility>
 
@@ -80,10 +78,7 @@ enum {
     Reverse
 };
 
-map<char, int8_t> m;
-map<char, uint8_t> m_dir;
-map<int8_t, string> m_update_lanes;
-char arr[9];
+uint8_t arr[9];
 
 /**
  * This is the stack size of the dispatcher task that triggers the period tasks to run.
@@ -115,99 +110,62 @@ bool period_init(void)
     CAN_bypass_filter_accept_all_msgs();
     CAN_reset_bus(canTest);
 
-    //array initialized to ensure the car goes straight
-    arr[0]='c'; //center
-    arr[1]='r'; //soft right
-    arr[2]='l'; //soft left
-    arr[3]='R'; //right
-    arr[4]='L'; //left
-    arr[5]='H'; //hard right
-    arr[6]='I'; //hard left
-    arr[7]='E'; //extreme right
-    arr[8]='F'; //extreme left
-
-    //std::map for steering control
-    m_dir['c']=Center;//center
-    m_dir['r']=HardRight;//soft right
-    m_dir['R']=HardRight;//right
-    m_dir['H']=HardRight;//hard right
-    m_dir['E']=HardRight;//extreme right
-    m_dir['l']=HardLeft;//soft left
-    m_dir['L']=HardLeft;//left
-    m_dir['I']=HardLeft;//hard left
-    m_dir['F']=HardLeft;//extreme left
-    m_dir['s']=Center;
-
-
+    //array for steering control
+    arr[0]=Center;//center
+    arr[1]=HardRight;//soft right
+    arr[3]=HardRight;//right
+    arr[5]=HardRight;//hard right
+    arr[7]=HardRight;//extreme right
+    arr[2]=HardLeft;//soft left
+    arr[4]=HardLeft;//left
+    arr[6]=HardLeft;//hard left
+    arr[8]=HardLeft;//extreme left
 
     return true; // Must return true upon success
 }
 
-//reads data from the CAN message based on x
-//@params label x, CAN message y
-//@returns x->y.__
-int8_t map_get_value(char x, SENSOR_DATA_t y)
+//reads data from the CAN message
+//@returns the bit with highest priority
+uint8_t map_get_value(SENSOR_DATA_t y)
 {
-    if(x=='c')
-        return y.LIDAR_0;
-    else if (x=='r')
-        return y.LIDAR_20;
-    else if (x=='R')
-        return y.LIDAR_40;
-    else if (x=='H')
-        return y.LIDAR_60;
-    else if (x=='E')
-        return y.LIDAR_80;
-    else if (x=='l')
-        return y.LIDAR_neg20;
-    else if (x=='L')
-        return y.LIDAR_neg40;
-    else if (x=='I')
-        return y.LIDAR_neg60;
-    return y.LIDAR_neg80;
+    if(!y.LIDAR_0)
+        return 0;
+    else if (!y.LIDAR_20)
+        return 1;
+    else if (!y.LIDAR_40)
+        return 3;
+    else if (!y.LIDAR_60)
+        return 5;
+    else if (!y.LIDAR_80)
+        return 7;
+    else if (!y.LIDAR_neg20)
+        return 2;
+    else if (!y.LIDAR_neg40)
+        return 4;
+    else if (!y.LIDAR_neg60)
+        return 6;
+    else if (!y.LIDAR_neg80)
+        return 8;
+    return 9;
 }
-
-//updates the lanes to look out for after turning
-void update_map_lane(int8_t correction, bool sign)
-{
-    string local_array = m_update_lanes[correction];
-    for (uint8_t i=0; i<9 ; i++)
-        arr[i] = local_array[i];
-
-}
-
 
 //turns the steering if an obstacle is deleted
-//@params received can message from the sonar sensor
+//@params received can message from the lidar sensor
 //@returns steering rotation and car speed
 pair<uint8_t, uint8_t> update_lanes(SENSOR_DATA_t x)
 {
-    u0_dbg_printf("\n");
-    uint8_t i;
-    for (i=0; map_get_value(arr[i], x)== 1 && i<9; i++){}
-    /*u0_dbg_printf("%d ", x.LIDAR_0);
-    u0_dbg_printf("%d ", x.LIDAR_20);
-    u0_dbg_printf("%d ", x.LIDAR_40);
-    u0_dbg_printf("%d ", x.LIDAR_60);
-    u0_dbg_printf("%d ", x.LIDAR_80);
-    u0_dbg_printf("%d ", x.LIDAR_neg20);
-    u0_dbg_printf("%d ", x.LIDAR_neg40);
-    u0_dbg_printf("%d ", x.LIDAR_neg60);
-    u0_dbg_printf("%d ", x.LIDAR_neg80);
-    u0_dbg_printf("\n");
-    for(uint8_t j=0 ; j<9; j++)
-        u0_dbg_printf("%c",arr[j]);
+    static pair<uint8_t , uint8_t> return_value;
+    return_value.first=Center;
+    return_value.second=Stop;
 
-    u0_dbg_printf("i %d\n",i);*/
+    uint8_t i=map_get_value(x);
 
     if(i==9)
-        return make_pair(Center, Stop);
+        return return_value;
 
-    /*u0_dbg_printf("\nUpdated\n");
-    for(uint8_t j=0 ; j<9; j++)
-        u0_dbg_printf("%c",arr[j]);*/
-
-    return make_pair(m_dir[arr[i]], Forward_L1);
+    return_value.first = arr[i];
+    return_value.second = Forward_L1;
+    return return_value;
 }
 
 /// Register any telemetry variables
