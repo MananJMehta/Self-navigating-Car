@@ -87,20 +87,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                     Log.e("TataNano : Bluetooth", " Total check points are "+ Checkpoint_num );
                     BTdata = "^" + String.valueOf(Checkpoint_num);
+
+                for (LatLng temp : checkpoints) {
+                        Log.e("TataNano : Bluetooth", "(" + temp.latitude + "," + temp.longitude+")");
+                        BTdata += "(" + ((float) temp.latitude) + "," + ((float) temp.longitude)+")";
+                }
+                BTdata += "\n";
+                Log.e("TataNano : Bluetooth", BTdata);
                 try {
                     tx_data.write(BTdata.getBytes());
                 } catch (IOException e) {
                     e.printStackTrace();
-                }
-
-                for (LatLng temp : checkpoints) {
-                        Log.e("TataNano : Bluetooth", "(" + temp.latitude + "," + temp.longitude+")");
-                        BTdata = "(" + temp.latitude + "," + temp.longitude+")\n";
-                    try {
-                        tx_data.write(BTdata.getBytes());
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
                 }
             }
         });
@@ -122,7 +119,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                     if(!speed.getText().toString().equals("")) {
-                        BTdata = "Start$" + speed.getText().toString() + "\n";
+                        BTdata = "$Start" + speed.getText().toString() + "\n";
                         try {
                             tx_data.write(BTdata.getBytes());
                             Log.e("TataNano : Bluetooth", " Start command sent" + speed.getText().toString() );
@@ -156,7 +153,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onClick(View v) {
                 SendStart.setVisibility(View.VISIBLE);
                 SendStop.setVisibility(View.INVISIBLE);
-                BTdata = "Stop@\n";
+                BTdata = "@Stop\n";
                 try {
                     tx_data.write(BTdata.getBytes());
                     Log.e("TataNano : Bluetooth", " Stop command sent" );
