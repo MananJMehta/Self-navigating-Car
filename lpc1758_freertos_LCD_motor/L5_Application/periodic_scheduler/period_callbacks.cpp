@@ -31,7 +31,7 @@
 #include <stdint.h>
 #include "io.hpp"
 #include "periodic_callback.h"
-//#include "lcd.hpp"
+#include "lcd.hpp"
 #include "uart2.hpp"
 #include "_can_dbc/generated_can.h"
 #include "can.h"
@@ -120,9 +120,7 @@ bool period_init(void)
     Uart2& u2 = Uart2::getInstance();
     u2.init(115200);
 #endif
-    CAN_init(can1, 100, 10, 10, NULL, NULL);
-    CAN_reset_bus(can1);
-    CAN_bypass_filter_accept_all_msgs();
+
     return true; // Must return true upon success
     return true; // Must return true upon success
 }
@@ -272,6 +270,10 @@ bool master =false;
 void period_10Hz(uint32_t count)
 {
     static uint32_t counter; //Counter to for checking the period of every second
+    SENSOR_DATA_t sensor_can_msg = { 0 };
+    COMPASS_t compass_can_msg = { 0 };
+    GPS_DATA_t gps_can_msg = { 0 };
+    CAR_CONTROL_t car_control_can_msg = { 0 };
     counter++;
 
     if(count%2==0)
@@ -371,6 +373,7 @@ void period_10Hz(uint32_t count)
              * distance_covered = ;
              * distance_remaining = ;
              */
+        }
 #endif
 }
 

@@ -8,6 +8,14 @@
 #ifndef LCD_HPP_
 #define LCD_HPP_
 
+#include "uart2.hpp"
+#include <cstdlib>
+#include <ctime>
+#include "lcd.hpp"
+#include <stdio.h>
+#include <utilities.h>
+#include "lcd_utilities.cpp"
+
 int get_random_int(int max_val);
 void display_speedometer(char random_speed);
 void display_bus_reset();
