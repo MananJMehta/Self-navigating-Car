@@ -81,30 +81,32 @@ int Bluetooth::getCPNum(char* rx) {
 }
 
 void Bluetooth::getLatLong(char* rx, int count) {
-    char* startIndex;
     int temp=0;
-    char* endIndex;
-    char* separatorIndex;
-    char* lat;
-    char* lng;
+    char* startPos;
+    char* endPos;
+    char* separatorPos;
+    char latChar[10];
+    char lngChar[10];
 
     while(temp<count) {
-        startIndex = strchr(rx, '(');
-        separatorIndex = strchr(rx, ',');
-        endIndex = strchr(rx, ')');
+        startPos = strchr(rx, '(');
+        separatorPos = strchr(rx, ',');
+        endPos = strchr(rx, ')');
 
-        //printf("\n%c %c %c",*startIndex,*separatorIndex,*endIndex);
-
-        strncpy(lat, startIndex, (separatorIndex - startIndex));
-        strncpy(lng, separatorIndex + 1, endIndex-separatorIndex+1);
-
-        printf("\n%s",lng);
-
-        /*latitude[temp] = strtod(lat, NULL);
-        longitude[temp] = strtod(lng, NULL);
-        rx = endIndex+1;
-        printf("LATitude: %f\n",latitude[0]);
-        printf("Longitude: %f\n",longitude[0]);*/
+        //printf("\n%c %c %c",*startPos,*separatorPos,*endPos);
+        int startIndex = (int)(startPos -  rx);
+        int endIndex = (int)(endPos - rx);
+        int separatorIndex = (int)(separatorPos - rx);
+        printf("STINDEX: %d\n",startIndex);
+        printf("EINDEX: %d\n",endIndex);
+        printf("SEPINDEX: %d\n",separatorIndex);
+        strncpy(latChar, rx + startIndex + 1, separatorIndex - startIndex -1);
+        strncpy(lngChar, rx + separatorIndex + 1, endIndex-separatorIndex - 1);
+        //float lat = atof(latChar);
+        float lng = atof(lngChar);
+        //printf("LAT: %s\n",latChar);
+        printf("LNG: %f\n",lng);
+        rx = endPos + 1;
         temp++;
     }
 }

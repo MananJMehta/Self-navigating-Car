@@ -105,7 +105,7 @@ void period_10Hz(uint32_t count)
         LE.on(2);
 
         int signalType = bluetooth.getSignalType(rx);
-        printf("\n%d",signalType);
+        printf("%d\n",signalType);
 
         if(signalType == 3) {
             int chkPointNo = bluetooth.getCPNum(rx);
