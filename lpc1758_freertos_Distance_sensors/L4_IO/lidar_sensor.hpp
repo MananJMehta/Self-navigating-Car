@@ -45,9 +45,15 @@ class Lidar_Sensor : public SingletonTemplate<Lidar_Sensor>
 
         scan_data_packet_t data_packet [360];
 
-        int quality_value = 0;
-        int distance_value_cm = 0;
-        int angle_value_deg = 0;
+        uint16_t quality_value = 0;
+        uint16_t distance_value_cm = 0;
+        uint16_t angle_value_deg = 0;
+
+        uint16_t *quality_value_ptr;
+        uint16_t *distance_value_cm_ptr;
+        uint16_t *angle_value_deg_ptr;
+
+
         bool check_start = false;
         bool lane_lut[9] ;
         uint16_t Lane_LUT;
@@ -55,11 +61,10 @@ class Lidar_Sensor : public SingletonTemplate<Lidar_Sensor>
         float lookup1[9];
 
     private:
-        void lane_algorithm(int distance, int angle_deg, int quality);
-        void test_distance(int distance, int angle_deg, int quality);
-        float get_quality_value();
-        float get_angle_value();//return angle in degrees
-        float get_distance_value();//return distance in cm
+        void lane_algorithm();
+        uint16_t get_quality_value();
+        uint16_t get_angle_value();//return angle in degrees
+        uint16_t get_distance_value();//return distance in cm
 
         char arr[8] = { 0xa5 , 0x5a , 0x05 , 0x00 , 0x00 , 0x40 , 0x81};
 
@@ -75,6 +80,9 @@ class Lidar_Sensor : public SingletonTemplate<Lidar_Sensor>
             }
             Lane_LUT = 0;
 
+            quality_value_ptr = &quality_value;
+            distance_value_cm_ptr = &distance_value_cm;
+            angle_value_deg_ptr = &angle_value_deg;
 
             //Create 360 Structs for Data and put the pointers to those structs
             //in the queue

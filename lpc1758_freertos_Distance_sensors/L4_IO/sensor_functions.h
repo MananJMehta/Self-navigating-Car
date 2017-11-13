@@ -57,19 +57,19 @@ void add_some_data_to_msg(LIDAR_DATA_VALUES_t *from)
     if (count == 0)
     {
         from->LIDAR_DISTANCE_CM_1 = rplidar.distance_value_cm;
-        from->LIDAR_ANGLE_DEG_1 = rplidar.distance_value_cm;
+        from->LIDAR_ANGLE_DEG_1 = rplidar.angle_value_deg;
         count++;
     }
     else if (count == 1)
     {
         from->LIDAR_DISTANCE_CM_2 = rplidar.distance_value_cm;
-        from->LIDAR_ANGLE_DEG_2 = rplidar.distance_value_cm;
+        from->LIDAR_ANGLE_DEG_2 = rplidar.angle_value_deg;
         count++;
     }
     else if (count == 2)
     {
         from->LIDAR_DISTANCE_CM_3 = rplidar.distance_value_cm;
-        from->LIDAR_ANGLE_DEG_3 = rplidar.distance_value_cm;
+        from->LIDAR_ANGLE_DEG_3 = rplidar.angle_value_deg;
         count = 0;
     }
 }

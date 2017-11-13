@@ -177,26 +177,26 @@ bool Lidar_Sensor::update_lanes()//this function is obsolete<<<<<<
 
 }
 
-float Lidar_Sensor::get_quality_value()
+uint16_t Lidar_Sensor::get_quality_value()
 {
     float quality = (float)rplidar.receive_lidar_data();
-    return quality;
+    return (uint16_t)quality;
 }
 
-float Lidar_Sensor::get_angle_value()
+uint16_t Lidar_Sensor::get_angle_value()
 {
     uint16_t angle;
-    float angle_deg;
+    float angle_value_deg;
     uint16_t temp;
     angle = (uint16_t)(rplidar.receive_lidar_data()); //get da angle_1
     temp = (uint16_t)(rplidar.receive_lidar_data()); //get da angle_2
     angle = angle>>1;
     angle |= temp<<7;
-    angle_deg = (float)(angle)/64.0;
-    return angle_deg;
+    angle_value_deg = (float)(angle)/64.0;
+    return (uint16_t)angle_value_deg;
 }
 
-float Lidar_Sensor::get_distance_value()
+uint16_t Lidar_Sensor::get_distance_value()
 {
     uint16_t temp1;
     uint16_t distance;
@@ -206,254 +206,242 @@ float Lidar_Sensor::get_distance_value()
     temp1 = (uint16_t)(rplidar.receive_lidar_data()); //get da distance 2
     distance |= temp1<<8;
     distance_q6 = (float)(distance)/4.0;
-    return (distance_q6/10);
-}
-
-void Lidar_Sensor::test_distance(int distance_cm, int angle_deg, int quality)
-{
-    //check every 11th item
-        quality_value = quality;
-        angle_value_deg = angle_deg;
-        distance_value_cm = distance_cm;
+    return (uint16_t)(distance_q6/10);
 }
 
 
 bool Lidar_Sensor::update_lane_lut()
 {
 
-    static const float object_range = 100.0;
-    static const uint8_t data = 5;
-    static uint8_t count = 0;
-    static uint8_t lane = 8;
-    static bool local_lanes [9];
+//    static const float object_range = 100.0;
+//    static const uint8_t data = 5;
+//    static uint8_t count = 0;
+//    static uint8_t lane = 8;
+//    static bool local_lanes [9];
 
 
-    float quality;
-    float angle_deg;
-    float distance_cm;
+    quality_value = get_quality_value();
+    angle_value_deg = get_angle_value();//return angle in degrees
+    distance_value_cm = get_distance_value();//return distance in cm
 
-    quality = get_quality_value();
-    angle_deg = get_angle_value();//return angle in degrees
-    distance_cm = get_distance_value();//return distance in cm
+    lane_algorithm();
 
-    lane_algorithm(distance_cm, angle_deg, quality);
-
-    if (angle_deg>=270&&angle_deg<290)
-    {
-        if(lane == 8)
-        {
-            if(count>data)
-            {
-                local_lanes[8] = false;
-            }
-            else
-            {
-                local_lanes[8] = true;
-            }
-
-            count = 0;
-        }
-
-        if(distance_cm <= object_range&&distance_cm>1)
-        {
-            test_distance((int)distance_cm, (int)angle_deg, (int)quality);
-            count++;
-        }
-        lane = 0;
-
-    }
-
-    else if(angle_deg>=290&&angle_deg<310)
-    {
-        if(lane == 0)
-        {
-            if(count>data)
-            {
-                local_lanes[0] = false;
-            }
-            else
-            {
-                local_lanes[0] = true;
-            }
-
-            count = 0;
-        }
-
-        if(distance_cm <= object_range&&distance_cm>1)
-        {
-            test_distance((int)distance_cm, (int)angle_deg, (int)quality);
-            count++;
-        }
-        lane = 1;
-
-    }
-    else if(angle_deg>=310&&angle_deg<330)
-    {
-        if(lane == 1)
-        {
-            if(count>data)
-            {
-                local_lanes[1] = false;
-            }
-            else
-            {
-                local_lanes[1] = true;
-            }
-
-            count = 0;
-        }
-
-        if(distance_cm <= object_range&&distance_cm>1)
-        {
-            test_distance((int)distance_cm, (int)angle_deg, (int)quality);
-            count++;
-        }
-        lane = 2;
-    }
-    else if(angle_deg>=330&&angle_deg<350)
-    {
-        if(lane == 2)
-        {
-            if(count>data)
-            {
-                local_lanes[2] = false;
-            }
-            else
-            {
-                local_lanes[2] = true;
-            }
-
-            count = 0;
-        }
-
-        if(distance_cm <= object_range&&distance_cm>1)
-        {
-            test_distance((int)distance_cm, (int)angle_deg, (int)quality);
-            count++;
-        }
-        lane = 3;
-    }
-    else if((angle_deg>=350&&angle_deg<360) | (angle_deg>=0&&angle_deg<10))
-    {
-        if(lane == 3)
-        {
-            if(count>data)
-            {
-                local_lanes[3] = false;
-            }
-            else
-            {
-                local_lanes[3] = true;
-            }
-
-            count = 0;
-        }
-
-        if(distance_cm <= object_range&&distance_cm>1)
-        {
-            test_distance((int)distance_cm, (int)angle_deg, (int)quality);
-            count++;
-        }
-        lane = 4;
-    }
-    else if(angle_deg>=10&&angle_deg<30)
-    {
-        if(lane == 4)
-        {
-            if(count>data)
-            {
-                local_lanes[4] = false;
-            }
-            else
-            {
-                local_lanes[4] = true;
-            }
-            count = 0;
-        }
-
-        if(distance_cm <= object_range&&distance_cm>1)
-        {
-            test_distance((int)distance_cm, (int)angle_deg, (int)quality);
-            count++;
-        }
-        lane = 5;
-    }
-    else if(angle_deg>=30&&angle_deg<50)
-    {
-        if(lane == 5)
-        {
-            if(count>data)
-            {
-                local_lanes[5] = false;
-            }
-            else
-            {
-                local_lanes[5] = true;
-            }
-
-            count = 0;
-        }
-
-        if(distance_cm <= object_range&&distance_cm>1)
-        {
-            test_distance((int)distance_cm, (int)angle_deg, (int)quality);
-            count++;
-        }
-        lane = 6;
-    }
-    else if(angle_deg>=50&&angle_deg<70)
-    {
-        if(lane == 6)
-        {
-            if(count>data)
-            {
-                local_lanes[6] = false;
-            }
-            else
-            {
-                local_lanes[6] = true;
-            }
-
-            count = 0;
-        }
-
-        if(distance_cm <= object_range&&distance_cm>1)
-        {
-            test_distance((int)distance_cm, (int)angle_deg, (int)quality);
-            count++;
-        }
-        lane = 7;
-    }
-    else if(angle_deg>=70&&angle_deg<90)
-    {
-        if(lane == 7)
-        {
-            if(count>data)
-            {
-                local_lanes[7] = false;
-            }
-            else
-            {
-                local_lanes[7] = true;
-            }
-            count = 0;
-        }
-
-        if(distance_cm <= object_range&&distance_cm>1)
-        {
-            test_distance((int)distance_cm, (int)angle_deg, (int)quality);
-            count++;
-        }
-
-        lane = 8;
-    }
-
-    memcpy(rplidar.lane_lut, local_lanes, sizeof(rplidar.lane_lut));
-
-
+//    if (angle_value_deg>=270&&angle_value_deg<290)
+//    {
+//        if(lane == 8)
+//        {
+//            if(count>data)
+//            {
+//                local_lanes[8] = false;
+//            }
+//            else
+//            {
+//                local_lanes[8] = true;
+//            }
+//
+//            count = 0;
+//        }
+//
+//        if(distance_value_cm <= object_range&&distance_value_cm>1)
+//        {
+//
+//            count++;
+//        }
+//        lane = 0;
+//
+//    }
+//
+//    else if(angle_value_deg>=290&&angle_value_deg<310)
+//    {
+//        if(lane == 0)
+//        {
+//            if(count>data)
+//            {
+//                local_lanes[0] = false;
+//            }
+//            else
+//            {
+//                local_lanes[0] = true;
+//            }
+//
+//            count = 0;
+//        }
+//
+//        if(distance_value_cm <= object_range&&distance_value_cm>1)
+//        {
+//
+//            count++;
+//        }
+//        lane = 1;
+//
+//    }
+//    else if(angle_value_deg>=310&&angle_value_deg<330)
+//    {
+//        if(lane == 1)
+//        {
+//            if(count>data)
+//            {
+//                local_lanes[1] = false;
+//            }
+//            else
+//            {
+//                local_lanes[1] = true;
+//            }
+//
+//            count = 0;
+//        }
+//
+//        if(distance_value_cm <= object_range&&distance_value_cm>1)
+//        {
+//
+//            count++;
+//        }
+//        lane = 2;
+//    }
+//    else if(angle_value_deg>=330&&angle_value_deg<350)
+//    {
+//        if(lane == 2)
+//        {
+//            if(count>data)
+//            {
+//                local_lanes[2] = false;
+//            }
+//            else
+//            {
+//                local_lanes[2] = true;
+//            }
+//
+//            count = 0;
+//        }
+//
+//        if(distance_value_cm <= object_range&&distance_value_cm>1)
+//        {
+//
+//            count++;
+//        }
+//        lane = 3;
+//    }
+//    else if((angle_value_deg>=350&&angle_value_deg<360) | (angle_value_deg>=0&&angle_value_deg<10))
+//    {
+//        if(lane == 3)
+//        {
+//            if(count>data)
+//            {
+//                local_lanes[3] = false;
+//            }
+//            else
+//            {
+//                local_lanes[3] = true;
+//            }
+//
+//            count = 0;
+//        }
+//
+//        if(distance_value_cm <= object_range&&distance_value_cm>1)
+//        {
+//
+//            count++;
+//        }
+//        lane = 4;
+//    }
+//    else if(angle_value_deg>=10&&angle_value_deg<30)
+//    {
+//        if(lane == 4)
+//        {
+//            if(count>data)
+//            {
+//                local_lanes[4] = false;
+//            }
+//            else
+//            {
+//                local_lanes[4] = true;
+//            }
+//            count = 0;
+//        }
+//
+//        if(distance_value_cm <= object_range&&distance_value_cm>1)
+//        {
+//
+//            count++;
+//        }
+//        lane = 5;
+//    }
+//    else if(angle_value_deg>=30&&angle_value_deg<50)
+//    {
+//        if(lane == 5)
+//        {
+//            if(count>data)
+//            {
+//                local_lanes[5] = false;
+//            }
+//            else
+//            {
+//                local_lanes[5] = true;
+//            }
+//
+//            count = 0;
+//        }
+//
+//        if(distance_value_cm <= object_range&&distance_value_cm>1)
+//        {
+//
+//            count++;
+//        }
+//        lane = 6;
+//    }
+//    else if(angle_value_deg>=50&&angle_value_deg<70)
+//    {
+//        if(lane == 6)
+//        {
+//            if(count>data)
+//            {
+//                local_lanes[6] = false;
+//            }
+//            else
+//            {
+//                local_lanes[6] = true;
+//            }
+//
+//            count = 0;
+//        }
+//
+//        if(distance_value_cm <= object_range&&distance_value_cm>1)
+//        {
+//
+//            count++;
+//        }
+//        lane = 7;
+//    }
+//    else if(angle_value_deg>=70&&angle_value_deg<90)
+//    {
+//        if(lane == 7)
+//        {
+//            if(count>data)
+//            {
+//                local_lanes[7] = false;
+//            }
+//            else
+//            {
+//                local_lanes[7] = true;
+//            }
+//            count = 0;
+//        }
+//
+//        if(distance_value_cm <= object_range&&distance_value_cm>1)
+//        {
+//
+//            count++;
+//        }
+//
+//        lane = 8;
+//    }
+//
+//    memcpy(rplidar.lane_lut, local_lanes, sizeof(rplidar.lane_lut));
     return true;
 }
-void Lidar_Sensor::lane_algorithm(int distance_cm, int angle_deg, int quality)
+
+
+void Lidar_Sensor::lane_algorithm()
 {
 
     static uint8_t count = 0;
@@ -462,7 +450,7 @@ void Lidar_Sensor::lane_algorithm(int distance_cm, int angle_deg, int quality)
     static const uint8_t data = 5;
     static uint8_t lane = 8;
 
-    if (angle_deg>=270&&angle_deg<290)
+    if (angle_value_deg>=270&&angle_value_deg<290)
         {
             if(lane == 8)
             {
@@ -478,16 +466,16 @@ void Lidar_Sensor::lane_algorithm(int distance_cm, int angle_deg, int quality)
                 count = 0;
             }
 
-            if(distance_cm <= object_range&&distance_cm>1)
+            if(distance_value_cm <= object_range&&distance_value_cm>1)
             {
-                test_distance((int)distance_cm, (int)angle_deg, (int)quality);
+
                 count++;
             }
             lane = 0;
 
         }
 
-        else if(angle_deg>=290&&angle_deg<310)
+        else if(angle_value_deg>=290&&angle_value_deg<310)
         {
             if(lane == 0)
             {
@@ -503,15 +491,15 @@ void Lidar_Sensor::lane_algorithm(int distance_cm, int angle_deg, int quality)
                 count = 0;
             }
 
-            if(distance_cm <= object_range&&distance_cm>1)
+            if(distance_value_cm <= object_range&&distance_value_cm>1)
             {
-                test_distance((int)distance_cm, (int)angle_deg, (int)quality);
+
                 count++;
             }
             lane = 1;
 
         }
-        else if(angle_deg>=310&&angle_deg<330)
+        else if(angle_value_deg>=310&&angle_value_deg<330)
         {
             if(lane == 1)
             {
@@ -527,14 +515,14 @@ void Lidar_Sensor::lane_algorithm(int distance_cm, int angle_deg, int quality)
                 count = 0;
             }
 
-            if(distance_cm <= object_range&&distance_cm>1)
+            if(distance_value_cm <= object_range&&distance_value_cm>1)
             {
-                test_distance((int)distance_cm, (int)angle_deg, (int)quality);
+
                 count++;
             }
             lane = 2;
         }
-        else if(angle_deg>=330&&angle_deg<350)
+        else if(angle_value_deg>=330&&angle_value_deg<350)
         {
             if(lane == 2)
             {
@@ -550,14 +538,14 @@ void Lidar_Sensor::lane_algorithm(int distance_cm, int angle_deg, int quality)
                 count = 0;
             }
 
-            if(distance_cm <= object_range&&distance_cm>1)
+            if(distance_value_cm <= object_range&&distance_value_cm>1)
             {
-                test_distance((int)distance_cm, (int)angle_deg, (int)quality);
+
                 count++;
             }
             lane = 3;
         }
-        else if((angle_deg>=350&&angle_deg<360) | (angle_deg>=0&&angle_deg<10))
+        else if((angle_value_deg>=350&&angle_value_deg<360) | (angle_value_deg>=0&&angle_value_deg<10))
         {
             if(lane == 3)
             {
@@ -573,14 +561,14 @@ void Lidar_Sensor::lane_algorithm(int distance_cm, int angle_deg, int quality)
                 count = 0;
             }
 
-            if(distance_cm <= object_range&&distance_cm>1)
+            if(distance_value_cm <= object_range&&distance_value_cm>1)
             {
-                test_distance((int)distance_cm, (int)angle_deg, (int)quality);
+
                 count++;
             }
             lane = 4;
         }
-        else if(angle_deg>=10&&angle_deg<30)
+        else if(angle_value_deg>=10&&angle_value_deg<30)
         {
             if(lane == 4)
             {
@@ -595,14 +583,14 @@ void Lidar_Sensor::lane_algorithm(int distance_cm, int angle_deg, int quality)
                 count = 0;
             }
 
-            if(distance_cm <= object_range&&distance_cm>1)
+            if(distance_value_cm <= object_range&&distance_value_cm>1)
             {
-                test_distance((int)distance_cm, (int)angle_deg, (int)quality);
+
                 count++;
             }
             lane = 5;
         }
-        else if(angle_deg>=30&&angle_deg<50)
+        else if(angle_value_deg>=30&&angle_value_deg<50)
         {
             if(lane == 5)
             {
@@ -618,14 +606,14 @@ void Lidar_Sensor::lane_algorithm(int distance_cm, int angle_deg, int quality)
                 count = 0;
             }
 
-            if(distance_cm <= object_range&&distance_cm>1)
+            if(distance_value_cm <= object_range&&distance_value_cm>1)
             {
-                test_distance((int)distance_cm, (int)angle_deg, (int)quality);
+
                 count++;
             }
             lane = 6;
         }
-        else if(angle_deg>=50&&angle_deg<70)
+        else if(angle_value_deg>=50&&angle_value_deg<70)
         {
             if(lane == 6)
             {
@@ -641,14 +629,14 @@ void Lidar_Sensor::lane_algorithm(int distance_cm, int angle_deg, int quality)
                 count = 0;
             }
 
-            if(distance_cm <= object_range&&distance_cm>1)
+            if(distance_value_cm <= object_range&&distance_value_cm>1)
             {
-                test_distance((int)distance_cm, (int)angle_deg, (int)quality);
+
                 count++;
             }
             lane = 7;
         }
-        else if(angle_deg>=70&&angle_deg<90)
+        else if(angle_value_deg>=70&&angle_value_deg<90)
         {
             if(lane == 7)
             {
@@ -663,9 +651,8 @@ void Lidar_Sensor::lane_algorithm(int distance_cm, int angle_deg, int quality)
                 count = 0;
             }
 
-            if(distance_cm <= object_range&&distance_cm>1)
+            if(distance_value_cm <= object_range&&distance_value_cm>1)
             {
-                test_distance((int)distance_cm, (int)angle_deg, (int)quality);
                 count++;
             }
 
