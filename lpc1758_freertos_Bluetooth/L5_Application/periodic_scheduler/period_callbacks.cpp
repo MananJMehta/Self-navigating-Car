@@ -28,20 +28,33 @@
  * do must be completed within 1ms.  Running over the time slot will reset the system.
  */
 
-#include <stdint.h>
+#include "stdint.h"
+#include "stdlib.h"
 #include "io.hpp"
 #include "periodic_callback.h"
 #include "can.h"
-#include "_can_dbc/generated_can.h"
+//#include "_can_dbc/generated_can.h"
 #include "utilities.h"
 #include "stdio.h"
 #include "Bluetooth.hpp"
 #include "uart2.hpp"
+#include "string.h"
 
-//Uart2 &u2 = Uart2::getInstance();
-//char rx[15];
-//char *p = rx;
-Bluetooth b;
+Bluetooth bluetooth;
+
+//CAN init
+void initCan() {
+    CAN_init(can1, 100, 100, 100, NULL, NULL);
+    CAN_bypass_filter_accept_all_msgs();
+    CAN_reset_bus(can1);
+}
+
+//CAN reset bus
+void canResetBus() {
+    if(CAN_is_bus_off(can1)){
+        CAN_reset_bus(can1);
+    }
+}
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
 
@@ -56,7 +69,9 @@ const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
 {
-    b.init(9600,100,100);
+    bluetooth.init(9600, 100, 100);
+    initCan();
+
     return true; // Must return true upon success
 }
 
@@ -67,28 +82,39 @@ bool period_reg_tlm(void)
     return true; // Must return true upon success
 }
 
-
 /**
  * Below are your periodic functions.
  * The argument 'count' is the number of times each periodic task is called.
  */
-/*
-void RxString() {
-    u2.gets(p,15,0);
-    printf("Char: %s\n",rx);
-}
-*/
 
 void period_1Hz(uint32_t count)
 {
+    //canResetBus();
     LE.toggle(1);
 }
 
 void period_10Hz(uint32_t count)
 {
-    //RxString();
-    b.getGPS(50,0);
-    LE.toggle(2);
+    char rx[50] = ""; //Receive Buffer
+    char latitudeChar[10] = ""; //
+    char longitudeChar[10] = "";
+    int success = 0;
+
+    ANDROID_CMD_t android_cmd = {0};
+    can_msg_t can_msg = {0};
+
+    if(bluetooth.getBluetoothData(rx, 50, 0)) {
+        printf("\nChar: %s\n",rx);
+        LE.on(2);
+        success = 1;
+    }
+    if(success == 1) {
+        int signalType = bluetooth.getSignalType(rx, latitudeChar, longitudeChar);
+        bluetooth.sendCanData(signalType, android_cmd, can_msg);
+
+    }
+    LE.off(2);
+    //LE.toggle(2);
 }
 
 void period_100Hz(uint32_t count)
