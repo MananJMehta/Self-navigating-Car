@@ -1,5 +1,5 @@
 /*
- *     SocialLedge.com - Copyright (C) 2013
+b *     SocialLedge.com - Copyright (C) 2013
  *
  *     This file is part of free software framework for embedded processors.
  *     You can use it and/or distribute it as long as this copyright header
@@ -37,12 +37,8 @@
 #include "io.hpp"
 #include "printf_lib.h"
 
-#define SONAR_CODE          //Uncomment to include SONAR code
-//#define SONAR_ALERT         //Uncomment to include SONAR_ALERT code
-
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
-
 
 // Enum for Sonar Status
 enum {
@@ -53,25 +49,32 @@ enum {
 
 
 // Enum for Motor Steer
-enum {
-    ExtremeLeft,
-    ExtremeRight,
-    HardLeft,
-    Left,
-    SoftLeft,
-    Center,
-    SoftRight,
-    Right,
-    HardRight
-};
+//enum {
+//    ExtremeLeft,
+//    ExtremeRight,
+//    HardLeft,
+//    Left,
+//    SoftLeft,
+//    Center,
+//    SoftRight,
+//    Right,
+//    HardRight
+//};
 
+#define HARDLEFT 12
+#define LEFT 13
+#define SOFTLEFT 14
+#define CENTER 15
+#define SOFTRIGHT 16
+#define RIGHT 17
+#define HARDRIGHT 18
+#define SONAR_CRITICAL 30
+#define SONAR_WARNING 100
 
 // Enum for Motor Speed
 enum {
-    Forward_L1,     //medium
-    Forward_L2,     //fastest
-    Forward_L3,     //slowest
-    Stop,
+    stop,
+    maintain,     //slowest
     Reverse
 };
 
@@ -146,109 +149,99 @@ void period_10Hz(uint32_t count)
         u0_dbg_printf("in while");
         switch(can_msg.msg_id)
         {
-            u0_dbg_printf("in switch");
             case 150:
-
                 /*Sonar Priorities are higher than LIDAR as LIDAR's range will be larger*/
                 if (dbc_decode_SENSOR_DATA(&sensor_msg, can_msg.data.bytes, &can_header))
                 {
-#ifdef SONAR_CODE
-                    if (sensor_msg.SONAR_left == sonar_critical)
+                    if (sensor_msg.SONAR_left <= SONAR_CRITICAL && sensor_msg.SONAR_right <= SONAR_CRITICAL)
                     {
-                        LE.off(2);
-                        LE.off(3);
-                        LE.on(4);
-                        master_motor_msg.CAR_CONTROL_steer = HardRight;
-                        master_motor_msg.CAR_CONTROL_speed = Forward_L1;
+                        master_motor_msg.CAR_CONTROL_speed = stop;
+                        master_motor_msg.CAR_CONTROL_steer = CENTER;
                         dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
                     }
-                    else if (sensor_msg.SONAR_right == sonar_critical)
+                    if(sensor_msg.SONAR_left <= SONAR_WARNING && sensor_msg.SONAR_right <= SONAR_WARNING)
                     {
-                        LE.off(2);
-                        LE.off(4);
-                        LE.on(3);
-                        master_motor_msg.CAR_CONTROL_steer = HardLeft;
-                        master_motor_msg.CAR_CONTROL_speed = Forward_L1;
-                        dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
+                        sensor_msg.LIDAR_0 = 1;
+                        sensor_msg.LIDAR_20 = 1;
+                        sensor_msg.LIDAR_neg20 = 1;
                     }
-                    //Back Sonar currently not being used for LAB2
-                    //                    else if (sensor_msg.SONAR_back == sonar_critical)
-                    //                    {
-                    //                        LE.on(4);
-                    //                        master_motor_msg.CAR_CONTROL_steer = Center;      //put stop here
-                    //                        dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
-                    //                    }
-#ifdef SONAR_ALERT
-                    else if (sensor_msg.SONAR_right == sonar_alert)
+                    else if (sensor_msg.SONAR_left <= SONAR_CRITICAL)
                     {
-                        LE.off(2);
-                        LE.off(4);
-                        LE.on(3);
-                        master_motor_msg.CAR_CONTROL_steer = SoftLeft;
-                        master_motor_msg.CAR_CONTROL_speed = Forward_L1;
-                        dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
+                        sensor_msg.LIDAR_neg20 = 1;
                     }
-                    else if (sensor_msg.SONAR_left == sonar_alert)
+                    else if (sensor_msg.SONAR_right <= SONAR_CRITICAL)
                     {
-                        LE.off(2);
-                        LE.off(3);
-                        LE.on(4);
-                        master_motor_msg.CAR_CONTROL_steer = SoftRight;
-                        master_motor_msg.CAR_CONTROL_speed = Forward_L1;
-                        dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
+                        sensor_msg.LIDAR_20 = 1;
                     }
-#endif
-#endif
+
                     //If any of LIDAR right values set, take HardLeft
                     //else if (sensor_msg.LIDAR_0 || sensor_msg.LIDAR_20 || sensor_msg.LIDAR_40 || sensor_msg.LIDAR_60 || sensor_msg.LIDAR_80)
-                    else if ((sensor_msg.LIDAR_80 && sensor_msg.LIDAR_60) || sensor_msg.LIDAR_40)
+                    if((sensor_msg.LIDAR_0 && sensor_msg.LIDAR_20 && sensor_msg.LIDAR_neg20 && sensor_msg.LIDAR_40 && sensor_msg.LIDAR_neg40))
                     {
-                        LE.off(2);
-                        LE.off(4);
-                        LE.on(3);
-                        master_motor_msg.CAR_CONTROL_steer = HardLeft;
-                        master_motor_msg.CAR_CONTROL_speed = Forward_L3;
+                        master_motor_msg.CAR_CONTROL_steer = CENTER;
+                        master_motor_msg.CAR_CONTROL_speed = stop;
+                        dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
+                    }
+                    else if (sensor_msg.LIDAR_40 || sensor_msg.LIDAR_20)
+                    {
+                        master_motor_msg.CAR_CONTROL_steer = HARDLEFT;
+                        master_motor_msg.CAR_CONTROL_speed = maintain;
                         dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
                     }
                     //If any of LIDAR left values set, take HardRight
-                    else if ((sensor_msg.LIDAR_neg80 && sensor_msg.LIDAR_neg60) || sensor_msg.LIDAR_neg40)
+                    else if (sensor_msg.LIDAR_neg40 || sensor_msg.LIDAR_neg20)
                     {
-                        LE.off(2);
-                        LE.off(3);
-                        LE.on(4);
-                        master_motor_msg.CAR_CONTROL_steer = HardRight;
-                        master_motor_msg.CAR_CONTROL_speed = Forward_L3;
+                        master_motor_msg.CAR_CONTROL_steer = HARDRIGHT;
+                        master_motor_msg.CAR_CONTROL_speed = maintain;
                         dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
                     }
                     //Go Straight
-                    else
-                        if((sensor_msg.LIDAR_0 && sensor_msg.LIDAR_20) && !(sensor_msg.LIDAR_neg80 && sensor_msg.LIDAR_neg60))
+                    else if((sensor_msg.LIDAR_0 && sensor_msg.LIDAR_20) && !(sensor_msg.LIDAR_neg40))
+                    {
+                        master_motor_msg.CAR_CONTROL_steer = HARDLEFT;
+                        master_motor_msg.CAR_CONTROL_speed = maintain;
+                        dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
+                    }
+                    else if((sensor_msg.LIDAR_0 && sensor_msg.LIDAR_neg20) && !(sensor_msg.LIDAR_40))
+                    {
+                        master_motor_msg.CAR_CONTROL_steer = HARDRIGHT;
+                        master_motor_msg.CAR_CONTROL_speed = maintain;
+                        dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
+                    }
+                    else if(!sensor_msg.LIDAR_0)
+                    {
+                        master_motor_msg.CAR_CONTROL_steer = CENTER;
+                        master_motor_msg.CAR_CONTROL_speed = maintain;
+                        dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
+                    }
+                    else if(sensor_msg.LIDAR_0)
+                    {
+                        if((sensor_msg.LIDAR_20 || sensor_msg.LIDAR_40) && !(sensor_msg.LIDAR_neg40))
                         {
-                            LE.off(3);
-                            LE.off(4);
-                            LE.off(2);
-                            master_motor_msg.CAR_CONTROL_steer = HardLeft;
-                            master_motor_msg.CAR_CONTROL_speed = Forward_L3;
-
+                            master_motor_msg.CAR_CONTROL_steer = LEFT;
+                            master_motor_msg.CAR_CONTROL_speed = maintain;
+                            dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
                         }
                         else
-                            if((sensor_msg.LIDAR_0 && sensor_msg.LIDAR_neg20) && !(sensor_msg.LIDAR_80 && sensor_msg.LIDAR_60))
+                            if((sensor_msg.LIDAR_neg20 || sensor_msg.LIDAR_neg40) && !(sensor_msg.LIDAR_40))
                             {
-                                LE.off(3);
-                                LE.off(4);
-                                LE.off(2);
-                                master_motor_msg.CAR_CONTROL_steer = HardRight;
-                                master_motor_msg.CAR_CONTROL_speed = Forward_L3;
-
-                            }
-                            else  {
-                                LE.off(3);
-                                LE.off(4);
-                                LE.on(2);
-                                master_motor_msg.CAR_CONTROL_steer = Center;
-                                master_motor_msg.CAR_CONTROL_speed = Forward_L3;
+                                master_motor_msg.CAR_CONTROL_steer = RIGHT;
+                                master_motor_msg.CAR_CONTROL_speed = maintain;
                                 dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
                             }
+                            else
+                            {
+                                master_motor_msg.CAR_CONTROL_steer = HARDLEFT;
+                                master_motor_msg.CAR_CONTROL_speed = maintain;
+                                dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
+                            }
+                    }
+                    else
+                    {
+                        master_motor_msg.CAR_CONTROL_steer = CENTER;
+                        master_motor_msg.CAR_CONTROL_speed = stop;
+                        dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
+                    }
                 }
                 break;
         }
