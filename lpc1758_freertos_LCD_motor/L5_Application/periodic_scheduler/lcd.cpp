@@ -10,16 +10,10 @@
 #include "lcd.hpp"
 #include <stdio.h>
 #include <utilities.h>
+#include "lcd_utilities.cpp"
 
 enum lcd_led{Sensor, Motor, Comm, Geo};
 
-int get_random_int(int max_val)
-{
-    srand((unsigned) time(0));
-    int random_integer = rand();
-    int value = random_integer % max_val;
-    return value;
-}
 
 void display_speedometer(char random_speed)
 {
@@ -74,17 +68,10 @@ void display_LCD_large_led(char led_num, char state)
     ack();
 }
 
-void convert16_to_hex(uint16_t number, uint8_t *lsb_val, uint8_t *msb_val)
-{
-    *lsb_val = ((uint8_t)(number & 0xFF)) ;
-    *msb_val = ((uint8_t)((number>>8) & 0xFF));
-}
-
 void display_lcd_geo(uint8_t placeholder, uint32_t geo)
 {
-    uint16_t geo_left = geo / 10000;
-    uint16_t geo_right = geo % 10000;
-
+    uint16_t geo_left, geo_right;
+    convert_geo(geo, &geo_left, &geo_right);
     display_lcd_numbers(placeholder, geo_left);
     display_lcd_numbers(placeholder + 4, geo_right);
 
