@@ -22,4 +22,5 @@ void convert_geo(uint32_t geo, uint16_t *geo_left, uint16_t *geo_right)
     *geo_left = geo / 10000;
     *geo_right = geo % 10000;
 }
+
 }

@@ -31,23 +31,22 @@
 #include <stdint.h>
 #include "io.hpp"
 #include "periodic_callback.h"
-#include "lcd.hpp"
+//#include "lcd.hpp"
 #include "uart2.hpp"
 #include "_can_dbc/generated_can.h"
 #include "can.h"
 #include <stdio.h>
-#include "adc0.h"
+
 
 #include "eint.h"
 #include "gpio.hpp"
 #include "L4.5_Motor_Control/Steering.hpp"
 #include "L4.5_Motor_Control/Speed.hpp"
-#include "_can_dbc/generated_can.h"
-#include "can.h"
 #include "printf_lib.h"
 #include "eint.h"
 #include "string.h"
 
+//#define LCD
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
 const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3); ///check
@@ -99,12 +98,6 @@ uint16_t distance_covered, distance_remaining;
 uint16_t deg_0, deg_20, deg_40, deg_60, deg_80, deg_neg20, deg_neg40, deg_neg60, deg_neg80;
 uint16_t dest_lat_val, dest_long_val, current_lat_val, current_long_val;
 
-float adc_read(void)
-{
-    LPC_PINCON->PINSEL1 |= (1 << 20); // ADC-3 is on P0.26, select this as ADC0.3
-    int adc3 = adc0_get_reading(3); // Read the value of ADC-3
-    return (float)adc3/(4095/3.3);
-}
 
 
 /// Called once before the RTOS is started, this is a good place to initialize things once
@@ -123,9 +116,10 @@ bool period_init(void)
         LD.setNumber(2);
     spd.setSpeed(STOP);
     str.setDirection(CENTER); //Aditya : this part might be extra/ already set in init
-	  Uart2& u2 = Uart2::getInstance();
+#ifdef LCD
+    Uart2& u2 = Uart2::getInstance();
     u2.init(115200);
-
+#endif
     CAN_init(can1, 100, 10, 10, NULL, NULL);
     CAN_reset_bus(can1);
     CAN_bypass_filter_accept_all_msgs();
@@ -139,7 +133,7 @@ bool period_reg_tlm(void)
     // Make sure "SYS_CFG_ENABLE_TLM" is enabled at sys_config.h to use Telemetry
     return true; // Must return true upon success
 }
-
+#ifdef LCD
 /**
  * Send readings of LCD's Main Page
  */
@@ -204,7 +198,7 @@ void update_LCD_sensor_page()
  * Below are your periodic functions.
  * The argument 'count' is the number of times each periodic task is called.
  */
-
+#endif
 void check_bus()
 {
     if(CAN_is_bus_off(can1))
@@ -218,8 +212,9 @@ void period_1Hz(uint32_t count)
     telemetry.MOTOR_TELEMETRY_kph= spd.rpm_meter();
     printf("%f\n",telemetry.MOTOR_TELEMETRY_kph);
     check_bus();
-        display_bus_reset();
-    }
+#ifdef LCD
+    display_bus_reset();
+
 
     if (getButtonState()) //Check if the startStop button is pressed in LCD
     {
@@ -257,7 +252,7 @@ void period_1Hz(uint32_t count)
             //Do something to throw error
             break;
     }
-
+#endif
 }
 
 const uint32_t        CAR_CONTROL__MIA_MS=3000;
@@ -266,9 +261,19 @@ can_msg_t msg;
 CAR_CONTROL_t carControl;
 
 HEARTBEAT_t heartbeat;
-
+const uint32_t                             SENSOR_DATA__MIA_MS = 3000;
+const SENSOR_DATA_t                        SENSOR_DATA__MIA_MSG = {0};
+const uint32_t                             HEARTBEAT__MIA_MS = 3000;
+const uint32_t                             GPS_DATA__MIA_MS = 3000;
+const GPS_DATA_t                           GPS_DATA__MIA_MSG = {0};
+const uint32_t                             COMPASS__MIA_MS = 3000;
+const COMPASS_t                            COMPASS__MIA_MSG = {0};
+bool master =false;
 void period_10Hz(uint32_t count)
 {
+    static uint32_t counter; //Counter to for checking the period of every second
+    counter++;
+
     if(count%2==0)
     val=spd.speed_check(flag,val);
     printf("%f\n",spd.getSpeed());
@@ -314,17 +319,15 @@ void period_10Hz(uint32_t count)
         LE.on(1);
     else LE.off(1);
 
-    //    if(SW.getSwitch(3))
-    //        str.setDirection(HARDRIGHT);
-    //    else if(SW.getSwitch(4))
-    //        str.setDirection(HARDLEFT);
-    //else
-    if(carControl.CAR_CONTROL_steer==8)
-        str.setDirection(HARDRIGHT);
-    else if(carControl.CAR_CONTROL_steer==2)
-        str.setDirection(HARDLEFT);
-    else
-        str.setDirection(CENTER);
+    if(flag==false || master ==false)
+        spd.setSpeed(STOP);
+    if(flag ==true || master ==true)
+        spd.setSpeed(val);
+        str.setDirection(carControl.CAR_CONTROL_steer);
+
+
+
+#ifdef LCD
   //Update values from CAN every 10 iterations (every 1 Second)
         if (counter % 10 == 0) {
 
@@ -368,6 +371,7 @@ void period_10Hz(uint32_t count)
              * distance_covered = ;
              * distance_remaining = ;
              */
+#endif
 }
 
 void period_100Hz(uint32_t count)

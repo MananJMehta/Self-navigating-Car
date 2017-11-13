@@ -41,11 +41,7 @@ float Speed::maintain_speed(float val)
         val=this->getSpeed() + 0.1;
         LE.on(4);
     }
-    else
-    {
-        //        LE.off(3);
-        //        LE.off(4);
-    }
+if(val >15.5) val = 15.5;
     return val;
 }
 
