@@ -186,14 +186,14 @@ uint16_t Lidar_Sensor::get_quality_value()
 uint16_t Lidar_Sensor::get_angle_value()
 {
     uint16_t angle;
-    float angle_value_deg;
+    float angle_deg;
     uint16_t temp;
     angle = (uint16_t)(rplidar.receive_lidar_data()); //get da angle_1
     temp = (uint16_t)(rplidar.receive_lidar_data()); //get da angle_2
     angle = angle>>1;
     angle |= temp<<7;
-    angle_value_deg = (float)(angle)/64.0;
-    return (uint16_t)angle_value_deg;
+    angle_deg = (float)(angle)/64.0;
+    return (uint16_t)angle_deg;
 }
 
 uint16_t Lidar_Sensor::get_distance_value()
@@ -207,6 +207,59 @@ uint16_t Lidar_Sensor::get_distance_value()
     distance |= temp1<<8;
     distance_q6 = (float)(distance)/4.0;
     return (uint16_t)(distance_q6/10);
+}
+
+void Lidar_Sensor::check_for_lane_angle(uint16_t *distance, uint16_t *angle)
+{
+    static uint8_t lanes = 0;
+
+    if(lanes == 0 && *angle == 280)
+    {
+        lane_distances[lanes] = *distance;
+        lanes = 1;
+    }
+    else if(lanes == 1 && *angle == 300)
+    {
+            lane_distances[lanes] = *distance;
+            lanes = 2;
+    }
+    else if(lanes == 2 && *angle == 320)
+    {
+            lane_distances[lanes] = *distance;
+            lanes = 3;
+    }
+    else if(lanes == 3 && *angle == 340)
+    {
+            lane_distances[lanes] = *distance;
+            lanes = 4;
+    }
+    else if(lanes == 4 && *angle == 0)
+    {
+            lane_distances[lanes] = *distance;
+            lanes = 5;
+    }
+    else if(lanes == 5 && *angle == 20)
+    {
+            lane_distances[lanes] = *distance;
+            lanes = 6;
+    }
+    else if(lanes == 6 && *angle == 40)
+    {
+            lane_distances[lanes] = *distance;
+            lanes = 7;
+    }
+    else if(lanes == 7 && *angle == 60)
+    {
+            lane_distances[lanes] = *distance;
+            lanes = 8;
+    }
+    else if(lanes == 8 && *angle == 80)
+    {
+            lane_distances[lanes] = *distance;
+            lanes = 0;
+            rplidar.flag = true;
+    }
+
 }
 
 
@@ -224,7 +277,10 @@ bool Lidar_Sensor::update_lane_lut()
     angle_value_deg = get_angle_value();//return angle in degrees
     distance_value_cm = get_distance_value();//return distance in cm
 
+
+
     lane_algorithm();
+    //check_for_lane_angle(distance_ptr, angle_ptr);
 
 //    if (angle_value_deg>=270&&angle_value_deg<290)
 //    {
@@ -446,10 +502,14 @@ void Lidar_Sensor::lane_algorithm()
 
     static uint8_t count = 0;
     static bool local_lanes [9];
-    static const float object_range = 100.0;
+    static const float object_range = 200.0;
     static const uint8_t data = 5;
     static uint8_t lane = 8;
 
+    if(distance_value_cm>0)
+
+    {
+    //-80
     if (angle_value_deg>=270&&angle_value_deg<290)
         {
             if(lane == 8)
@@ -468,13 +528,17 @@ void Lidar_Sensor::lane_algorithm()
 
             if(distance_value_cm <= object_range&&distance_value_cm>1)
             {
-
+                lane_distances[0] = distance_value_cm;
                 count++;
             }
+
+
             lane = 0;
 
         }
 
+
+        //-60
         else if(angle_value_deg>=290&&angle_value_deg<310)
         {
             if(lane == 0)
@@ -493,12 +557,14 @@ void Lidar_Sensor::lane_algorithm()
 
             if(distance_value_cm <= object_range&&distance_value_cm>1)
             {
-
+                lane_distances[1] = distance_value_cm;
                 count++;
             }
             lane = 1;
 
         }
+
+        //-40
         else if(angle_value_deg>=310&&angle_value_deg<330)
         {
             if(lane == 1)
@@ -517,11 +583,14 @@ void Lidar_Sensor::lane_algorithm()
 
             if(distance_value_cm <= object_range&&distance_value_cm>1)
             {
-
+                lane_distances[2] = distance_value_cm;
                 count++;
             }
+
             lane = 2;
         }
+
+        //-20
         else if(angle_value_deg>=330&&angle_value_deg<350)
         {
             if(lane == 2)
@@ -540,11 +609,13 @@ void Lidar_Sensor::lane_algorithm()
 
             if(distance_value_cm <= object_range&&distance_value_cm>1)
             {
-
+                lane_distances[3] = distance_value_cm;
                 count++;
             }
             lane = 3;
         }
+
+        //0
         else if((angle_value_deg>=350&&angle_value_deg<360) | (angle_value_deg>=0&&angle_value_deg<10))
         {
             if(lane == 3)
@@ -563,11 +634,16 @@ void Lidar_Sensor::lane_algorithm()
 
             if(distance_value_cm <= object_range&&distance_value_cm>1)
             {
-
+                lane_distances[4] = distance_value_cm;
                 count++;
             }
+
+
+
             lane = 4;
         }
+
+        //20
         else if(angle_value_deg>=10&&angle_value_deg<30)
         {
             if(lane == 4)
@@ -585,11 +661,15 @@ void Lidar_Sensor::lane_algorithm()
 
             if(distance_value_cm <= object_range&&distance_value_cm>1)
             {
-
+                lane_distances[5] = distance_value_cm;
                 count++;
             }
+
+
             lane = 5;
         }
+
+        //40
         else if(angle_value_deg>=30&&angle_value_deg<50)
         {
             if(lane == 5)
@@ -608,11 +688,15 @@ void Lidar_Sensor::lane_algorithm()
 
             if(distance_value_cm <= object_range&&distance_value_cm>1)
             {
-
+                lane_distances[6] = distance_value_cm;
                 count++;
             }
+
+
             lane = 6;
         }
+
+        //60
         else if(angle_value_deg>=50&&angle_value_deg<70)
         {
             if(lane == 6)
@@ -631,11 +715,15 @@ void Lidar_Sensor::lane_algorithm()
 
             if(distance_value_cm <= object_range&&distance_value_cm>1)
             {
-
+                lane_distances[7] = distance_value_cm;
                 count++;
             }
+
+
             lane = 7;
         }
+
+        //80
         else if(angle_value_deg>=70&&angle_value_deg<90)
         {
             if(lane == 7)
@@ -653,13 +741,18 @@ void Lidar_Sensor::lane_algorithm()
 
             if(distance_value_cm <= object_range&&distance_value_cm>1)
             {
+                lane_distances[8] = distance_value_cm;
                 count++;
             }
+
+
 
             lane = 8;
         }
 
         memcpy(rplidar.lane_lut, local_lanes, sizeof(rplidar.lane_lut));
+
+    }
 
 }
 

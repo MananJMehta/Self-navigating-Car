@@ -48,12 +48,13 @@ class Lidar_Sensor : public SingletonTemplate<Lidar_Sensor>
         uint16_t quality_value = 0;
         uint16_t distance_value_cm = 0;
         uint16_t angle_value_deg = 0;
+        uint16_t lane_distances[9];
 
         uint16_t *quality_value_ptr;
         uint16_t *distance_value_cm_ptr;
         uint16_t *angle_value_deg_ptr;
 
-
+        bool flag = false;
         bool check_start = false;
         bool lane_lut[9] ;
         uint16_t Lane_LUT;
@@ -61,6 +62,7 @@ class Lidar_Sensor : public SingletonTemplate<Lidar_Sensor>
         float lookup1[9];
 
     private:
+        void check_for_lane_angle(uint16_t *distance, uint16_t *angle);
         void lane_algorithm();
         uint16_t get_quality_value();
         uint16_t get_angle_value();//return angle in degrees
@@ -76,6 +78,7 @@ class Lidar_Sensor : public SingletonTemplate<Lidar_Sensor>
             //0 means this lane is clear
             for(int i =0; i < 9; i++)
             {
+                lane_distances[i] = 0;
                 lane_lut[i] = false;
             }
             Lane_LUT = 0;
