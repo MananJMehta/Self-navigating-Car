@@ -44,8 +44,8 @@ BO_ 130 ANDROID_CMD: 8 ANDROID
  SG_ ANDROID_CMD_long : 30|29@1+ (0.000001,-180.000000) [-180|180] "Degrees" MASTER
 
 BO_ 140 CAR_CONTROL: 2 MASTER
- SG_ CAR_CONTROL_speed : 0|4@1+ (1,0) [0|0] "mph" MOTOR
- SG_ CAR_CONTROL_steer : 4|4@1+ (1,0) [0|0] "" MOTOR
+ SG_ CAR_CONTROL_speed : 0|8@1+ (1,0) [0|0] "mph" MOTOR
+ SG_ CAR_CONTROL_steer : 8|8@1+ (1,0) [0|0] "" MOTOR
 
 BO_ 150 SENSOR_DATA: 2 SENSOR
  SG_ LIDAR_neg80 : 0|1@1+ (1,0) [0|1] "" MASTER,MOTOR,ANDROID
@@ -71,7 +71,11 @@ BO_ 170 COMPASS: 8 GEO
 
 BO_ 180 MOTOR_DATA: 1 MOTOR
  SG_ CAR_SPEED : 0|5@1+ (1,0) [0|0] "mph" MASTER
-  
+
+BO_ 190 MOTOR_TELEMETRY: 8 MOTOR
+ SG_ MOTOR_TELEMETRY_pwm : 0|16@1+ (0.1,0) [0|30] "PWM" MASTER,ANDROID
+ SG_ MOTOR_TELEMETRY_kph : 16|16@1+ (0.1,0) [0|0] "kph" MASTER,ANDROID
+
  
 CM_ BU_ MASTER "Master controller is heart of the system and will control other boards";
 CM_ BU_ MOTOR "Motor will drive the wheels of car and display data on LCD";
@@ -80,11 +84,5 @@ CM_ BU_ GEO "Geo will help in navigation";
 CM_ BU_ ANDROID "User sets destination and commands to start-stop the car";
 
 BA_ "FieldType" SG_ 120 HEARTBEAT_cmd "HEARTBEAT_cmd";
-BA_ "FieldType" SG_ 150 SONAR_left "SONAR_left";
-BA_ "FieldType" SG_ 150 SONAR_right "SONAR_right";
-BA_ "FieldType" SG_ 150 SONAR_back "SONAR_back";
 
 VAL_ 120 HEARTBEAT_cmd 2 "HEARTBEAT_cmd_REBOOT" 1 "HEARTBEAT_cmd_SYNC" 0 "HEARTBEAT_cmd_NOOP" ;
-VAL_ 150 SONAR_left 2 "SONAR_left_safe" 1 "SONAR_left_alert" 0 "SONAR_left_critical" ;
-VAL_ 150 SONAR_right 2 "SONAR_right_safe" 1 "SONAR_right_alert" 0 "SONAR_right_critical" ;
-VAL_ 150 SONAR_back 2 "SONAR_back_safe" 1 "SONAR_back_alert" 0 "SONAR_back_critical" ;

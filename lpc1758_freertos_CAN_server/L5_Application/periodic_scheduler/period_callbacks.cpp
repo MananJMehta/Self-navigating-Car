@@ -29,14 +29,12 @@
  */
 
 #include "string.h"
-#include "string"
 #include <stdint.h>
 #include "io.hpp"
 #include "periodic_callback.h"
 #include "can.h"
 #include "_can_dbc/generated_can.h"
 #include "printf_lib.h"
-#include "map"
 #include <cmath>
 #include <utility>
 
@@ -57,19 +55,14 @@ enum {
 };
 
 
-// Enum for Motor Steer
-enum {
-    ExtremeLeft,
-    ExtremeRight,
-    HardLeft,
-    Left,
-    SoftLeft,
-    Center,
-    SoftRight,
-    Right,
-    HardRight
-};
-
+// Define for Motor Steer
+#define HARDLEFT 12
+#define LEFT 13
+#define SOFTLEFT 14
+#define CENTER 15
+#define SOFTRIGHT 16
+#define RIGHT 17
+#define HARDRIGHT 18
 
 // Enum for Motor Speed
 enum {
@@ -80,10 +73,7 @@ enum {
     Reverse
 };
 
-map<char, int8_t> m;
-map<char, uint8_t> m_dir;
-map<int8_t, string> m_update_lanes;
-char arr[9];
+uint8_t arr[9];
 
 /**
  * This is the stack size of the dispatcher task that triggers the period tasks to run.
@@ -115,136 +105,64 @@ bool period_init(void)
     CAN_bypass_filter_accept_all_msgs();
     CAN_reset_bus(canTest);
 
-    //std::map for lane identification and correction
-    m['c']=0;//center
-    m['r']=1;//soft right
-    m['R']=2;//right
-    m['H']=3;//hard right
-    m['E']=4;//extreme right
-    m['l']=-1;//soft left
-    m['L']=-2;//left
-    m['I']=-3;//hard left
-    m['F']=-4;//extreme left
+    //array for steering control
+    arr[0]=15;//center
 
-    //array initialized to ensure the car goes straight
-    arr[0]='c'; //center
-    arr[1]='r'; //soft right
-    arr[2]='l'; //soft left
-    arr[3]='R'; //right
-    arr[4]='L'; //left
-    arr[5]='H'; //hard right
-    arr[6]='I'; //hard left
-    arr[7]='E'; //extreme right
-    arr[8]='F'; //extreme left
+    arr[1]=SOFTRIGHT;//soft right
+    arr[3]=RIGHT;//right
+    arr[5]=HARDRIGHT;//hard right
+    arr[7]=HARDRIGHT;//extreme right
 
-    //map that updates the array arr
-    //@params correction
-    m_update_lanes[0] = "crlRLHIEF";
-    m_update_lanes[1] = "rcRHrELcc";
-    m_update_lanes[-1]= "lcLIrFRss";
-    m_update_lanes[2] = "RrcHEssss";
-    m_update_lanes[-2] ="LlcIFssss";
-    m_update_lanes[3] = "HRErcssss";
-    m_update_lanes[-3] ="ILFlcssss";
-    m_update_lanes[4] = "EHRrcssss";
-    m_update_lanes[-4]= "FILlcssss";
-
-    //std::map for steering control
-    m_dir['c']=Center;//center
-    m_dir['r']=HardRight;//soft right
-    m_dir['R']=HardRight;//right
-    m_dir['H']=HardRight;//hard right
-    m_dir['E']=HardRight;//extreme right
-    m_dir['l']=HardLeft;//soft left
-    m_dir['L']=HardLeft;//left
-    m_dir['I']=HardLeft;//hard left
-    m_dir['F']=HardLeft;//extreme left
-    m_dir['s']=Center;
-
-
+    arr[2]=SOFTLEFT;//soft left
+    arr[4]=LEFT;//left
+    arr[6]=HARDLEFT;//hard left
+    arr[8]=HARDLEFT;//extreme left
 
     return true; // Must return true upon success
 }
 
-//reads data from the CAN message based on x
-//@params label x, CAN message y
-//@returns x->y.__
-int8_t map_get_value(char x, SENSOR_DATA_t y)
+//reads data from the CAN message
+//@returns the bit with highest priority
+uint8_t map_get_value(SENSOR_DATA_t y)
 {
-    if(x=='c' || x=='s')
-        return y.LIDAR_0;
-    else if (x=='r')
-        return y.LIDAR_20;
-    else if (x=='R')
-        return y.LIDAR_40;
-    else if (x=='H')
-        return y.LIDAR_60;
-    else if (x=='E')
-        return y.LIDAR_80;
-    else if (x=='l')
-        return y.LIDAR_neg20;
-    else if (x=='L')
-        return y.LIDAR_neg40;
-    else if (x=='I')
-        return y.LIDAR_neg60;
-    return y.LIDAR_neg80;
+    if(y.LIDAR_0 == 0 && y.LIDAR_20 == 0 && y.LIDAR_neg20 == 0)
+        return 0;
+    else if (y.LIDAR_0 == 0 && y.LIDAR_20 == 0 && y.LIDAR_neg20 == 1 )
+        return 3;
+    else if (y.LIDAR_0 == 0 && y.LIDAR_20 == 1 && y.LIDAR_neg20 == 0)
+        return 4;
+    else if (y.LIDAR_40 == 0)
+        return 5;
+    else if (y.LIDAR_neg40 == 0)
+        return 6;
+    /*else if (y.LIDAR_60 == 0)
+        return 5;
+    else if (y.LIDAR_neg60 == 0)
+        return 6;
+    else if (y.LIDAR_80 == 0)
+        return 7;
+    else if (y.LIDAR_neg80 == 0)
+        return 8;*/
+    return 9;
 }
 
-//function that converts a logiical lane to an actual lane...from (-4 to +4) to (0 to 8)
-//@params logical lane from -4 to 4
-//@returns a value from 0 to 8
-uint8_t logical_to_actual_lane(int8_t i)
-{
-    if (i<0)
-        return -1*i + 4;
-    return i;
-}
-
-//updates the lanes to look out for after turning
-void update_map_lane(int8_t correction, bool sign)
-{
-    string local_array = m_update_lanes[correction];
-    for (uint8_t i=0; i<9 ; i++)
-        arr[i] = local_array[i];
-
-}
-
-
-
-//turns the steering if an obstacle is deteted
-//@params received can message from the sonar sensor
+//turns the steering if an obstacle is deleted
+//@params received can message from the lidar sensor
 //@returns steering rotation and car speed
 pair<uint8_t, uint8_t> update_lanes(SENSOR_DATA_t x)
 {
-    u0_dbg_printf("\n");
-    uint8_t i;
-    for (i=0; map_get_value(arr[i], x)== 1 && i<9; i++){}
-    u0_dbg_printf("%d ", x.LIDAR_0);
-    u0_dbg_printf("%d ", x.LIDAR_20);
-    u0_dbg_printf("%d ", x.LIDAR_40);
-    u0_dbg_printf("%d ", x.LIDAR_60);
-    u0_dbg_printf("%d ", x.LIDAR_80);
-    u0_dbg_printf("%d ", x.LIDAR_neg20);
-    u0_dbg_printf("%d ", x.LIDAR_neg40);
-    u0_dbg_printf("%d ", x.LIDAR_neg60);
-    u0_dbg_printf("%d ", x.LIDAR_neg80);
-    u0_dbg_printf("\n");
-    for(uint8_t j=0 ; j<9; j++)
-        u0_dbg_printf("%c",arr[j]);
+    static pair<uint8_t , uint8_t> return_value;
+    return_value.first=CENTER;
+    return_value.second=0;
 
-    u0_dbg_printf("i %d\n",i);
-    if(arr[i] == 's')
-        return make_pair(Center, Stop);
+    uint8_t i=map_get_value(x);
 
-    //int8_t correction = -1*m[arr[i]]; //the magnitude and direction of turn needed to realign the car
-    //u0_dbg_printf("C %d\n", correction);
-    //update_map_lane(correction, signbit(correction));
+    if(i==9)
+        return return_value;
 
-    u0_dbg_printf("\nUpdated\n");
-    for(uint8_t j=0 ; j<9; j++)
-        u0_dbg_printf("%c",arr[j]);
-
-    return make_pair(m_dir[arr[i]], Forward_L1);
+    return_value.first = arr[i];
+    return_value.second = 1;
+    return return_value;
 }
 
 /// Register any telemetry variables
@@ -287,13 +205,13 @@ void period_10Hz(uint32_t count)
                 /*Sonar Priorities are higher than LIDAR as LIDAR's range will be larger*/
                 if (dbc_decode_SENSOR_DATA(&sensor_msg, can_msg.data.bytes, &can_header))
                 {
-#ifdef SONAR_CODE
+/*#ifdef SONAR_CODE
                     if (sensor_msg.SONAR_left == sonar_critical)
                     {
                         LE.off(2);
                         LE.off(3);
                         LE.on(4);
-                        master_motor_msg.CAR_CONTROL_steer = HardRight;
+                        master_motor_msg.CAR_CONTROL_steer = HARDRIGHT;
                         master_motor_msg.CAR_CONTROL_speed = Forward_L1;
                         dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
                     }
@@ -302,7 +220,7 @@ void period_10Hz(uint32_t count)
                         LE.off(2);
                         LE.off(4);
                         LE.on(3);
-                        master_motor_msg.CAR_CONTROL_steer = HardLeft;
+                        master_motor_msg.CAR_CONTROL_steer = HARDLEFT;
                         master_motor_msg.CAR_CONTROL_speed = Forward_L1;
                         dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
                     }
@@ -333,44 +251,17 @@ void period_10Hz(uint32_t count)
                         dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
                     }
 #endif
-#endif
+#endif*/
+
                     //If any of LIDAR right values set, take HardLeft
                     pair<uint8_t , uint8_t> son;
                     son = update_lanes(sensor_msg);
                     master_motor_msg.CAR_CONTROL_steer = son.first;
                     master_motor_msg.CAR_CONTROL_speed = son.second;
                     dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
-                    /*else if (sensor_msg.LIDAR_0 || sensor_msg.LIDAR_20 || sensor_msg.LIDAR_40 || sensor_msg.LIDAR_60 || sensor_msg.LIDAR_80)
-                    {
-                        LE.off(2);
-                        LE.off(4);
-                        LE.on(3);
-                        master_motor_msg.CAR_CONTROL_steer = HardLeft;
-                        master_motor_msg.CAR_CONTROL_speed = Forward_L1;
-                        dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
-                    }
-                    //If any of LIDAR left values set, take HardRight
-                    else if (sensor_msg.LIDAR_neg20 || sensor_msg.LIDAR_neg40 || sensor_msg.LIDAR_neg60 || sensor_msg.LIDAR_neg80)
-                    {
-                        LE.off(2);
-                        LE.off(3);
-                        LE.on(4);
-                        master_motor_msg.CAR_CONTROL_steer = HardRight;
-                        master_motor_msg.CAR_CONTROL_speed = Forward_L1;
-                        dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
-                    }
-                    //Go Straight
-                    else
-                    {
-                        LE.off(3);
-                        LE.off(4);
-                        LE.on(2);
-                        master_motor_msg.CAR_CONTROL_steer = Center;
-                        master_motor_msg.CAR_CONTROL_speed = Forward_L1;
-                        dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
-                    }*/
+
+                    break;
                 }
-                break;
         }
     }
 }
