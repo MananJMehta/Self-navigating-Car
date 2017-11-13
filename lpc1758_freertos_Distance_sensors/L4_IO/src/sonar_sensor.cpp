@@ -12,6 +12,8 @@
 #include "stdio.h"
 #include "utilities.h"
 
+#define INCH2CENTI 2.54
+
 extern SemaphoreHandle_t sonar_mutex;
 extern float left_start, dist_in_left, left_stop;
 extern float back_start, dist_in_back, back_stop;
@@ -65,6 +67,27 @@ void Sonar_Sensor::sensor_detect_fall_right()
     //xSemaphoreGiveFromISR(sonar_mutex,0);
 }
 
+void Sonar_Sensor:: update_can_frame(uint16_t& back, uint16_t& left, uint16_t& right)
+{
+
+        start_operation();
+//--------------------- for Left sonar sensor ---------------------//
+        left = (uint16_t) (dist_in_left * INCH2CENTI);
+
+//--------------------- for Right sonar sensor ---------------------//
+        right = (uint16_t) (dist_in_right * INCH2CENTI);
+
+//--------------------- for Back sonar sensor ---------------------//
+        back = (uint16_t) (dist_in_back * INCH2CENTI);
+}
+
+bool Sonar_Sensor::get_mutex_value()
+{
+    if(xSemaphoreTake(sonar_mutex,1))
+        return 1;
+    return 0;
+}
+
 Sonar_Sensor::Sonar_Sensor()
 {
     left_start=0;
@@ -103,6 +126,8 @@ bool Sonar_Sensor::init()
 
     eint3_enable_port2(4,eint_falling_edge,sensor_detect_fall_right);
     eint3_enable_port2(4,eint_rising_edge,sensor_detect_rise_right);
+
+    sonar_mutex = xSemaphoreCreateMutex();
 
     return true;
 }

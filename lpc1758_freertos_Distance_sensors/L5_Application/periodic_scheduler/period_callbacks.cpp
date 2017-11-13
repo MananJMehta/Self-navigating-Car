@@ -32,11 +32,10 @@
 #include "io.hpp"
 #include "periodic_callback.h"
 #include "sensor_functions.h"
-#include "lidar_sensor.h"
+//#include "lidar_sensor.h"
 #include "tasks.hpp"
 #include "stdio.h"
 #include "can.h"
-
 
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
@@ -49,6 +48,7 @@ const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
  */
 const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
 
+
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
 {
@@ -56,6 +56,10 @@ bool period_init(void)
     const can_std_id_t slist[] = { CAN_gen_sid(can1, 100), CAN_gen_sid(can1, 120)};
     CAN_setup_filter(slist, 2, NULL, 0, NULL, 0, NULL, 0);
     CAN_reset_bus(can1);
+
+    //Sonar Sensor init
+    sonar_init_from_sensor_functions();
+
     return true; // Must return true upon success
 }
 
@@ -74,7 +78,9 @@ bool period_reg_tlm(void)
 
 void period_1Hz(uint32_t count)
 {
+
     send_distance_values();
+
 }
 
 void period_10Hz(uint32_t count)

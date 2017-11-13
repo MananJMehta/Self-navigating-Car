@@ -34,7 +34,10 @@ class Sonar_Sensor //: public SingletonTemplate<Sonar_Sensor>
         void start_operation();
         bool init();
         Sonar_Sensor();
+        void update_can_frame(uint16_t& back, uint16_t& left, uint16_t& right);
+        bool get_mutex_value();
     private:
+
         static void sensor_detect_fall_left();
         static void sensor_detect_rise_left();
         static void sensor_detect_fall_back();
@@ -43,5 +46,4 @@ class Sonar_Sensor //: public SingletonTemplate<Sonar_Sensor>
         static void sensor_detect_rise_right();
 };
 
-#define sonar  Sonar_Sensor::getInstance()
 #endif

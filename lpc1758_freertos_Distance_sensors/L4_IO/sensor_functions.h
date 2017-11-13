@@ -12,8 +12,13 @@
 #include "_can_dbc/generated_can.h"
 #include "sonar_sensor.hpp"
 
-//Sonar_Sensor* sonar;
 
+Sonar_Sensor* sonar;
+void sonar_init_from_sensor_functions()
+{
+    sonar = new Sonar_Sensor();
+    sonar->init();
+}
 
 //this function will send lane data ad sonar sensor data should
 //be renamed appropriately
@@ -32,7 +37,12 @@ void send_lidar_sonar_data()
     SensorData.LIDAR_80 = !rplidar.lane_lut[8];
 
 
+    SensorData.SONAR_left = 645;
+    SensorData.SONAR_right = 645;
+    SensorData.SONAR_back = 645;
     //add the Sonar Sensor code here
+    if(sonar->get_mutex_value())
+        sonar->update_can_frame(SensorData.SONAR_back, SensorData.SONAR_left, SensorData.SONAR_right);
 
     dbc_encode_and_send_SENSOR_DATA(&SensorData);
 
