@@ -68,7 +68,7 @@ enum {
 #define SOFTRIGHT 16
 #define RIGHT 17
 #define HARDRIGHT 18
-#define SONAR_CRITICAL 30
+#define SONAR_CRITICAL 60
 #define SONAR_WARNING 100
 
 // Enum for Motor Speed
@@ -153,6 +153,33 @@ void period_10Hz(uint32_t count)
                 /*Sonar Priorities are higher than LIDAR as LIDAR's range will be larger*/
                 if (dbc_decode_SENSOR_DATA(&sensor_msg, can_msg.data.bytes, &can_header))
                 {
+#if 1
+                    if (sensor_msg.SONAR_left <= SONAR_CRITICAL && sensor_msg.SONAR_right <= SONAR_CRITICAL)
+                    {
+                        master_motor_msg.CAR_CONTROL_speed = stop;
+                        master_motor_msg.CAR_CONTROL_steer = CENTER;
+                        dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
+                    }
+//                    if(sensor_msg.SONAR_left <= SONAR_WARNING && sensor_msg.SONAR_right <= SONAR_WARNING)
+//                    {
+//                        sensor_msg.LIDAR_0 = 1;
+//                        sensor_msg.LIDAR_20 = 1;
+//                        sensor_msg.LIDAR_neg20 = 1;
+//                    }
+                    else if (sensor_msg.SONAR_left <= SONAR_WARNING)
+                    {
+                        master_motor_msg.CAR_CONTROL_speed = maintain;
+                        master_motor_msg.CAR_CONTROL_steer = RIGHT;
+                        dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
+                    }
+                    else if (sensor_msg.SONAR_right <= SONAR_WARNING)
+                    {
+                        master_motor_msg.CAR_CONTROL_speed = maintain;
+                        master_motor_msg.CAR_CONTROL_steer = LEFT;
+                        dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
+                    }
+#endif
+#if 0
                     if (sensor_msg.SONAR_left <= SONAR_CRITICAL && sensor_msg.SONAR_right <= SONAR_CRITICAL)
                     {
                         master_motor_msg.CAR_CONTROL_speed = stop;
@@ -173,6 +200,7 @@ void period_10Hz(uint32_t count)
                     {
                         sensor_msg.LIDAR_20 = 1;
                     }
+#endif
 
                     //If any of LIDAR right values set, take HardLeft
                     //else if (sensor_msg.LIDAR_0 || sensor_msg.LIDAR_20 || sensor_msg.LIDAR_40 || sensor_msg.LIDAR_60 || sensor_msg.LIDAR_80)
@@ -196,13 +224,13 @@ void period_10Hz(uint32_t count)
                         dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
                     }
                     //Go Straight
-                    else if((sensor_msg.LIDAR_0 && sensor_msg.LIDAR_20) && !(sensor_msg.LIDAR_neg40))
+                    else if((sensor_msg.LIDAR_0 && sensor_msg.LIDAR_20) && !(sensor_msg.LIDAR_neg20))
                     {
                         master_motor_msg.CAR_CONTROL_steer = HARDLEFT;
                         master_motor_msg.CAR_CONTROL_speed = maintain;
                         dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
                     }
-                    else if((sensor_msg.LIDAR_0 && sensor_msg.LIDAR_neg20) && !(sensor_msg.LIDAR_40))
+                    else if((sensor_msg.LIDAR_0 && sensor_msg.LIDAR_neg20) && !(sensor_msg.LIDAR_20))
                     {
                         master_motor_msg.CAR_CONTROL_steer = HARDRIGHT;
                         master_motor_msg.CAR_CONTROL_speed = maintain;
@@ -216,14 +244,14 @@ void period_10Hz(uint32_t count)
                     }
                     else if(sensor_msg.LIDAR_0)
                     {
-                        if((sensor_msg.LIDAR_20 || sensor_msg.LIDAR_40) && !(sensor_msg.LIDAR_neg40))
+                        if((sensor_msg.LIDAR_20 || sensor_msg.LIDAR_40) && !(sensor_msg.LIDAR_neg20))
                         {
                             master_motor_msg.CAR_CONTROL_steer = LEFT;
                             master_motor_msg.CAR_CONTROL_speed = maintain;
                             dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
                         }
                         else
-                            if((sensor_msg.LIDAR_neg20 || sensor_msg.LIDAR_neg40) && !(sensor_msg.LIDAR_40))
+                            if((sensor_msg.LIDAR_neg20 || sensor_msg.LIDAR_neg40) && !(sensor_msg.LIDAR_20))
                             {
                                 master_motor_msg.CAR_CONTROL_steer = RIGHT;
                                 master_motor_msg.CAR_CONTROL_speed = maintain;
