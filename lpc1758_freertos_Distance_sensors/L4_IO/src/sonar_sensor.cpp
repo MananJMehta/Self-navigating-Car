@@ -33,8 +33,8 @@ void Sonar_Sensor::sensor_detect_rise_left()
 void Sonar_Sensor::sensor_detect_fall_left()
 {
     left_stop = sys_get_uptime_us();
-    dist_in_left = ((left_stop - left_start)/147);
-    //xSemaphoreGiveFromISR(sonar_mutex,0);
+    dist_in_left = ((left_stop - left_start)*0.0172);
+    xSemaphoreGiveFromISR(sonar_mutex,0);
 }
 
 // callbacks for center sensor
@@ -48,7 +48,7 @@ void Sonar_Sensor::sensor_detect_fall_back()
 {
     back_stop = sys_get_uptime_us();
     dist_in_back = ((back_stop - back_start)/147);
-    xSemaphoreGiveFromISR(sonar_mutex,0);
+    //xSemaphoreGiveFromISR(sonar_mutex,0);
 }
 
 // callbacks for right sensor
