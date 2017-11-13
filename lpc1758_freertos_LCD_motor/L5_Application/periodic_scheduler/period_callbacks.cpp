@@ -63,7 +63,7 @@ bool dbc_app_send_can_msg(uint32_t mid, uint8_t dlc, uint8_t bytes[8])
 
 Speed spd;
 Steering str;
-float val = SLOW;
+float val = VERYSLOW;
 bool flag=false;
 MOTOR_TELEMETRY_t telemetry;
 /**
@@ -253,31 +253,33 @@ void period_1Hz(uint32_t count)
 #endif
 }
 
-const uint32_t        CAR_CONTROL__MIA_MS=3000;
-const CAR_CONTROL_t   CAR_CONTROL__MIA_MSG={0};
+
 can_msg_t msg;
 CAR_CONTROL_t carControl;
-
+SENSOR_DATA_t sensor_can_msg;
+COMPASS_t compass_can_msg;
+GPS_DATA_t gps_can_msg;
 HEARTBEAT_t heartbeat;
+
+const uint32_t                             CAR_CONTROL__MIA_MS=3000;
+const CAR_CONTROL_t                        CAR_CONTROL__MIA_MSG={0};
 const uint32_t                             SENSOR_DATA__MIA_MS = 3000;
 const SENSOR_DATA_t                        SENSOR_DATA__MIA_MSG = {0};
-const uint32_t                             HEARTBEAT__MIA_MS = 3000;
+const HEARTBEAT_t                          HEARTBEAT__MIA_MSG = {    HEARTBEAT_cmd_NOOP };
+const uint32_t                             HEARTBEAT__MIA_MS = 2000;
 const uint32_t                             GPS_DATA__MIA_MS = 3000;
-const GPS_DATA_t                           GPS_DATA__MIA_MSG = {0};
+const GPS_DATA_t                           GPS_DATA__MIA_MSG = {5,5};
 const uint32_t                             COMPASS__MIA_MS = 3000;
-const COMPASS_t                            COMPASS__MIA_MSG = {0};
+const COMPASS_t                            COMPASS__MIA_MSG = {5,5};
 bool master =false;
 void period_10Hz(uint32_t count)
 {
     static uint32_t counter; //Counter to for checking the period of every second
-    SENSOR_DATA_t sensor_can_msg = { 0 };
-    COMPASS_t compass_can_msg = { 0 };
-    GPS_DATA_t gps_can_msg = { 0 };
-    CAR_CONTROL_t car_control_can_msg = { 0 };
+
     counter++;
 
     if(count%2==0)
-    val=spd.speed_check(flag,val);
+        val=spd.speed_check(flag,val);
     printf("%f\n",spd.getSpeed());
     if(flag==false)
         spd.setSpeed(STOP);
@@ -316,7 +318,10 @@ void period_10Hz(uint32_t count)
 
     telemetry.MOTOR_TELEMETRY_pwm=val;
     dbc_encode_and_send_MOTOR_TELEMETRY(&telemetry);
-
+    dbc_handle_mia_COMPASS(&compass_can_msg,100);
+    dbc_handle_mia_GPS_DATA(&gps_can_msg,100);
+    dbc_handle_mia_SENSOR_DATA(&sensor_can_msg,100);
+    // dbc_handle_mia_HEARTBEAT(&heartbeat,100);
     if(dbc_handle_mia_CAR_CONTROL(&carControl,100))
         LE.on(1);
     else LE.off(1);
@@ -325,55 +330,55 @@ void period_10Hz(uint32_t count)
         spd.setSpeed(STOP);
     if(flag ==true || master ==true)
         spd.setSpeed(val);
-        str.setDirection(carControl.CAR_CONTROL_steer);
+    str.setDirection(carControl.CAR_CONTROL_steer);
 
 
 
 #ifdef LCD
-  //Update values from CAN every 10 iterations (every 1 Second)
-        if (counter % 10 == 0) {
+    //Update values from CAN every 10 iterations (every 1 Second)
+    if (counter % 10 == 0) {
 
-            /**
-             * Set Lidar sensor values for LCD display
-             */
-            deg_0 = sensor_can_msg.LIDAR_0;
-            deg_20 = sensor_can_msg.LIDAR_20;
-            deg_40 = sensor_can_msg.LIDAR_40;
-            deg_60 = sensor_can_msg.LIDAR_60;
-            deg_80 = sensor_can_msg.LIDAR_80;
-            deg_neg20 = sensor_can_msg.LIDAR_neg20;
-            deg_neg40 = sensor_can_msg.LIDAR_neg40;
-            deg_neg60 = sensor_can_msg.LIDAR_neg60;
-            deg_neg80 = sensor_can_msg.LIDAR_neg80;
+        /**
+         * Set Lidar sensor values for LCD display
+         */
+        deg_0 = sensor_can_msg.LIDAR_0;
+        deg_20 = sensor_can_msg.LIDAR_20;
+        deg_40 = sensor_can_msg.LIDAR_40;
+        deg_60 = sensor_can_msg.LIDAR_60;
+        deg_80 = sensor_can_msg.LIDAR_80;
+        deg_neg20 = sensor_can_msg.LIDAR_neg20;
+        deg_neg40 = sensor_can_msg.LIDAR_neg40;
+        deg_neg60 = sensor_can_msg.LIDAR_neg60;
+        deg_neg80 = sensor_can_msg.LIDAR_neg80;
 
-            /**
-             * Set Ultrasound sensor values for LCD display
-             */
-            us_left = sensor_can_msg.SONAR_left;
-            us_right = sensor_can_msg.SONAR_right;
-            us_front = sensor_can_msg.SONAR_back;
+        /**
+         * Set Ultrasound sensor values for LCD display
+         */
+        us_left = sensor_can_msg.SONAR_left;
+        us_right = sensor_can_msg.SONAR_right;
+        us_front = sensor_can_msg.SONAR_back;
 
-            /**
-             * Set GPS Coordinates values for LCD Display
-             */
-            current_lat_val = gps_can_msg.GPS_LATITUDE;
-            current_long_val = gps_can_msg.GPS_LONGITUDE;
+        /**
+         * Set GPS Coordinates values for LCD Display
+         */
+        current_lat_val = gps_can_msg.GPS_LATITUDE;
+        current_long_val = gps_can_msg.GPS_LONGITUDE;
 
-            /**
-             * TODO - Need to update the speed value, distance remaining,
-             * distance covered, destination latitude and destination
-             * longitude once the DBC file is updated
-             */
+        /**
+         * TODO - Need to update the speed value, distance remaining,
+         * distance covered, destination latitude and destination
+         * longitude once the DBC file is updated
+         */
 
 
-            /**
-             * dest_lat_val = ;
-             * dest_long_val = ;
-             * speed = ;
-             * distance_covered = ;
-             * distance_remaining = ;
-             */
-        }
+        /**
+         * dest_lat_val = ;
+         * dest_long_val = ;
+         * speed = ;
+         * distance_covered = ;
+         * distance_remaining = ;
+         */
+    }
 #endif
 }
 
