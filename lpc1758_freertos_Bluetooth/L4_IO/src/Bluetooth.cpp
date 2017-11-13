@@ -31,10 +31,10 @@ bool Bluetooth::getBluetoothData(char* rxBuffer, int length,int timeout) {
     return true;
 }*/
 
-int Bluetooth::getSignalType(char* rx, char* latitudeChar, char* longitudeChar) {
+int Bluetooth::getSignalType(char* rx) {
     int signalType = 0;
-    int idIndex = strlen(rx) - 1;
-    char id = rx[idIndex];
+    //int idIndex = strlen(rx) - 1;
+    char id = rx[0];
     printf("ID: %c\n", id);
 
     if(id == '$') {
@@ -45,44 +45,66 @@ int Bluetooth::getSignalType(char* rx, char* latitudeChar, char* longitudeChar) 
         //Send Stop
         signalType = 2;
     }
-    else if(id == '(') {
+    else if(id == '^') {
         //Send GPS
-        getLatLong(rx, latitudeChar, longitudeChar);
-        latitude = strtod(latitudeChar, NULL);
-        longitude = strtod(longitudeChar, NULL);
         signalType = 3;
     }
+
     return signalType;
 }
 
-void Bluetooth::getLatLong(char* rx, char* latitude, char* longitude) {
-    char *separatorIndex; //Index for ','
-    int index = 0;
+bool Bluetooth::sendCanData(ANDROID_CMD_t android_cmd, can_msg_t can_msg, int signalType) {
 
-    separatorIndex = strchr(rx, ',');
-    index = int(separatorIndex - rx);
-    strncpy(latitude, rx, index);
-    strncpy(longitude, rx + index + 1, strlen(rx) - 1);
-    printf("Index: %d\n", index);
-}
+    if(signalType == 1)
+        android_cmd.ANDROID_CMD_start = 1;
+    else if(signalType == 2)
+        android_cmd.ANDROID_CMD_start = 0;
+    else
+        android_cmd.ANDROID_CMD_start = 0;
 
-bool Bluetooth::sendCanData(int flag, ANDROID_CMD_t cmd, can_msg_t msg) {
-    if(flag == 1) {
-        cmd.ANDROID_CMD_start = 1;
-    }
-    if(flag == 2) {
-        cmd.ANDROID_CMD_kill = 1;
-    }
-    if(flag == 3) {
-        cmd.ANDROID_CMD_lat = latitude;
-        cmd.ANDROID_CMD_long = longitude;
-    }
+    android_cmd.ANDROID_CMD_lat = latitude[0];
+    android_cmd.ANDROID_CMD_long = longitude[0];
 
-    dbc_msg_hdr_t msg_hdr = dbc_encode_MOTOR_CMD(can_msg.data.bytes, &motor_cmd);
+    dbc_msg_hdr_t msg_hdr = dbc_encode_ANDROID_CMD(can_msg.data.bytes, &android_cmd);
     can_msg.msg_id = msg_hdr.mid;
     can_msg.frame_fields.data_len = msg_hdr.dlc;
 
         // Queue the CAN message to be sent out
     CAN_tx(can1, &can_msg, 0);
     return true;
+}
+
+int Bluetooth::getCPNum(char* rx) {
+    int cpNo= 0;
+    cpNo = rx[1] - '0';
+    return cpNo;
+}
+
+void Bluetooth::getLatLong(char* rx, int count) {
+    char* startIndex;
+    int temp=0;
+    char* endIndex;
+    char* separatorIndex;
+    char* lat;
+    char* lng;
+
+    while(temp<count) {
+        startIndex = strchr(rx, '(');
+        separatorIndex = strchr(rx, ',');
+        endIndex = strchr(rx, ')');
+
+        //printf("\n%c %c %c",*startIndex,*separatorIndex,*endIndex);
+
+        strncpy(lat, startIndex, (separatorIndex - startIndex));
+        strncpy(lng, separatorIndex + 1, endIndex-separatorIndex+1);
+
+        printf("\n%s",lng);
+
+        /*latitude[temp] = strtod(lat, NULL);
+        longitude[temp] = strtod(lng, NULL);
+        rx = endIndex+1;
+        printf("LATitude: %f\n",latitude[0]);
+        printf("Longitude: %f\n",longitude[0]);*/
+        temp++;
+    }
 }

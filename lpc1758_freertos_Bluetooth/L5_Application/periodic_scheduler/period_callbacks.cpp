@@ -95,25 +95,31 @@ void period_1Hz(uint32_t count)
 
 void period_10Hz(uint32_t count)
 {
-    char rx[50] = ""; //Receive Buffer
-    char latitudeChar[10] = ""; //
-    char longitudeChar[10] = "";
-    int success = 0;
+    char rx[200]={0}; //Receive Buffer
 
     ANDROID_CMD_t android_cmd = {0};
     can_msg_t can_msg = {0};
 
-    if(bluetooth.getBluetoothData(rx, 50, 0)) {
+    if(bluetooth.getBluetoothData(rx, 150, 0)) {
         printf("\nChar: %s\n",rx);
         LE.on(2);
-        success = 1;
-    }
-    if(success == 1) {
-        int signalType = bluetooth.getSignalType(rx, latitudeChar, longitudeChar);
-        bluetooth.sendCanData(signalType, android_cmd, can_msg);
 
+        int signalType = bluetooth.getSignalType(rx);
+        printf("\n%d",signalType);
+
+        if(signalType == 3) {
+            int chkPointNo = bluetooth.getCPNum(rx);
+            printf("Chk Pt: %d\n",chkPointNo);
+            bluetooth.getLatLong(rx, chkPointNo);
+        }
+
+        bluetooth.sendCanData(android_cmd, can_msg, signalType);
     }
-    LE.off(2);
+    else
+    {
+        LE.toggle(2);
+    }
+
     //LE.toggle(2);
 }
 

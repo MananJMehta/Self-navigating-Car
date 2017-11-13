@@ -18,16 +18,19 @@ public:
     //bool initCan(can_t can, uint32_t baudRate, uint16_t rxQSize, uint16_t txQSize);
     bool getBluetoothData(char* rxBuffer, int length, int timeout); //Get data from App
     //bool sendBluetoothData(char);
-    int getSignalType(char* rx, char* latitudeChar, char* longitudeChar); //Send data on CAN bus
-    void getLatLong(char* rx, char* latitude, char* longitude); //Parse data to get Lat and Long
-    bool sendCanData(int flag, ANDROID_CMD_t cmd, can_msg_t msg);
+    int getSignalType(char* rx); //Send data on CAN bus
+    int getCPNum(char* rx);
+    void getLatLong(char* rx, int count); //Parse data to get Lat and Long
+    bool sendCanData(ANDROID_CMD_t cmd, can_msg_t can_msg, int signalType);
 
-    double latitude;
-    double longitude;
+    double latitude[10];
+    double longitude[10];
+    int checkpointCounter;
 
     Bluetooth() {
-        latitude = 0.0;
-        longitude = 0.0;
+        latitude[10] = 0;
+        longitude[10] = 0;
+        checkpointCounter = sizeof(latitude) / sizeof(double);
     };
     //friend class SingletonTemplate<Bluetooth>;  ///< Friend class used for Singleton Template
 };
