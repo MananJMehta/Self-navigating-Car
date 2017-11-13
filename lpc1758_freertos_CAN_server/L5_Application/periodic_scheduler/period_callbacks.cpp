@@ -28,14 +28,41 @@
  * do must be completed within 1ms.  Running over the time slot will reset the system.
  */
 
+#include "string.h"
 #include <stdint.h>
 #include "io.hpp"
 #include "periodic_callback.h"
+#include "can.h"
+#include "_can_dbc/generated_can.h"
+#include "printf_lib.h"
+#include <cmath>
+#include <utility>
 
+using namespace std;
 
+#define SONAR_CODE  0        //Uncomment to include SONAR code
 
-/// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
+
+
+// Define for Motor Steer
+#define HARDLEFT 12
+#define LEFT 13
+#define SOFTLEFT 14
+#define CENTER 15
+#define SOFTRIGHT 16
+#define RIGHT 17
+#define HARDRIGHT 18
+
+#define SONAR_CRITICAL 30
+
+// Enum for Motor Speed
+enum {
+    Stop,
+    Go     //medium
+};
+
+uint8_t arr[9];
 
 /**
  * This is the stack size of the dispatcher task that triggers the period tasks to run.
@@ -45,9 +72,28 @@ const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
  */
 const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
 
+can_t canTest = can1;
+
+SENSOR_DATA_t sensor_msg = { 0 };
+CAR_CONTROL_t master_motor_msg = { 0 };
+HEARTBEAT_t heartbeat_msg;
+
+bool dbc_app_send_can_msg(uint32_t mid, uint8_t dlc, uint8_t bytes[8])
+{
+    can_msg_t can_msg = { 0 };
+    can_msg.msg_id = mid;
+    can_msg.frame_fields.data_len = dlc;
+    memcpy(can_msg.data.bytes, bytes, dlc);
+    return CAN_tx(canTest, &can_msg, 0);
+}
+
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
 {
+    CAN_init(canTest, 100, 10, 10, NULL, NULL);
+    CAN_bypass_filter_accept_all_msgs();
+    CAN_reset_bus(canTest);
+
     return true; // Must return true upon success
 }
 
@@ -58,30 +104,71 @@ bool period_reg_tlm(void)
     return true; // Must return true upon success
 }
 
-
 /**
  * Below are your periodic functions.
  * The argument 'count' is the number of times each periodic task is called.
  */
-
 void period_1Hz(uint32_t count)
 {
+    heartbeat_msg.HEARTBEAT_cmd = HEARTBEAT_cmd_SYNC;
+    dbc_encode_and_send_HEARTBEAT(&heartbeat_msg);
     LE.toggle(1);
+    if(CAN_is_bus_off(can1))
+    {
+        CAN_reset_bus(can1);
+    }
 }
 
 void period_10Hz(uint32_t count)
 {
-    LE.toggle(2);
+    can_msg_t can_msg;
+    while(CAN_rx(canTest,&can_msg,0))
+    {
+        dbc_msg_hdr_t can_header;
+        can_header.dlc = can_msg.frame_fields.data_len;
+        can_header.mid = can_msg.msg_id;
+        switch(can_msg.msg_id)
+        {
+            case 150:
+                if (dbc_decode_SENSOR_DATA(&sensor_msg, can_msg.data.bytes, &can_header))
+                {
+                    if (sensor_msg.SONAR_left <= SONAR_CRITICAL && sensor_msg.SONAR_right <= SONAR_CRITICAL)
+                    {
+                        master_motor_msg.CAR_CONTROL_speed = Stop;
+                        dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
+                    }
+                    else if (sensor_msg.SONAR_left <= SONAR_CRITICAL)
+                    {
+                        master_motor_msg.CAR_CONTROL_steer = HARDRIGHT;
+                        master_motor_msg.CAR_CONTROL_speed = Go;
+                        dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
+                    }
+                    else if (sensor_msg.SONAR_right <= SONAR_CRITICAL)
+                    {
+                        master_motor_msg.CAR_CONTROL_steer = HARDLEFT;
+                        master_motor_msg.CAR_CONTROL_speed = Go;
+                        dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
+                    }
+                    else
+                    {
+                        master_motor_msg.CAR_CONTROL_steer = CENTER;
+                        master_motor_msg.CAR_CONTROL_speed = Go;
+                        dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
+                    }
+
+                }
+                break;
+        }
+    }
 }
+
 
 void period_100Hz(uint32_t count)
 {
-    LE.toggle(3);
+    //LE.toggle(3);
 }
 
-// 1Khz (1ms) is only run if Periodic Dispatcher was configured to run it at main():
-// scheduler_add_task(new periodicSchedulerTask(run_1Khz = true));
 void period_1000Hz(uint32_t count)
 {
-    LE.toggle(4);
+    //LE.toggle(4);
 }
