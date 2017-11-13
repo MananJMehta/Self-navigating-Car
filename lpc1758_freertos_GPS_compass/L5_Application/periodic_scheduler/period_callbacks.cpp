@@ -33,9 +33,12 @@
 #include "periodic_callback.h"
 #include "printf_lib.h"
 #include "gps_v1.hpp"
+#include "can.h"
+#include "_can_dbc/generated_can.h"
 
 
 Uart2_GPS gps;
+HEARTBEAT_t hrt_buffer;
 
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
@@ -48,11 +51,17 @@ const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
  */
 const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
 
+void CAN_GPS_Trasmit();
+void CAN_HeartBeat_Receive();
+
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
 {
     gps.init();
-    gps.transmit();
+
+    CAN_init(can1, 100, 100, 100, NULL, NULL);
+    CAN_bypass_filter_accept_all_msgs();
+    CAN_reset_bus(can1);
 
     return true; // Must return true upon success
 }
@@ -71,15 +80,27 @@ bool period_reg_tlm(void)
 
 void period_1Hz(uint32_t count)
 {
+    if(CAN_is_bus_off(can1))
+    {
+        CAN_reset_bus(can1);
+    }
+
     gps.parse_data();
     u0_dbg_printf("Lat: %f\n", gps.getLatitude());
  //   u0_dbg_printf("Lon: %f\n", gps.getLongitude());
+
+
+
 //    LE.toggle(1);
 }
 
 void period_10Hz(uint32_t count)
 {
     gps.receive();
+
+//    CAN_GPS_Trasmit();
+    CAN_HeartBeat_Receive();
+
 }
 
 
@@ -93,4 +114,41 @@ void period_100Hz(uint32_t count)
 void period_1000Hz(uint32_t count)
 {
 //    LE.toggle(4);
+}
+
+void CAN_GPS_Trasmit()
+{
+    GPS_DATA_t gps_buffer_transmit = {0};
+    gps_buffer_transmit.GPS_LATITUDE = gps.getLatitude();
+    gps_buffer_transmit.GPS_LONGITUDE = gps.getLongitude();
+
+    can_msg_t can_gps_transmit = {0};
+    dbc_msg_hdr_t msg_hdr_transmit = dbc_encode_GPS_DATA(can_gps_transmit.data.bytes, &gps_buffer_transmit);
+    can_gps_transmit.msg_id = msg_hdr_transmit.mid;
+    can_gps_transmit.frame_fields.data_len = msg_hdr_transmit.dlc;
+
+    CAN_tx(can1, &can_gps_transmit, 0);
+}
+
+void CAN_HeartBeat_Receive()
+{
+    can_msg_t can_hrt_receive;
+
+    if(CAN_rx(can1, &can_hrt_receive, 0))
+    {
+        dbc_msg_hdr_t msg_hdr_receive;
+        msg_hdr_receive.mid = can_hrt_receive.msg_id;
+        msg_hdr_receive.dlc = can_hrt_receive.frame_fields.data_len;
+
+        dbc_decode_HEARTBEAT(&hrt_buffer, can_hrt_receive.data.bytes, &msg_hdr_receive);
+    }
+
+    if(hrt_buffer.HEARTBEAT_cmd == HEARTBEAT_cmd_SYNC)
+    {
+        LE.toggle(4);
+    }
+    else
+    {
+        LE.off(4);
+    }
 }

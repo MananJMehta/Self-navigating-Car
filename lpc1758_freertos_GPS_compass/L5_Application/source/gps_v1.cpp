@@ -20,6 +20,7 @@ bool Uart2_GPS::init()
     Uart2::getInstance().init(9600, UART_RECEIVE_BUFFER_SIZE, UART_TRANSMIT_BUFFER_SIZE);   // Initial GPS baud rate should be 9600
     Uart2::getInstance().putline(PMTK_SET_BAUD_57600, portMAX_DELAY);                       // Change GPS baud rate to 57600
     Uart2::getInstance().init(57600, UART_RECEIVE_BUFFER_SIZE, UART_TRANSMIT_BUFFER_SIZE);  // Change SJ One baud rate to 57600
+    transmit();
 
     return true;
 }
@@ -54,11 +55,11 @@ bool Uart2_GPS::parse_data()
 {
     if(!memcmp(buffer, "$GPRMC", 6) && buffer[18]=='A' && buffer[30]=='N' && buffer[43]=='W')
     {
-        char lat[9] = "";
-        char lon[10] = "";
+        char lat[10] = "";
+        char lon[11] = "";
 
-        memcpy(lat, (buffer+20), 8);
-        memcpy(lon, (buffer+32), 9);
+        memcpy(lat, (buffer+20), 9);
+        memcpy(lon, (buffer+32), 10);
         u0_dbg_printf("lat: %s\n", lat);
 
         latitude = (float)atof(lat);        // Limit float values---------------------------------------
