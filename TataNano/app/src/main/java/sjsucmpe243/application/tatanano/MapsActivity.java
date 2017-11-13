@@ -19,8 +19,11 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
+import android.text.InputType;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -35,6 +38,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 
@@ -52,14 +56,28 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     static int Checkpoint_num = 0;
     boolean flag = true;
     String BTdata;
+    TextView actualSpeed;
+    InputStream rx_data;
+    OutputStream tx_data;
+    boolean Toggle_start_stop = false;
 
     AlertDialog.Builder alertDialogBuilder;
     AlertDialog alertDialog;
+    AlertDialog.Builder speedDialogBuilder;
+    AlertDialog speedDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+        actualSpeed = findViewById(R.id.speedText);
+        try {
+            rx_data = MainActivity.gotSocket.getInputStream();
+            tx_data = MainActivity.gotSocket.getOutputStream();
+        } catch (IOException e) {
+            Log.e("TataNano : Bluetooth", "Socket is not connected yet. ");
+        }
 
         SendLocation = findViewById(R.id.SendLocation);
         SendLocation.setOnClickListener(new View.OnClickListener() {
@@ -67,18 +85,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onClick(View v) {
                 //LatLng temp = new LatLng(0,0);
 
-                try {
-                    OutputStream rx_data = MainActivity.gotSocket.getOutputStream();
                     Log.e("TataNano : Bluetooth", " Total check points are "+ Checkpoint_num );
+                    BTdata = "^" + String.valueOf(Checkpoint_num);
+                try {
+                    tx_data.write(BTdata.getBytes());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
-                    for (LatLng temp : checkpoints) {
+                for (LatLng temp : checkpoints) {
                         Log.e("TataNano : Bluetooth", "(" + temp.latitude + "," + temp.longitude+")");
                         BTdata = "(" + temp.latitude + "," + temp.longitude+")\n";
-                        rx_data.write(BTdata.getBytes());
+                    try {
+                        tx_data.write(BTdata.getBytes());
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
-
-                } catch (IOException e) {
-                    Log.e("TataNano : Bluetooth", "Socket is not connected yet. ");
                 }
             }
         });
@@ -87,17 +109,43 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SendStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SendStart.setVisibility(View.INVISIBLE);
-                SendStop.setVisibility(View.VISIBLE);
 
-                try {
-                    OutputStream rx_data = MainActivity.gotSocket.getOutputStream();
-                    Log.e("TataNano : Bluetooth", " Start command sent" );
-                        BTdata = "start\n";
-                        rx_data.write(BTdata.getBytes());
-                } catch (IOException e) {
-                    Log.e("TataNano : Bluetooth", "Socket is not connected yet. ");
-                }
+                final EditText speed = new EditText(MapsActivity.this);
+                speed.setInputType(InputType.TYPE_CLASS_NUMBER);
+                speedDialogBuilder = new AlertDialog.Builder(MapsActivity.this);
+                speedDialogBuilder.setTitle("Enter desired speed");
+                speedDialog = speedDialogBuilder
+                .setMessage("Valid input is 1 to 10 km/h")
+                .setCancelable(false)
+                .setView(speed)
+                .setPositiveButton("Set and Send", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                    if(!speed.getText().toString().equals("")) {
+                        BTdata = "Start$" + speed.getText().toString() + "\n";
+                        try {
+                            tx_data.write(BTdata.getBytes());
+                            Log.e("TataNano : Bluetooth", " Start command sent" + speed.getText().toString() );
+                            Toggle_start_stop = true;
+                        } catch (NullPointerException e) {
+                            Log.e("TataNano : Bluetooth", " Could not sent. Null pointer exception" );
+                        } catch (IOException e) {
+                            Log.e("TataNano : Bluetooth", " Could not sent. IO exception" );
+                        }
+                        speedDialog.cancel();
+                    }
+                    else{
+                        Toast.makeText(MapsActivity.this, "Value cannot be empty.", Toast.LENGTH_SHORT).show();
+                        Toggle_start_stop = false;
+                    }
+                        if (Toggle_start_stop) {
+                            SendStart.setVisibility(View.INVISIBLE);
+                            SendStop.setVisibility(View.VISIBLE);
+                        }
+                    }
+                })
+                .create();
+                speedDialog.show();
             }
         });
 
@@ -108,14 +156,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onClick(View v) {
                 SendStart.setVisibility(View.VISIBLE);
                 SendStop.setVisibility(View.INVISIBLE);
-
+                BTdata = "Stop@\n";
                 try {
-                    OutputStream rx_data = MainActivity.gotSocket.getOutputStream();
+                    tx_data.write(BTdata.getBytes());
                     Log.e("TataNano : Bluetooth", " Stop command sent" );
-                    BTdata = "stop\n";
-                    rx_data.write(BTdata.getBytes());
+                } catch (NullPointerException e) {
+                    Log.e("TataNano : Bluetooth", " Could not sent. Null pointer exception" );
                 } catch (IOException e) {
-                    Log.e("TataNano : Bluetooth", "Socket is not connected yet. ");
+                    Log.e("TataNano : Bluetooth", " Could not sent. IO exception" );
                 }
             }
         });
@@ -159,6 +207,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         // to handle the case where the user grants the permission. See the documentation
                         // for ActivityCompat#requestPermissions for more details.
                         return;
+                    }
+
+                    try {
+                        if(rx_data.available()>0)
+                            actualSpeed.setText(rx_data.read());
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
 
                     if (temp != null && temp.isProviderEnabled(LocationManager.GPS_PROVIDER) && temp.getLastKnownLocation(LocationManager.GPS_PROVIDER) != null)
