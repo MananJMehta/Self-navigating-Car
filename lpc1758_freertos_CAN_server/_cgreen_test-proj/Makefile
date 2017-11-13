@@ -27,7 +27,6 @@ HEADER_DIR = -I$(PROJ_DIR)/L0_LowLevel \
                -I$(PROJ_DIR)/L1_FreeRTOS/portable \
                -I$(PROJ_DIR)/L1_FreeRTOS/portable/mpu \
                -I$(PROJ_DIR)/L2_Drivers/base \
-               -I$(PROJ_DIR)/L2_Drivers \
                -I$(PROJ_DIR)/L3_Utils \
                -I$(PROJ_DIR)/L3_Utils/tlm \
                -I$(PROJ_DIR)/L4_IO \
@@ -39,6 +38,7 @@ HEADER_DIR = -I$(PROJ_DIR)/L0_LowLevel \
                -I$(PROJ_DIR)/L5_Application \
                -I$(PROJ_DIR)/L5_Application/examples \
                -I$(PROJ_DIR)/L5_Application/periodic_scheduler \
+               -I$(PROJ_DIR)/L5_Application/periodic_scheduler/periodic_callback.cpp \
                -I$(EXAMPLE_DIR) \
 
 # Default for "make"
@@ -50,23 +50,23 @@ clean :
 test_main.o: $(UT_DIR)/test_main.cpp
 	$(CXX) $(CGREEN_HEADERS) $(HEADER_DIR) $(CXXFLAGS) -c $(UT_DIR)/test_main.cpp $(LIBS)
 
-turtle.o: $(EXAMPLE_DIR)/turtle.cpp
-	$(CXX) $(CGREEN_HEADERS) $(HEADER_DIR) $(CXXFLAGS) -c $(EXAMPLE_DIR)/turtle.cpp $(LIBS)
+#turtle.o: $(EXAMPLE_DIR)/turtle.cpp
+#	$(CXX) $(CGREEN_HEADERS) $(HEADER_DIR) $(CXXFLAGS) -c $(EXAMPLE_DIR)/turtle.cpp $(LIBS)
 
-foo.o: $(EXAMPLE_DIR)/foo.cpp turtle.o
-	$(CXX) $(CGREEN_HEADERS) $(HEADER_DIR) $(CXXFLAGS) -c $(EXAMPLE_DIR)/foo.cpp $(LIBS)
+#foo.o: $(EXAMPLE_DIR)/foo.cpp turtle.o
+#	$(CXX) $(CGREEN_HEADERS) $(HEADER_DIR) $(CXXFLAGS) -c $(EXAMPLE_DIR)/foo.cpp $(LIBS)
 
-test_foo.o: $(UT_DIR)/test_foo.cpp foo.o
-	$(CXX) $(CGREEN_HEADERS) $(HEADER_DIR) $(CXXFLAGS) -c $(UT_DIR)/test_foo.cpp $(LIBS)
+#test_foo.o: $(UT_DIR)/test_foo.cpp foo.o
+#	$(CXX) $(CGREEN_HEADERS) $(HEADER_DIR) $(CXXFLAGS) -c $(UT_DIR)/test_foo.cpp $(LIBS)
 
-c_list.o: $(PROJ_DIR)/L3_Utils/src/c_list.c
-	$(CXX) $(CGREEN_HEADERS) $(HEADER_DIR) $(CXXFLAGS) -c $(PROJ_DIR)/L3_Utils/src/c_list.c $(LIBS)
+#c_list.o: $(PROJ_DIR)/L3_Utils/src/c_list.c
+#	$(CXX) $(CGREEN_HEADERS) $(HEADER_DIR) $(CXXFLAGS) -c $(PROJ_DIR)/L3_Utils/src/c_list.c $(LIBS)
 
 #gps_parse.o: $(PROJ_DIR)/L5_Application/gps_parse.c
 #	$(CXX) $(CGREEN_HEADERS) $(HEADER_DIR) $(CXXFLAGS) -c $(PROJ_DIR)/L5_Application/gps_parse.c $(LIBS)
 	
-test_c_list.o: $(UT_DIR)/test_c_list.c $(HEADER_DIR) c_list.o
-	$(CXX) $(CGREEN_HEADERS) $(HEADER_DIR) $(CXXFLAGS) -c $(UT_DIR)/test_c_list.c $(LIBS)
+#test_c_list.o: $(UT_DIR)/test_c_list.c $(HEADER_DIR) c_list.o
+#	$(CXX) $(CGREEN_HEADERS) $(HEADER_DIR) $(CXXFLAGS) -c $(UT_DIR)/test_c_list.c $(LIBS)
 
-test_all: test_main.o c_list.o foo.o # gps_parse.o
+test_all: test_main.o
 	$(CXX) $(CGREEN_HEADERS) $(HEADER_DIR) $(CXXFLAGS) $^ -o $@ $(LIBS)
