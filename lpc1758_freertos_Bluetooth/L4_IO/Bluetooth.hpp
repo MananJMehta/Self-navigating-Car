@@ -22,6 +22,8 @@ public:
     int getCPNum(char* rx);
     void getLatLong(char* rx, int count); //Parse data to get Lat and Long
     bool sendCanData(ANDROID_CMD_t cmd, can_msg_t can_msg, int signalType);
+    bool sendSpeed();
+    bool flushBuffer();
 
     double latitude[10];
     double longitude[10];

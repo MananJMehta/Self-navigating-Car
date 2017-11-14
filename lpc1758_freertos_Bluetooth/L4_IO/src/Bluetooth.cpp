@@ -1,7 +1,7 @@
 #include "Bluetooth.hpp"
 #include "string.h"
 #include "stdlib.h"
-
+#include "io.hpp"
 
 Uart2& u2 = Uart2::getInstance();
 //Bluetooth b;
@@ -18,12 +18,11 @@ bool Bluetooth::init(int baudRate, int rxQueue, int txQueue) {
     return 0;
 }*/
 
-bool Bluetooth::getBluetoothData(char* rxBuffer, int length,int timeout) {
-    int status = false;
-    if(u2.gets(rxBuffer, length, timeout))
-        status = true;
-
-    return status;
+bool Bluetooth::getBluetoothData(char* rxBuffer, int length, int timeout) {
+    if(u2.getRxQueueSize() > 0)
+        return u2.gets(rxBuffer, length, timeout);
+    else
+        return false;
 }
 
 /*bool Bluetooth::sendBluetoothData() {
@@ -102,11 +101,42 @@ void Bluetooth::getLatLong(char* rx, int count) {
         printf("SEPINDEX: %d\n",separatorIndex);
         strncpy(latChar, rx + startIndex + 1, separatorIndex - startIndex -1);
         strncpy(lngChar, rx + separatorIndex + 1, endIndex-separatorIndex - 1);
-        //float lat = atof(latChar);
+        float lat = atof(latChar);
         float lng = atof(lngChar);
-        //printf("LAT: %s\n",latChar);
+        printf("LAT: %f\n",lat);
         printf("LNG: %f\n",lng);
         rx = endPos + 1;
         temp++;
     }
+}
+
+bool Bluetooth::sendSpeed() {
+    char desiredSpeed;
+    if(SW.getSwitch(1)) {
+        desiredSpeed = '2';
+        if(u2.putChar(desiredSpeed, 0))
+            printf("Sent 2\n");
+    }
+    else if(SW.getSwitch(2)) {
+        desiredSpeed = '5';
+        if(u2.putChar(desiredSpeed, 0))
+            printf("Sent 5\n");
+    }
+    else if(SW.getSwitch(3)) {
+        desiredSpeed = '7';
+        if(u2.putChar(desiredSpeed, 0))
+            printf("Sent 7\n");
+        }
+    else if(SW.getSwitch(4)) {
+        desiredSpeed = '9';
+        if(u2.putChar(desiredSpeed, 0))
+            printf("Sent 9\n");
+        }
+
+    return true;
+}
+
+bool Bluetooth::flushBuffer() {
+    u2.flush();
+    return true;
 }

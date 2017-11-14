@@ -40,6 +40,8 @@
 #include "uart2.hpp"
 #include "string.h"
 
+#define bufferLength 600
+
 Bluetooth bluetooth;
 
 //CAN init
@@ -56,7 +58,7 @@ void canResetBus() {
     }
 }
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
-const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
+const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 8);
 
 /**
  * This is the stack size of the dispatcher task that triggers the period tasks to run.
@@ -89,18 +91,13 @@ bool period_reg_tlm(void)
 
 void period_1Hz(uint32_t count)
 {
-    //canResetBus();
-    LE.toggle(1);
-}
-
-void period_10Hz(uint32_t count)
-{
-    char rx[200]={0}; //Receive Buffer
+    //char rx[bufferLength]={0}; //Receive Buffer
+    char* rx = new char;
 
     ANDROID_CMD_t android_cmd = {0};
     can_msg_t can_msg = {0};
 
-    if(bluetooth.getBluetoothData(rx, 150, 0)) {
+    if(bluetooth.getBluetoothData(rx, bufferLength, 1)) {
         printf("\nChar: %s\n",rx);
         LE.on(2);
 
@@ -114,23 +111,32 @@ void period_10Hz(uint32_t count)
         }
 
         bluetooth.sendCanData(android_cmd, can_msg, signalType);
+        bluetooth.flushBuffer();
     }
     else
     {
         LE.toggle(2);
     }
+    bluetooth.sendSpeed();
+    //canResetBus();
+    LE.toggle(1);
+}
+
+void period_10Hz(uint32_t count)
+{
 
     //LE.toggle(2);
 }
 
 void period_100Hz(uint32_t count)
 {
-    LE.toggle(3);
+
+    //LE.toggle(3);
 }
 
 // 1Khz (1ms) is only run if Periodic Dispatcher was configured to run it at main():
 // scheduler_add_task(new periodicSchedulerTask(run_1Khz = true));
 void period_1000Hz(uint32_t count)
 {
-    LE.toggle(4);
+    //LE.toggle(4);
 }
