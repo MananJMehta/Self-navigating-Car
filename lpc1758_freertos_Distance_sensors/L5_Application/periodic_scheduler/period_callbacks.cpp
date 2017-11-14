@@ -86,7 +86,7 @@ void period_1Hz(uint32_t count)
 
 
     send_distance_values();
-    LE.toggle(1);
+    //LE.toggle(1);
 }
 
 void period_10Hz(uint32_t count)
@@ -110,13 +110,13 @@ void period_10Hz(uint32_t count)
         prev_count = count;
     }
 
-    LE.toggle(2);
+    //LE.toggle(2);
 }
 
 void period_100Hz(uint32_t count)
 {
 
-    LE.toggle(3);
+    //LE.toggle(3);
 }
 
 // 1Khz (1ms) is only run if Periodic Dispatcher was configured to run it at main():
@@ -136,7 +136,7 @@ void period_1000Hz(uint32_t count)
         prev_count = count;
     }
 
-    LE.toggle(4);
+    //LE.toggle(4);
 }
 
 void check_heartbeat()

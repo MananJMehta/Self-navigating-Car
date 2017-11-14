@@ -40,6 +40,7 @@ class Lidar_Sensor : public SingletonTemplate<Lidar_Sensor>
         bool update_lane_lut();
         int8_t det_smol_angle();
         void send_angles();
+        bool uart_sucks();
 
         char receive_lidar_data();
 

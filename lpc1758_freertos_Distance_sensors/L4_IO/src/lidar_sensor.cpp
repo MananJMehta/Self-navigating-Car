@@ -32,6 +32,12 @@ void Lidar_Sensor::send_lidar_command(lidar_cmd_t lidar_cmd)
     u2.printf("%c",lidar_cmd);
 }
 
+bool Lidar_Sensor::uart_sucks()
+{
+    bool x = u2.recentlyActive(1000);
+    return x;
+}
+
 
 /*
  *
