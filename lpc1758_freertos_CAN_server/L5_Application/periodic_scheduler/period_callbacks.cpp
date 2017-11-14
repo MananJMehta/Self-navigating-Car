@@ -73,7 +73,12 @@ enum {
     Reverse
 };
 
+//Define a critical distance for sonar
+#define sonar_critical 50
+#define sonar_warning 70
+
 uint8_t arr[9];
+uint8_t flag_speed = 0;
 
 /**
  * This is the stack size of the dispatcher task that triggers the period tasks to run.
@@ -86,6 +91,7 @@ const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
 can_t canTest = can1;
 
 SENSOR_DATA_t sensor_msg = { 0 };
+ANDROID_CMD_t and_msg ={0};
 CAR_CONTROL_t master_motor_msg = { 0 };
 HEARTBEAT_t heartbeat_msg;
 
@@ -127,27 +133,29 @@ uint8_t map_get_value(SENSOR_DATA_t y)
 {
     if (y.LIDAR_0 == 1)
     {
+        if(y.LIDAR_20 == 1 && y.LIDAR_neg20 == 1 && y.LIDAR_40 == 1 && y.LIDAR_neg40 == 1)
+            return 9;
         if(y.LIDAR_20 == 1 && y.LIDAR_neg20 == 1 && y.LIDAR_40 == 0)
             return 5;
-        else if (y.LIDAR_20 == 1 && y.LIDAR_neg20 == 1 && y.LIDAR_neg40 == 0)
+        if (y.LIDAR_20 == 1 && y.LIDAR_neg20 == 1 && y.LIDAR_neg40 == 0)
             return 6;
-        else if (y.LIDAR_20 == 1 && y.LIDAR_neg20 == 0)
+        if (y.LIDAR_20 == 1 && y.LIDAR_neg20 == 0)
             return 6;
-        else if (y.LIDAR_20 == 0 && y.LIDAR_neg20 == 1)
+        if (y.LIDAR_20 == 0 && y.LIDAR_neg20 == 1)
             return 5;
-        else if (y.LIDAR_neg40 == 0)
+        if (y.LIDAR_neg40 == 0)
             return 6;
-        else if(y.LIDAR_40 == 0)
+        if(y.LIDAR_40 == 0)
             return 5;
     }
 
-    else if(y.LIDAR_0 == 0 && y.LIDAR_20 == 0 && y.LIDAR_neg20 == 0)
+    if(y.LIDAR_0 == 0 && y.LIDAR_20 == 0 && y.LIDAR_neg20 == 0)
         return 0;
 
-    else if (y.LIDAR_0 == 0 && y.LIDAR_20 == 0 && y.LIDAR_neg20 == 1 )
+    if (y.LIDAR_0 == 0 && y.LIDAR_20 == 0 && y.LIDAR_neg20 == 1 )
         return 3;
 
-    else if (y.LIDAR_0 == 0 && y.LIDAR_20 == 1 && y.LIDAR_neg20 == 0)
+    if (y.LIDAR_0 == 0 && y.LIDAR_20 == 1 && y.LIDAR_neg20 == 0)
         return 4;
 
     return 9;
@@ -159,17 +167,36 @@ uint8_t map_get_value(SENSOR_DATA_t y)
 pair<uint8_t, uint8_t> update_lanes(SENSOR_DATA_t x)
 {
     static pair<uint8_t , uint8_t> return_value;
-    return_value.first=CENTER;
-    return_value.second=0;
+    return_value.first=HARDLEFT;//steering
+    return_value.second=0;//speed
 
     uint8_t i=map_get_value(x);
 
     if(i==9)
+    {
+        LE.on(2);
+        LE.on(3);
+        LE.on(4);
         return return_value;
+    }
+
+    LE.off(2);
+    LE.off(3);
+    LE.off(4);
 
     return_value.first = arr[i];
-    return_value.second = 1;
+    return_value.second = flag_speed;
     return return_value;
+}
+
+//stops the car if the obstacle is too close
+void stop_lidar (SENSOR_DATA_t& x)
+{
+    x.LIDAR_0 = 1;
+    x.LIDAR_20 = 1;
+    x.LIDAR_40 = 1;
+    x.LIDAR_neg20 = 1;
+    x.LIDAR_neg40 = 1;
 }
 
 /// Register any telemetry variables
@@ -196,79 +223,45 @@ void period_1Hz(uint32_t count)
 
 void period_10Hz(uint32_t count)
 {
-    //LE.toggle(2);
     can_msg_t can_msg;
     while(CAN_rx(canTest,&can_msg,0))
     {
         dbc_msg_hdr_t can_header;
         can_header.dlc = can_msg.frame_fields.data_len;
         can_header.mid = can_msg.msg_id;
-        //u0_dbg_printf("in while");
         switch(can_header.mid)
         {
-            //u0_dbg_printf("in switch");
+
+            case 130:
+                if (dbc_decode_ANDROID_CMD(&and_msg, can_msg.data.bytes, &can_header))
+                {
+                    if(and_msg.ANDROID_CMD_start == 0)
+                        flag_speed = 0;
+                    else
+                        flag_speed = 1;
+                }
+                break;
             case 150:
 
                 /*Sonar Priorities are higher than LIDAR as LIDAR's range will be larger*/
                 if (dbc_decode_SENSOR_DATA(&sensor_msg, can_msg.data.bytes, &can_header))
                 {
-/*#ifdef SONAR_CODE
-                    if (sensor_msg.SONAR_left == sonar_critical)
-                    {
-                        LE.off(2);
-                        LE.off(3);
-                        LE.on(4);
-                        master_motor_msg.CAR_CONTROL_steer = HARDRIGHT;
-                        master_motor_msg.CAR_CONTROL_speed = Forward_L1;
-                        dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
-                    }
-                    else if (sensor_msg.SONAR_right == sonar_critical)
-                    {
-                        LE.off(2);
-                        LE.off(4);
-                        LE.on(3);
-                        master_motor_msg.CAR_CONTROL_steer = HARDLEFT;
-                        master_motor_msg.CAR_CONTROL_speed = Forward_L1;
-                        dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
-                    }
-                    //Back Sonar currently not being used for LAB2
-//                    else if (sensor_msg.SONAR_back == sonar_critical)
-//                    {
-//                        LE.on(4);
-//                        master_motor_msg.CAR_CONTROL_steer = Center;      //put stop here
-//                        dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
-//                    }
-#ifdef SONAR_ALERT
-                    else if (sensor_msg.SONAR_right == sonar_alert)
-                    {
-                        LE.off(2);
-                        LE.off(4);
-                        LE.on(3);
-                        master_motor_msg.CAR_CONTROL_steer = SoftLeft;
-                        master_motor_msg.CAR_CONTROL_speed = Forward_L1;
-                        dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
-                    }
-                    else if (sensor_msg.SONAR_left == sonar_alert)
-                    {
-                        LE.off(2);
-                        LE.off(3);
-                        LE.on(4);
-                        master_motor_msg.CAR_CONTROL_steer = SoftRight;
-                        master_motor_msg.CAR_CONTROL_speed = Forward_L1;
-                        dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
-                    }
-#endif
-#endif*/
-
-                    //If any of LIDAR right values set, take HardLeft
+//                    if(sensor_msg.SONAR_left <= sonar_critical)
+//                        stop_lidar(sensor_msg);
+                    if(sensor_msg.SONAR_left <= sonar_critical)
+                        sensor_msg.LIDAR_0 = 1;
+//                    if(sensor_msg.SONAR_right <= sonar_critical)
+//                        sensor_msg.LIDAR_20 = 1;
                     pair<uint8_t , uint8_t> son;
                     son = update_lanes(sensor_msg);
                     master_motor_msg.CAR_CONTROL_steer = son.first;
                     master_motor_msg.CAR_CONTROL_speed = son.second;
                     dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
                     LE.on(2);
-                    break;
                 }
+                break;
+
+
         }
     }
 }
