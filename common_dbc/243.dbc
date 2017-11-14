@@ -94,6 +94,9 @@ BO_ 170 COMPASS: 8 GEO
 BO_ 180 MOTOR_DATA: 1 MOTOR
  SG_ CAR_SPEED : 0|5@1+ (1,0) [0|0] "mph" MASTER
   
+BO_ 190 MOTOR_TELEMETRY: 8 MOTOR
+ SG_ MOTOR_TELEMETRY_pwm : 0|16@1+ (0.1,0) [0|30] "PWM" MASTER,ANDROID
+ SG_ MOTOR_TELEMETRY_kph : 16|16@1+ (0.1,0) [0|0] "kph" MASTER,ANDROID
  
 CM_ BU_ MASTER "Master controller is heart of the system and will control other boards";
 CM_ BU_ MOTOR "Motor will drive the wheels of car and display data on LCD";
