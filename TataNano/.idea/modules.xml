@@ -3,9 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/TataNano.iml" filepath="$PROJECT_DIR$/TataNano.iml" />
-      <module fileurl="file://C:\243Project\Autonomous-car\TataNano\TataNano.iml" filepath="C:\243Project\Autonomous-car\TataNano\TataNano.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://C:\243Project\Autonomous-car\TataNano\app\app.iml" filepath="C:\243Project\Autonomous-car\TataNano\app\app.iml" />
     </modules>
   </component>
 </project>

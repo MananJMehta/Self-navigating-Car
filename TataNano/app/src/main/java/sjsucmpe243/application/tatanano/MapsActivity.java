@@ -89,7 +89,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     BTdata = "^" + String.valueOf(Checkpoint_num);
 
                 for (LatLng temp : checkpoints) {
-                        Log.e("TataNano : Bluetooth", "(" + temp.latitude + "," + temp.longitude+")");
+                        //Log.e("TataNano : Bluetooth", "(" + temp.latitude + "," + temp.longitude+")");
                         BTdata += "(" + ((float) temp.latitude) + "," + ((float) temp.longitude)+")";
                 }
                 BTdata += "\n";
