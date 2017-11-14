@@ -27,21 +27,18 @@
  * For example, the 1000Hz take slot runs periodically every 1ms, and whatever you
  * do must be completed within 1ms.  Running over the time slot will reset the system.
  */
-
+#include <stdio.h>
 #include <stdint.h>
 #include "io.hpp"
 #include "periodic_callback.h"
-#include "lcd.hpp"
 #include "uart2.hpp"
 #include "_can_dbc/generated_can.h"
 #include "can.h"
-#include <stdio.h>
-
-
 #include "eint.h"
 #include "gpio.hpp"
 #include "L4.5_Motor_Control/Steering.hpp"
 #include "L4.5_Motor_Control/Speed.hpp"
+#include "lcd.hpp"
 #include "printf_lib.h"
 #include "eint.h"
 #include "string.h"
@@ -260,9 +257,11 @@ SENSOR_DATA_t sensor_can_msg;
 COMPASS_t compass_can_msg;
 GPS_DATA_t gps_can_msg;
 HEARTBEAT_t heartbeat;
+LIDAR_DATA_VALUES_t lidar_data_can_msg;
+DISTANCE_VALUES_t lidar_dist_can_msg;
 
-const uint32_t                             CAR_CONTROL__MIA_MS=3000;
-const CAR_CONTROL_t                        CAR_CONTROL__MIA_MSG={0};
+const uint32_t                             CAR_CONTROL__MIA_MS=1000;
+const CAR_CONTROL_t                        CAR_CONTROL__MIA_MSG={0,15};
 const uint32_t                             SENSOR_DATA__MIA_MS = 3000;
 const SENSOR_DATA_t                        SENSOR_DATA__MIA_MSG = {0};
 const HEARTBEAT_t                          HEARTBEAT__MIA_MSG = {    HEARTBEAT_cmd_NOOP };
@@ -271,31 +270,17 @@ const uint32_t                             GPS_DATA__MIA_MS = 3000;
 const GPS_DATA_t                           GPS_DATA__MIA_MSG = {5,5};
 const uint32_t                             COMPASS__MIA_MS = 3000;
 const COMPASS_t                            COMPASS__MIA_MSG = {5,5};
+const uint32_t                             DISTANCE_VALUES__MIA_MS = 3000;
+const DISTANCE_VALUES_t                    DISTANCE_VALUES__MIA_MSG = {5};
+const uint32_t                             LIDAR_DATA_VALUES__MIA_MS = 3000;
+const LIDAR_DATA_VALUES_t                  LIDAR_DATA_VALUES__MIA_MSG = {5};
+
+
 bool master =false;
 void period_10Hz(uint32_t count)
 {
     static uint32_t counter; //Counter to for checking the period of every second
-
     counter++;
-
-    if(count%2==0)
-        val=spd.speed_check(flag,val);
-    printf("%f\n",spd.getSpeed());
-    if(flag==false)
-        spd.setSpeed(STOP);
-
-    else if(flag==true)
-        spd.setSpeed(val);
-
-    if(SW.getSwitch(1)==true)
-        flag=true;
-    if(SW.getSwitch(2)==true)
-        flag=false;
-    if(SW.getSwitch(3)==true)
-        val+=0.1;
-    if(SW.getSwitch(4)==true)
-        val-=0.1;
-
 
     while(CAN_rx(can1,&msg,0))
     {
@@ -307,32 +292,67 @@ void period_10Hz(uint32_t count)
         {
             case 120:
                 dbc_decode_HEARTBEAT(&heartbeat,msg.data.bytes,&header);
-                LE.toggle(2);
+                LE.toggle(1);
                 break;
             case 140:
                 dbc_decode_CAR_CONTROL(&carControl,msg.data.bytes,&header);
-                // LE.toggle(3);
+                break;
+            case 144:
+                dbc_decode_LIDAR_DATA_VALUES(&lidar_data_can_msg, msg.data.bytes, &header);
+                break;
+            case 150:
+                dbc_decode_SENSOR_DATA(&sensor_can_msg, msg.data.bytes, &header);
+                break;
+            case 155:
+                dbc_decode_DISTANCE_VALUES(&lidar_dist_can_msg, msg.data.bytes, &header);
+                break;
+            case 160:
+                dbc_decode_GPS_DATA(&gps_can_msg, msg.data.bytes, &header);
+                break;
+            case 170:
+                dbc_decode_COMPASS(&compass_can_msg, msg.data.bytes, &header);
                 break;
 
         }
     }
 
-    telemetry.MOTOR_TELEMETRY_pwm=val;
-    dbc_encode_and_send_MOTOR_TELEMETRY(&telemetry);
     dbc_handle_mia_COMPASS(&compass_can_msg,100);
     dbc_handle_mia_GPS_DATA(&gps_can_msg,100);
-  //  dbc_handle_mia_SENSOR_DATA(&sensor_can_msg,100);
-    // dbc_handle_mia_HEARTBEAT(&heartbeat,100);
-    if(dbc_handle_mia_CAR_CONTROL(&carControl,10))
-        LE.on(1);
-    else LE.off(1);
-    str.setDirection(carControl.CAR_CONTROL_steer);
-    master = carControl.CAR_CONTROL_speed;
-    if(flag==false || master ==false)
-        spd.setSpeed(STOP);
-    if(flag ==true || master ==true)
-        spd.setSpeed(val);
+    dbc_handle_mia_SENSOR_DATA(&sensor_can_msg,100);
+    dbc_handle_mia_HEARTBEAT(&heartbeat,100);
+    dbc_handle_mia_LIDAR_DATA_VALUES(&lidar_data_can_msg,100);
+    dbc_handle_mia_DISTANCE_VALUES(&lidar_dist_can_msg,100);
+    if(dbc_handle_mia_CAR_CONTROL(&carControl,100))
+        LE.on(3);
+    else LE.off(3);
 
+    str.setDirection(carControl.CAR_CONTROL_steer);
+
+    //flag code - set flag
+    flag = carControl.CAR_CONTROL_speed;
+    if(SW.getSwitch(1)==true)
+        flag=true;
+    if(SW.getSwitch(2)==true)
+        flag=false;
+    //end set flag
+
+    if(flag==false)
+    {
+        spd.setSpeed(STOP);
+        val = STOP;
+    }
+    else if(flag==true )
+    {
+        val =SLOW;
+        spd.setSpeed(val);
+    }
+
+
+    if(count%2==0)
+        val=spd.speed_check(flag,val);
+    //end flag code
+    telemetry.MOTOR_TELEMETRY_pwm=val;
+    dbc_encode_and_send_MOTOR_TELEMETRY(&telemetry);
 
 
 #ifdef LCD
