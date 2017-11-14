@@ -92,7 +92,7 @@ void period_1Hz(uint32_t count)
 void period_10Hz(uint32_t count)
 {
     static uint32_t prev_count = count;
-    //send_lane_distance_values();
+    send_lane_distance_values();
 
     check_heartbeat();
 
