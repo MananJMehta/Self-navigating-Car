@@ -85,6 +85,7 @@ void period_1Hz(uint32_t count)
         CAN_reset_bus(can1);
 
     send_distance_values();
+    LE.toggle(1);
 }
 
 void period_10Hz(uint32_t count)
@@ -97,16 +98,22 @@ void period_10Hz(uint32_t count)
         sonar.start_operation();
     }
 
+
     if ((count-prev_count) == 1)
     {
+        rplidar.flag = true;
         send_lidar_sonar_data();
         prev_count = count;
     }
 
+    LE.toggle(2);
 }
 
 void period_100Hz(uint32_t count)
 {
+    send_lane_distance_values();
+
+    LE.toggle(3);
 }
 
 // 1Khz (1ms) is only run if Periodic Dispatcher was configured to run it at main():
@@ -126,7 +133,7 @@ void period_1000Hz(uint32_t count)
         prev_count = count;
     }
 
-//    LE.toggle(4);
+    LE.toggle(4);
 }
 
 void check_heartbeat()

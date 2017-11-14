@@ -58,19 +58,19 @@ void add_some_data_to_msg(LIDAR_DATA_VALUES_t *from)
     if (count == 0)
     {
         from->LIDAR_DISTANCE_CM_1 = rplidar.distance_value_cm;
-        from->LIDAR_ANGLE_DEG_1 = rplidar.distance_value_cm;
+        from->LIDAR_ANGLE_DEG_1 = rplidar.angle_value_deg;
         count++;
     }
     else if (count == 1)
     {
         from->LIDAR_DISTANCE_CM_2 = rplidar.distance_value_cm;
-        from->LIDAR_ANGLE_DEG_2 = rplidar.distance_value_cm;
+        from->LIDAR_ANGLE_DEG_2 = rplidar.angle_value_deg;
         count++;
     }
     else if (count == 2)
     {
         from->LIDAR_DISTANCE_CM_3 = rplidar.distance_value_cm;
-        from->LIDAR_ANGLE_DEG_3 = rplidar.distance_value_cm;
+        from->LIDAR_ANGLE_DEG_3 = rplidar.angle_value_deg;
         count = 0;
     }
 }
@@ -81,6 +81,22 @@ void send_three_values(LIDAR_DATA_VALUES_t *from)
 }
 
 
+void send_lane_distance_values ()
+{
+    LIDAR_LANE_VALUES_t data;
+
+    if(rplidar.flag)
+    {
+        data.LIDAR_DISTANCE_CM_N_40 = rplidar.lane_distances[2];
+        data.LIDAR_DISTANCE_CM_N_20 = rplidar.lane_distances[3];
+        data.LIDAR_DISTANCE_CM_0 = rplidar.lane_distances[4];
+        data.LIDAR_DISTANCE_CM_P_20 = rplidar.lane_distances[5];
+        data.LIDAR_DISTANCE_CM_P_40 = rplidar.lane_distances[6];
+
+        dbc_encode_and_send_LIDAR_LANE_VALUES(&data);
+        rplidar.flag = false;
+    }
+}
 
 
 #endif /* SENSOR_FUNCTIONS_H_ */
