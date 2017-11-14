@@ -83,7 +83,7 @@ void period_1Hz(uint32_t count)
 {
     if(CAN_is_bus_off(can1))
         CAN_reset_bus(can1);
-    rplidar.flag = true;
+
 
     send_distance_values();
     LE.toggle(1);
@@ -92,6 +92,7 @@ void period_1Hz(uint32_t count)
 void period_10Hz(uint32_t count)
 {
     static uint32_t prev_count = count;
+    rplidar.flag = true;
     send_lane_distance_values();
 
     check_heartbeat();
@@ -114,7 +115,6 @@ void period_10Hz(uint32_t count)
 
 void period_100Hz(uint32_t count)
 {
-    send_lane_distance_values();
 
     LE.toggle(3);
 }
