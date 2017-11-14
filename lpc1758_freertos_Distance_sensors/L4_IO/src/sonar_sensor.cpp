@@ -13,9 +13,9 @@
 #include "utilities.h"
 
 extern SemaphoreHandle_t sonar_mutex;
-extern float left_start, dist_in_left, left_stop;
-extern float back_start, dist_in_back, back_stop;
-extern float right_start, dist_in_right, right_stop;
+float left_start = 0, dist_in_left = 0, left_stop = 0;
+float back_start = 0, dist_in_back = 0, back_stop = 0;
+float right_start = 0, dist_in_right = 0, right_stop = 0;
 
 static GPIO myPinRX1(P2_1);     // left sensor
 static GPIO myPinRX2(P2_3);     // center sensor
@@ -34,7 +34,7 @@ void Sonar_Sensor::sensor_detect_fall_left()
 {
     left_stop = sys_get_uptime_us();
     dist_in_left = ((left_stop - left_start)/147);
-    //xSemaphoreGiveFromISR(sonar_mutex,0);
+    xSemaphoreGiveFromISR(sonar_mutex,0);
 }
 
 // callbacks for center sensor
@@ -48,7 +48,7 @@ void Sonar_Sensor::sensor_detect_fall_back()
 {
     back_stop = sys_get_uptime_us();
     dist_in_back = ((back_stop - back_start)/147);
-    xSemaphoreGiveFromISR(sonar_mutex,0);
+    //xSemaphoreGiveFromISR(sonar_mutex,0);
 }
 
 // callbacks for right sensor
@@ -67,17 +67,9 @@ void Sonar_Sensor::sensor_detect_fall_right()
 
 Sonar_Sensor::Sonar_Sensor()
 {
-    left_start=0;
-    dist_in_left=0;
-    left_stop=0;
-
-    right_start=0;
-    dist_in_right=0;
-    right_stop=0;
-
-    back_start=0;
-    dist_in_back=0;
-    back_stop=0;
+    leftDist = 0;
+    rightDist = 0;
+    backDist = 0;
 }
 
 #ifdef __cplusplus
@@ -118,5 +110,9 @@ void Sonar_Sensor::start_operation()
     myPinRX1.setHigh();
     delay_us(25);
     myPinRX1.setLow();
+
+    leftDist = dist_in_left;
+    rightDist = dist_in_right;
+    backDist = dist_in_back;
 
 }

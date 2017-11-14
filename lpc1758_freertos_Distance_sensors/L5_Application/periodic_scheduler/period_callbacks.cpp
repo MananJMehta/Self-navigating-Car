@@ -37,6 +37,10 @@
 #include "stdio.h"
 #include "can.h"
 
+Sonar_Sensor sonar;
+SemaphoreHandle_t sonar_mutex;
+can_msg_t rx_msg;
+void check_heartbeat();
 
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
@@ -52,6 +56,9 @@ const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
 {
+    sonar_mutex = xSemaphoreCreateMutex();
+    sonar.init();
+
     CAN_init(can1, 100, 10, 10, NULL, NULL);
     const can_std_id_t slist[] = { CAN_gen_sid(can1, 100), CAN_gen_sid(can1, 120)};
     CAN_setup_filter(slist, 2, NULL, 0, NULL, 0, NULL, 0);
@@ -74,12 +81,21 @@ bool period_reg_tlm(void)
 
 void period_1Hz(uint32_t count)
 {
+    if(CAN_is_bus_off(can1))
+        CAN_reset_bus(can1);
+
     send_distance_values();
 }
 
 void period_10Hz(uint32_t count)
 {
     static uint32_t prev_count = count;
+
+    check_heartbeat();
+    if(xSemaphoreTake(sonar_mutex,1))
+    {
+        sonar.start_operation();
+    }
 
     if ((count-prev_count) == 1)
     {
@@ -111,4 +127,12 @@ void period_1000Hz(uint32_t count)
     }
 
 //    LE.toggle(4);
+}
+
+void check_heartbeat()
+{
+    if(CAN_rx(can1,&rx_msg,1) && (rx_msg.msg_id == 120))
+        {
+                LE.toggle(3);
+        }
 }

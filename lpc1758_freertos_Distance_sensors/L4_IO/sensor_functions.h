@@ -11,9 +11,9 @@
 #include "lidar_sensor.hpp"
 #include "_can_dbc/generated_can.h"
 #include "sonar_sensor.hpp"
+#include "io.hpp"
 
-//Sonar_Sensor* sonar;
-
+extern Sonar_Sensor sonar;
 
 //this function will send lane data ad sonar sensor data should
 //be renamed appropriately
@@ -30,11 +30,12 @@ void send_lidar_sonar_data()
     SensorData.LIDAR_40 = !rplidar.lane_lut[6];
     SensorData.LIDAR_60 = !rplidar.lane_lut[7];
     SensorData.LIDAR_80 = !rplidar.lane_lut[8];
+    SensorData.SONAR_left = sonar.leftDist;
+    SensorData.SONAR_right = sonar.rightDist;
+    SensorData.SONAR_back = sonar.backDist;
 
-
-    //add the Sonar Sensor code here
-
-    dbc_encode_and_send_SENSOR_DATA(&SensorData);
+    if(dbc_encode_and_send_SENSOR_DATA(&SensorData))
+        LE.toggle(4);
 
 }
 
