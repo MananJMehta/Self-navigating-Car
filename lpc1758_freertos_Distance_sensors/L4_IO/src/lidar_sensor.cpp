@@ -507,7 +507,6 @@ void Lidar_Sensor::lane_algorithm()
     static uint8_t lane = 8;
 
     if(distance_value_cm>0)
-
     {
     //-80
     if (angle_value_deg>=270&&angle_value_deg<290)

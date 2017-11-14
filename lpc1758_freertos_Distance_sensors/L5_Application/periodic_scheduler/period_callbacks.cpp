@@ -83,6 +83,7 @@ void period_1Hz(uint32_t count)
 {
     if(CAN_is_bus_off(can1))
         CAN_reset_bus(can1);
+    rplidar.flag = true;
 
     send_distance_values();
     LE.toggle(1);
@@ -91,8 +92,10 @@ void period_1Hz(uint32_t count)
 void period_10Hz(uint32_t count)
 {
     static uint32_t prev_count = count;
+    //send_lane_distance_values();
 
     check_heartbeat();
+
     if(xSemaphoreTake(sonar_mutex,1))
     {
         sonar.start_operation();
@@ -101,7 +104,7 @@ void period_10Hz(uint32_t count)
 
     if ((count-prev_count) == 1)
     {
-        rplidar.flag = true;
+
         send_lidar_sonar_data();
         prev_count = count;
     }

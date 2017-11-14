@@ -34,6 +34,8 @@ void send_lidar_sonar_data()
     SensorData.SONAR_right = sonar.rightDist;
     SensorData.SONAR_back = sonar.backDist;
 
+    printf("\n %f %f %f",sonar.backDist,sonar.leftDist,sonar.rightDist);
+
     if(dbc_encode_and_send_SENSOR_DATA(&SensorData))
         LE.toggle(4);
 
@@ -83,19 +85,25 @@ void send_three_values(LIDAR_DATA_VALUES_t *from)
 
 void send_lane_distance_values ()
 {
-    LIDAR_LANE_VALUES_t data;
-
-    if(rplidar.flag)
-    {
-        data.LIDAR_DISTANCE_CM_N_40 = rplidar.lane_distances[2];
-        data.LIDAR_DISTANCE_CM_N_20 = rplidar.lane_distances[3];
-        data.LIDAR_DISTANCE_CM_0 = rplidar.lane_distances[4];
-        data.LIDAR_DISTANCE_CM_P_20 = rplidar.lane_distances[5];
-        data.LIDAR_DISTANCE_CM_P_40 = rplidar.lane_distances[6];
-
-        dbc_encode_and_send_LIDAR_LANE_VALUES(&data);
-        rplidar.flag = false;
-    }
+//    LIDAR_LANE_VALUES_t data;
+//
+//    if(rplidar.flag)
+//    {
+//        data.LIDAR_DISTANCE_CM_N_40 = rplidar.lane_distances[2];
+//        data.LIDAR_DISTANCE_CM_N_20 = rplidar.lane_distances[3];
+//        data.LIDAR_DISTANCE_CM_0 = rplidar.lane_distances[4];
+//        data.LIDAR_DISTANCE_CM_P_20 = rplidar.lane_distances[5];
+//        data.LIDAR_DISTANCE_CM_P_40 = rplidar.lane_distances[6];
+//
+//        for(uint8_t i = 2; i<=6;i++)
+//        {
+//            rplidar.lane_distances[i] = 0;
+//        }
+//
+//
+//        dbc_encode_and_send_LIDAR_LANE_VALUES(&data);
+//        rplidar.flag = false;
+//    }
 }
 
 
