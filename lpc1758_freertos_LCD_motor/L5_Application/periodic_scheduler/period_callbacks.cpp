@@ -333,7 +333,6 @@ void period_10Hz(uint32_t count)
     str.setDirection(carControl.CAR_CONTROL_steer);
 
 
-
 #ifdef LCD
     //Update values from CAN every 10 iterations (every 1 Second)
     if (counter % 10 == 0) {
