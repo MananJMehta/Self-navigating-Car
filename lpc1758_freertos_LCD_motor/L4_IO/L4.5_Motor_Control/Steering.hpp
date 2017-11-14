@@ -30,7 +30,7 @@ public:
     void setDirection(float value); ///< @param sets direction of car
 
     ///Constructor
-    Steering():PWM(pwmType::pwm1, 8){}
+    Steering():PWM(pwmType::pwm3, 8){}
     int currentDirection;
 };
 

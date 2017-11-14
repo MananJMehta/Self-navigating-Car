@@ -38,10 +38,10 @@ float Speed::maintain_speed(float val)
     }
     else if((RefCts.ref_count_medium - rpm_s.rpms) > 1)
     {
-        val=this->getSpeed() + 0.1;
+        val=this->getSpeed() + 0.05;
         LE.on(4);
     }
-if(val >15.5) val = 15.5;
+if(val >17) val = 17;
     return val;
 }
 

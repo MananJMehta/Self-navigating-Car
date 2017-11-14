@@ -63,7 +63,7 @@ bool dbc_app_send_can_msg(uint32_t mid, uint8_t dlc, uint8_t bytes[8])
 
 Speed spd;
 Steering str;
-float val = VERYSLOW;
+float val = SLOW;
 bool flag=false;
 MOTOR_TELEMETRY_t telemetry;
 /**
@@ -299,7 +299,7 @@ void period_10Hz(uint32_t count)
 
     while(CAN_rx(can1,&msg,0))
     {
-        LE.off(4);
+
         dbc_msg_hdr_t header;
         header.dlc = msg.frame_fields.data_len;
         header.mid = msg.msg_id;
@@ -307,12 +307,13 @@ void period_10Hz(uint32_t count)
         {
             case 120:
                 dbc_decode_HEARTBEAT(&heartbeat,msg.data.bytes,&header);
-                //LE.toggle(2);
+                LE.toggle(2);
                 break;
             case 140:
                 dbc_decode_CAR_CONTROL(&carControl,msg.data.bytes,&header);
                 // LE.toggle(3);
                 break;
+
         }
     }
 
@@ -320,17 +321,18 @@ void period_10Hz(uint32_t count)
     dbc_encode_and_send_MOTOR_TELEMETRY(&telemetry);
     dbc_handle_mia_COMPASS(&compass_can_msg,100);
     dbc_handle_mia_GPS_DATA(&gps_can_msg,100);
-    dbc_handle_mia_SENSOR_DATA(&sensor_can_msg,100);
+  //  dbc_handle_mia_SENSOR_DATA(&sensor_can_msg,100);
     // dbc_handle_mia_HEARTBEAT(&heartbeat,100);
-    if(dbc_handle_mia_CAR_CONTROL(&carControl,100))
+    if(dbc_handle_mia_CAR_CONTROL(&carControl,10))
         LE.on(1);
     else LE.off(1);
-
+    str.setDirection(carControl.CAR_CONTROL_steer);
+    master = carControl.CAR_CONTROL_speed;
     if(flag==false || master ==false)
         spd.setSpeed(STOP);
     if(flag ==true || master ==true)
         spd.setSpeed(val);
-    str.setDirection(carControl.CAR_CONTROL_steer);
+
 
 
 #ifdef LCD
