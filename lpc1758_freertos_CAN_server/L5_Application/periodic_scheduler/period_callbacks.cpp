@@ -125,24 +125,31 @@ bool period_init(void)
 //@returns the bit with highest priority
 uint8_t map_get_value(SENSOR_DATA_t y)
 {
-    if(y.LIDAR_0 == 0 && y.LIDAR_20 == 0 && y.LIDAR_neg20 == 0)
+    if (y.LIDAR_0 == 1)
+    {
+        if(y.LIDAR_20 == 1 && y.LIDAR_neg20 == 1 && y.LIDAR_40 == 0)
+            return 5;
+        else if (y.LIDAR_20 == 1 && y.LIDAR_neg20 == 1 && y.LIDAR_neg40 == 0)
+            return 6;
+        else if (y.LIDAR_20 == 1 && y.LIDAR_neg20 == 0)
+            return 6;
+        else if (y.LIDAR_20 == 0 && y.LIDAR_neg20 == 1)
+            return 5;
+        else if (y.LIDAR_neg40 == 0)
+            return 6;
+        else if(y.LIDAR_40 == 0)
+            return 5;
+    }
+
+    else if(y.LIDAR_0 == 0 && y.LIDAR_20 == 0 && y.LIDAR_neg20 == 0)
         return 0;
+
     else if (y.LIDAR_0 == 0 && y.LIDAR_20 == 0 && y.LIDAR_neg20 == 1 )
         return 3;
+
     else if (y.LIDAR_0 == 0 && y.LIDAR_20 == 1 && y.LIDAR_neg20 == 0)
         return 4;
-    else if (y.LIDAR_40 == 0)
-        return 5;
-    else if (y.LIDAR_neg40 == 0)
-        return 6;
-    /*else if (y.LIDAR_60 == 0)
-        return 5;
-    else if (y.LIDAR_neg60 == 0)
-        return 6;
-    else if (y.LIDAR_80 == 0)
-        return 7;
-    else if (y.LIDAR_neg80 == 0)
-        return 8;*/
+
     return 9;
 }
 
@@ -197,7 +204,7 @@ void period_10Hz(uint32_t count)
         can_header.dlc = can_msg.frame_fields.data_len;
         can_header.mid = can_msg.msg_id;
         //u0_dbg_printf("in while");
-        switch(can_msg.msg_id)
+        switch(can_header.mid)
         {
             //u0_dbg_printf("in switch");
             case 150:
@@ -259,7 +266,7 @@ void period_10Hz(uint32_t count)
                     master_motor_msg.CAR_CONTROL_steer = son.first;
                     master_motor_msg.CAR_CONTROL_speed = son.second;
                     dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
-
+                    LE.on(2);
                     break;
                 }
         }
