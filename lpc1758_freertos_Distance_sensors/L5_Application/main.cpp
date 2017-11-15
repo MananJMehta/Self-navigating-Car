@@ -74,6 +74,7 @@ bool lidar_data_acquisition::run(void* p)
             if(!rplidar.uart_sucks())
             {
                 rplidar.stop_scan();
+                vTaskDelay(1000);
                 rplidar.start_scan();
             }
             if(!rplidar.check_start)
