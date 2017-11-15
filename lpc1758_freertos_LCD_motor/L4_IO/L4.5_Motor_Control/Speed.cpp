@@ -6,14 +6,13 @@
  */
 
 #include "Speed.hpp"
-#include "IO.hpp"
-
-
+//#include "IO.hpp"
+#include "speed_util.cpp"
 
 bool Speed::init()
 {
     this->setSpeed(STOP);
-    LE.on(1);
+    //    LE.on(1);
     return true;
 }
 
@@ -31,38 +30,13 @@ void Speed::setSpeed(float speed) ///< @param sets floating-point speed of motor
 
 float Speed::maintain_speed(float val)
 {
-    if((rpm_s.rpms - RefCts.ref_count_medium) > 1)
-    {
-        val=this->getSpeed() - 0.1;
-        LE.on(3);
-    }
-    else if((RefCts.ref_count_medium - rpm_s.rpms) > 1)
-    {
-        val=this->getSpeed() + 0.1;
-        LE.on(4);
-    }
-if(val >15.5) val = 15.5;
+    check_speed_diff(rpm_s.rpms, RefCts.ref_count_medium, this->getSpeed(), &val);
     return val;
 }
 
 float Speed::rpm_meter()
 {
-    rpm_s.second_count++;
-    rpm_s.rps = rpm_s.cut_count - rpm_s.old_count;
-    // rpm_s.speed = rpm_s.rps/2*36.5*3600/(100*1000);
-    // printf("RPS: %d Speed: %f\n", rps, speed);
-    LD.setNumber(rpm_s.rpms);
-    rpm_s.speed = (36.5 * rpm_s.rps * 3600) / (4*1000*100);
-    rpm_s.ReferenceRps = rpm_s.ReferencSpeed * 4* 1000 *100 / (36.5 * 3600);
-    rpm_s.old_count = rpm_s.cut_count;
-
-    if(rpm_s.second_count == 60)
-    {
-        rpm_s.second_count = 0;
-        rpm_s.cut_count = 0;
-        rpm_s.old_count = 0;
-        rpm_s.old_countms=0;
-    }
+    rpm_mtr_val(&rpm_s.second_count, &rpm_s.rps, &rpm_s.cut_count, &rpm_s.old_count, &rpm_s.speed,&rpm_s.old_countms);
     return rpm_s.speed;
 }
 
@@ -72,8 +46,9 @@ float Speed::speed_check(bool flag, float val)
     {
         rpm_s.rpms = rpm_s.cut_count - rpm_s.old_countms;
         rpm_s.old_countms = rpm_s.cut_count;
-       // LD.setNumber(rpm_s.rpms);
+        // LD.setNumber(rpm_s.rpms);
         return this->maintain_speed(val);
     }
     return STOP;
 }
+

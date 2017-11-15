@@ -21,7 +21,7 @@
 #define REVERSESLOW 15
 #define REVERSEFAST 15
 
-class Speed: public PWM
+class Speed: PWM
 
 {
 public:
