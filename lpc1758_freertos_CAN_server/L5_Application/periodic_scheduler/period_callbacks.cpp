@@ -74,12 +74,13 @@ enum {
 };
 
 //Define a critical distance for sonar
-#define sonar_critical 50
-#define sonar_warning 70
+#define sonar_critical 60
+#define sonar_warning 90
 
 uint8_t arr[9];
 uint8_t flag_speed = 0;
-
+const SENSOR_DATA_t SENSOR_DATA__MIA_MSG = {1,1,1,1,1,1,1,1,1,15,15,15};
+const uint32_t SENSOR_DATA__MIA_MS = 500;
 /**
  * This is the stack size of the dispatcher task that triggers the period tasks to run.
  * Minimum 1500 bytes are needed in order to write a debug file if the period tasks overrun.
@@ -189,7 +190,7 @@ pair<uint8_t, uint8_t> update_lanes(SENSOR_DATA_t x)
     return return_value;
 }
 
-//stops the car if the obstacle is too close
+//stops the car if the obstacle is too close based on sonar
 void stop_lidar (SENSOR_DATA_t& x)
 {
     x.LIDAR_0 = 1;
@@ -246,24 +247,23 @@ void period_10Hz(uint32_t count)
                 /*Sonar Priorities are higher than LIDAR as LIDAR's range will be larger*/
                 if (dbc_decode_SENSOR_DATA(&sensor_msg, can_msg.data.bytes, &can_header))
                 {
-//                    if(sensor_msg.SONAR_left <= sonar_critical)
-//                        stop_lidar(sensor_msg);
-                    if(sensor_msg.SONAR_left <= sonar_critical)
+                    if(sensor_msg.SONAR_left > 14 && sensor_msg.SONAR_left <= sonar_critical)
+                        stop_lidar(sensor_msg);
+                    if(sensor_msg.SONAR_left > 14 && sensor_msg.SONAR_left <= sonar_warning)
                         sensor_msg.LIDAR_0 = 1;
-//                    if(sensor_msg.SONAR_right <= sonar_critical)
-//                        sensor_msg.LIDAR_20 = 1;
                     pair<uint8_t , uint8_t> son;
                     son = update_lanes(sensor_msg);
                     master_motor_msg.CAR_CONTROL_steer = son.first;
                     master_motor_msg.CAR_CONTROL_speed = son.second;
                     dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
-                    LE.on(2);
                 }
                 break;
 
 
         }
     }
+
+    dbc_handle_mia_SENSOR_DATA(&sensor_msg, 100);
 }
 
 void period_100Hz(uint32_t count)
