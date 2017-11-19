@@ -4,6 +4,7 @@ CXXFLAGS = -Wall -g
 
 # Points to the root of cgreen test files
 CGREEN_DIR = ../../../cgreen
+#CGREEN_DIR = ../../../../../../cgreen
 
 # Google Test headers
 CGREEN_HEADERS = -I$(CGREEN_DIR)/include -I$(CGREEN_DIR)/include/cgreen/internal
@@ -46,8 +47,8 @@ all : test_all
 clean :
 	rm -f test_all *.o
 
-test_main.o: $(UT_DIR)/test_main.cpp
-	$(CXX) $(CGREEN_HEADERS) $(HEADER_DIR) $(CXXFLAGS) -c $(UT_DIR)/test_main.cpp $(LIBS)
+#test_main.o: $(UT_DIR)/test_main.cpp
+#	$(CXX) $(CGREEN_HEADERS) $(HEADER_DIR) $(CXXFLAGS) -c $(UT_DIR)/test_main.cpp $(LIBS)
 
 turtle.o: $(EXAMPLE_DIR)/turtle.cpp
 	$(CXX) $(CGREEN_HEADERS) $(HEADER_DIR) $(CXXFLAGS) -c $(EXAMPLE_DIR)/turtle.cpp $(LIBS)

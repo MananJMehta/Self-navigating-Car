@@ -19,13 +19,22 @@
 /**
  * @file
  * @brief This is the application entry point.
- * 			FreeRTOS and stdio printf is pre-configured to use uart0_min.h before main() enters.
- * 			@see L0_LowLevel/lpc_sys.h if you wish to override printf/scanf functions.
+ *          FreeRTOS and stdio printf is pre-configured to use uart0_min.h before main() enters.
+ *          @see L0_LowLevel/lpc_sys.h if you wish to override printf/scanf functions.
  *
  */
 #include "tasks.hpp"
 #include "examples/examples.hpp"
+#include "stdio.h"
 
+extern "C"
+{
+    #include "sensor_functions.h"
+}
+
+#include "lidar_sensor.hpp"
+#include "io.hpp"
+#include "printf_lib.h"
 /**
  * The main() creates tasks or "threads".  See the documentation of scheduler_task class at scheduler_task.hpp
  * for details.  There is a very simple example towards the beginning of this class's declaration.
@@ -40,6 +49,61 @@
  *        In either case, you should avoid using this bus or interfacing to external components because
  *        there is no semaphore configured for this bus and it should be used exclusively by nordic wireless.
  */
+
+
+//change to RTOS API??
+class lidar_data_acquisition : public scheduler_task
+{
+    public:
+        lidar_data_acquisition(uint8_t priority) : scheduler_task("lidar", 2000, priority){}
+        bool init();
+        bool run(void* p);
+};
+
+bool lidar_data_acquisition::init()
+{
+    rplidar.start_scan();
+    return true;
+}
+
+bool lidar_data_acquisition::run(void* p)
+{
+    rplidar.Lane_LUT = 0;
+    while(1)
+    {
+            if(!rplidar.uart_sucks())
+            {
+                rplidar.stop_scan();
+                vTaskDelay(1000);
+                rplidar.start_scan();
+            }
+            if(!rplidar.check_start)
+            {
+                LE.on(1);
+                LE.on(2);
+                LE.on(3);
+                LE.on(4);
+                rplidar.check_start_scan();
+                return true;
+            }
+
+            else
+            {
+                LE.off(1);
+                LE.off(2);
+                LE.off(3);
+                LE.off(4);
+            }
+
+            rplidar.update_lane_lut();
+    }
+    return true;
+}
+
+
+//create task that will send key values
+
+
 int main(void)
 {
     /**
@@ -57,8 +121,10 @@ int main(void)
     /* Consumes very little CPU, but need highest priority to handle mesh network ACKs */
     scheduler_add_task(new wirelessTask(PRIORITY_CRITICAL));
 
+    scheduler_add_task(new lidar_data_acquisition(PRIORITY_CRITICAL));
+
     /* Change "#if 0" to "#if 1" to run period tasks; @see period_callbacks.cpp */
-    #if 0
+    #if 1
     const bool run_1Khz = false;
     scheduler_add_task(new periodicSchedulerTask(run_1Khz));
     #endif
@@ -90,8 +156,8 @@ int main(void)
     #endif
 
     /**
-	 * Try the rx / tx tasks together to see how they queue data to each other.
-	 */
+     * Try the rx / tx tasks together to see how they queue data to each other.
+     */
     #if 0
         scheduler_add_task(new queue_tx());
         scheduler_add_task(new queue_rx());
