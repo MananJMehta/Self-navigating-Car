@@ -62,17 +62,16 @@ class Lidar_Sensor : public SingletonTemplate<Lidar_Sensor>
         bool one=true;
         float lookup1[9];
 
-    private:
         void check_for_lane_angle(uint16_t *distance, uint16_t *angle);
         void lane_algorithm();
         uint16_t get_quality_value();
         uint16_t get_angle_value();//return angle in degrees
         uint16_t get_distance_value();//return distance in cm
 
-        char arr[8] = { 0xa5 , 0x5a , 0x05 , 0x00 , 0x00 , 0x40 , 0x81};
+        char arr[8] = { (char)0xa5 , (char)0x5a , (char)0x05 , (char)0x00 , (char)0x00 , (char)0x40 , (char)0x81};
 
         void send_lidar_command(lidar_cmd_t lidar_cmd);//we will send an enum data type
-
+    private:
         Lidar_Sensor() {
 
             //create the lane array
