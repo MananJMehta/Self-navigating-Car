@@ -32,9 +32,10 @@ void Lidar_Sensor::send_lidar_command(lidar_cmd_t lidar_cmd)
     u2.printf("%c",lidar_cmd);
 }
 
-bool Lidar_Sensor::uart_sucks()
+bool Lidar_Sensor::uart_active()
 {
-    bool x = u2.recentlyActive(1000);
+    //this will return true if uart was active in the last 1000ms
+    bool x = u2.recentlyActive(500);
     return x;
 }
 

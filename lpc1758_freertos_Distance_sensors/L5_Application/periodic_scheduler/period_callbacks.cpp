@@ -83,9 +83,21 @@ void period_1Hz(uint32_t count)
 {
     if(CAN_is_bus_off(can1))
         CAN_reset_bus(can1);
-
-
     send_distance_values();
+
+    static bool start_flag = false;
+        //if uart is not active send stop scan folowed by start scan
+        if(start_flag)
+        {
+            rplidar.start_scan();
+            start_flag = false;
+        }
+        if(!rplidar.uart_active())
+        {
+            rplidar.reset_core();
+            start_flag = true;
+        }
+
     //LE.toggle(1);
 }
 
@@ -115,6 +127,8 @@ void period_10Hz(uint32_t count)
 
 void period_100Hz(uint32_t count)
 {
+
+
 
     //LE.toggle(3);
 }
