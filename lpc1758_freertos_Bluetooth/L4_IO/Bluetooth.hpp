@@ -21,17 +21,22 @@ public:
     int getSignalType(char* rx); //Send data on CAN bus
     int getCPNum(char* rx);
     void getLatLong(char* rx, int count); //Parse data to get Lat and Long
-    bool sendCanData(ANDROID_CMD_t cmd, can_msg_t can_msg, int signalType);
+    bool sendCanData(ANDROID_CMD_t android_cmd, ANDROID_LOCATION_t android_loc, can_msg_t can_msg, int signalType);
     bool sendSpeed();
     bool flushBuffer();
+    bool sendStartSpeed(ANDROID_CMD_t android_cmd, can_msg_t can_msg);
+    bool sendLocation(ANDROID_LOCATION_t android_loc, can_msg_t can_msg);
+    //int getSpeed(char* rx);
 
     double latitude[10];
     double longitude[10];
+    int speed;
     int checkpointCounter;
 
     Bluetooth() {
         latitude[10] = 0;
         longitude[10] = 0;
+        speed = 0;
         checkpointCounter = sizeof(latitude) / sizeof(double);
     };
     //friend class SingletonTemplate<Bluetooth>;  ///< Friend class used for Singleton Template

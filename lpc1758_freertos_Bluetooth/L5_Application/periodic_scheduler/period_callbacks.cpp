@@ -95,11 +95,12 @@ void period_1Hz(uint32_t count)
     char* rx = new char;
 
     ANDROID_CMD_t android_cmd = {0};
+    ANDROID_LOCATION_t android_loc = {0};
     can_msg_t can_msg = {0};
 
     if(bluetooth.getBluetoothData(rx, bufferLength, 1)) {
         printf("\nChar: %s\n",rx);
-        LE.on(2);
+        LE.on(3);
 
         int signalType = bluetooth.getSignalType(rx);
         printf("%d\n",signalType);
@@ -110,16 +111,17 @@ void period_1Hz(uint32_t count)
             bluetooth.getLatLong(rx, chkPointNo);
         }
 
-        bluetooth.sendCanData(android_cmd, can_msg, signalType);
+        bluetooth.sendCanData(android_cmd, android_loc, can_msg, signalType);
         bluetooth.flushBuffer();
     }
-    else
+    /*else
     {
         LE.toggle(2);
-    }
+    }*/
     bluetooth.sendSpeed();
+
     //canResetBus();
-    LE.toggle(1);
+    //LE.toggle(1);
 }
 
 void period_10Hz(uint32_t count)
