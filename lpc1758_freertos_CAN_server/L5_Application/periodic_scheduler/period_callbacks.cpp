@@ -48,11 +48,11 @@ const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
 
 
 // Enum for Sonar Status
-enum {
-    sonar_safe = 0,     //No Obstacle
-    sonar_alert = 1,    //Obstacle at medium distance
-    sonar_critical = 2  //Obstacle critically near
-};
+//enum {
+//    sonar_safe = 0,     //No Obstacle
+//    sonar_alert = 1,    //Obstacle at medium distance
+//    sonar_critical = 2  //Obstacle critically near
+//};
 
 
 // Define for Motor Steer
@@ -65,13 +65,13 @@ enum {
 #define HARDRIGHT 18
 
 // Enum for Motor Speed
-enum {
-    Forward_L1,     //medium
-    Forward_L2,     //fastest
-    Forward_L3,     //slowest
-    Stop,
-    Reverse
-};
+//enum {
+//    Forward_L1,     //medium
+//    Forward_L2,     //fastest
+//    Forward_L3,     //slowest
+//    Stop,
+//    Reverse
+//};
 
 //Define a critical distance for sonar
 #define sonar_critical 60
@@ -79,6 +79,8 @@ enum {
 
 uint8_t arr[9];
 uint8_t flag_speed = 0;
+bool boot_t = true;
+
 const SENSOR_DATA_t SENSOR_DATA__MIA_MSG = {1,1,1,1,1,1,1,1,1,15,15,15};
 const uint32_t SENSOR_DATA__MIA_MS = 500;
 /**
@@ -90,7 +92,6 @@ const uint32_t SENSOR_DATA__MIA_MS = 500;
 const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
 
 can_t canTest = can1;
-
 SENSOR_DATA_t sensor_msg = { 0 };
 ANDROID_CMD_t and_msg ={0};
 CAR_CONTROL_t master_motor_msg = { 0 };
@@ -162,11 +163,11 @@ uint8_t map_get_value(SENSOR_DATA_t y)
     return 9;
 }
 
-//turns the steering if an obstacle is deleted
+//turns the steering if an obstacle is detected
 //@params received can message from the lidar sensor
 //@returns steering rotation and car speed
 pair<uint8_t, uint8_t> update_lanes(SENSOR_DATA_t x)
-{
+                                {
     static pair<uint8_t , uint8_t> return_value;
     return_value.first=HARDLEFT;//steering
     return_value.second=0;//speed
@@ -188,7 +189,7 @@ pair<uint8_t, uint8_t> update_lanes(SENSOR_DATA_t x)
     return_value.first = arr[i];
     return_value.second = flag_speed;
     return return_value;
-}
+                                }
 
 //stops the car if the obstacle is too close based on sonar
 void stop_lidar (SENSOR_DATA_t& x)
@@ -213,7 +214,12 @@ bool period_reg_tlm(void)
  */
 void period_1Hz(uint32_t count)
 {
-    heartbeat_msg.HEARTBEAT_cmd = HEARTBEAT_cmd_SYNC;
+    //heartbeat_msg.HEARTBEAT_cmd = HEARTBEAT_cmd_SYNC;
+    if(boot_t)
+    {
+        heartbeat_msg.HEARTBEAT_cmd = HEARTBEAT_cmd_REBOOT;
+        boot_t = false;
+    }
     dbc_encode_and_send_HEARTBEAT(&heartbeat_msg);
     LE.toggle(1);
     if(CAN_is_bus_off(can1))
@@ -224,6 +230,7 @@ void period_1Hz(uint32_t count)
 
 void period_10Hz(uint32_t count)
 {
+
     can_msg_t can_msg;
     while(CAN_rx(canTest,&can_msg,0))
     {
@@ -232,18 +239,22 @@ void period_10Hz(uint32_t count)
         can_header.mid = can_msg.msg_id;
         switch(can_header.mid)
         {
-
             case 130:
                 if (dbc_decode_ANDROID_CMD(&and_msg, can_msg.data.bytes, &can_header))
                 {
                     if(and_msg.ANDROID_CMD_start == 0)
+                    {
                         flag_speed = 0;
+                        heartbeat_msg.HEARTBEAT_cmd = HEARTBEAT_cmd_NOOP;
+                    }
                     else
+                    {
                         flag_speed = 1;
+                        heartbeat_msg.HEARTBEAT_cmd = HEARTBEAT_cmd_SYNC;
+                    }
                 }
                 break;
             case 150:
-
                 /*Sonar Priorities are higher than LIDAR as LIDAR's range will be larger*/
                 if (dbc_decode_SENSOR_DATA(&sensor_msg, can_msg.data.bytes, &can_header))
                 {
