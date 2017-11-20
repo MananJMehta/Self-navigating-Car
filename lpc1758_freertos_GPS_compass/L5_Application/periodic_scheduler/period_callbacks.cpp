@@ -36,6 +36,7 @@
 #include "can.h"
 #include "_can_dbc/generated_can.h"
 #include "string.h"
+#include "utilities.h"
 
 
 Uart2_GPS gps;
@@ -71,10 +72,14 @@ const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
 void CAN_GPS_Trasmit();
 
 void CAN_COMPASS_Transmit();
+void calibrate_compass();
+void stop_calibrate();
 
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
 {
+    //Compass calibration
+
     gps.init();
 
     CAN_init(can1, 100, 100, 100, NULL, NULL);
@@ -98,6 +103,16 @@ bool period_reg_tlm(void)
 
 void period_1Hz(uint32_t count)
 {
+    if (SW.getSwitch(1))
+    {
+        calibrate_compass();
+    }
+
+    if (SW.getSwitch(2))
+    {
+        stop_calibrate();
+    }
+
     if(CAN_is_bus_off(can1))
     {
         CAN_reset_bus(can1);
@@ -108,6 +123,7 @@ void period_1Hz(uint32_t count)
     CAN_COMPASS_Transmit();
     if(heartbeat_flag)
     {
+        //CAN_COMPASS_Transmit();
         CAN_GPS_Trasmit();
     }
     //u0_dbg_printf("Lat: %f\n", gps.getLatitude());
@@ -141,7 +157,7 @@ void period_10Hz(uint32_t count)
                 }
                 else if(hrt_buffer.HEARTBEAT_cmd == HEARTBEAT_cmd_NOOP)
                 {
-                    heartbeat_flag = true;
+                    heartbeat_flag = false;
                     LE.on(1);
                 }
                 break;
@@ -208,4 +224,29 @@ void CAN_COMPASS_Transmit()
         compass_msg.CMP_BEARING = bearing_float;
         dbc_encode_and_send_COMPASS(&compass_msg);
     }
+}
+
+void calibrate_compass()
+{
+    int command_reg = 0;
+    int addr = 0xc0;
+    uint8_t buffer[1] = { 0 };
+    buffer[0] = 0xF0;
+    I2C2::getInstance().writeRegisters(addr, command_reg, &buffer[0], 1);
+    delay_ms(30);
+    buffer[0] = 0xF5;
+    I2C2::getInstance().writeRegisters(addr, command_reg, &buffer[0], 1);
+    delay_ms(30);
+    buffer[0] = 0xF6;
+    I2C2::getInstance().writeRegisters(addr, command_reg, &buffer[0], 1);
+    //printf("Calibration started\n");
+}
+
+void stop_calibrate()
+{
+    int command_reg = 0;
+    int addr = 0xc0;
+    uint8_t buffer[1] = { 0 };
+    buffer[0] = 0xF8;
+    I2C2::getInstance().writeRegisters(addr, command_reg, &buffer[0], 1);
 }
