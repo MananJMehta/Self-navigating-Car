@@ -22,6 +22,7 @@ import android.support.v7.app.AlertDialog;
 import android.text.InputType;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -56,7 +57,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     static int Checkpoint_num = 0;
     boolean flag = true;
     String BTdata;
-    TextView actualSpeed;
+    TextView actualSpeed, currPosVal, headingVal;
     InputStream rx_data;
     OutputStream tx_data;
     boolean Toggle_start_stop = false;
@@ -72,12 +73,75 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         setContentView(R.layout.activity_maps);
 
         actualSpeed = findViewById(R.id.speedText);
+        currPosVal = findViewById(R.id.CurrPosText);
+        headingVal = findViewById(R.id.HeadingText);
         try {
             rx_data = MainActivity.gotSocket.getInputStream();
             tx_data = MainActivity.gotSocket.getOutputStream();
         } catch (IOException e) {
             Log.e("TataNano : Bluetooth", "Socket is not connected yet. ");
         }
+        /**
+         * Thread that keeps running to receive and display data from the controller using bluetooth
+         */
+        Thread t = new Thread() {
+
+            @Override
+            public void run() {
+                try {
+                    while (!isInterrupted()) {
+                        Thread.sleep(100);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    if(rx_data.available()>0) {
+                                        String test = "";
+                                        while(rx_data.available()>0) {
+                                            test = test + ((char) (rx_data.read()) + "");
+                                        }
+                                        Log.d("RX DATA VALUE", test);
+                                        String dataType = "", latVal = "", lngVal = "", headVal = "", speedVal = "";
+                                        int pipePos = test.indexOf("|");
+                                        if (pipePos != -1)
+                                        dataType = test.substring(0, pipePos);
+                                        if(dataType.equals("G")) {
+                                            if (pipePos + 1 != -1) {
+                                                test = test.substring(pipePos + 1);
+                                                pipePos = test.indexOf("|");
+                                                latVal = test.substring(0, pipePos);
+                                                lngVal = test.substring(pipePos + 1);
+                                                Log.d("GEO", latVal + ", " + lngVal);
+                                                currPosVal.setText(latVal + ", " + lngVal);
+                                            }
+                                        }
+                                        else if(dataType.equals("C")) {
+                                            if (pipePos + 1 != -1) {
+                                                headVal = test.substring(pipePos + 1);
+                                                Log.d("HEADING", headVal);
+                                                headingVal.setText(headVal);
+                                            }
+                                        }
+                                        else if(dataType.equals("S")) {
+                                            if (pipePos + 1 != -1) {
+                                                speedVal = test.substring(pipePos + 1);
+                                                Log.d("SPEED", speedVal);
+                                                actualSpeed.setText(speedVal);
+                                            }
+                                        }
+                                    }
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
+                    }
+                } catch (InterruptedException e) {
+                }
+            }
+        };
+
+        t.start();
 
         SendLocation = findViewById(R.id.SendLocation);
         SendLocation.setOnClickListener(new View.OnClickListener() {
@@ -207,8 +271,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
 
                     try {
-                        if(rx_data.available()>0)
-                            actualSpeed.setText(rx_data.read());
+                        if(rx_data.available()>0) {
+                            actualSpeed.setText(Integer.toString(rx_data.read()));
+                            Log.d("SPEED", Integer.toString(rx_data.read()));
+                        }
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
