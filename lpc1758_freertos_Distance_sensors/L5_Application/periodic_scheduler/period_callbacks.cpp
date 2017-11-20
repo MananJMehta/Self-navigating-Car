@@ -31,16 +31,16 @@
 #include <stdint.h>
 #include "io.hpp"
 #include "periodic_callback.h"
-#include "sensor_functions.h"
-#include "lidar_sensor.h"
+#include "sensor_functions.hpp"
 #include "tasks.hpp"
 #include "stdio.h"
-#include "can.h"
+
 
 Sonar_Sensor sonar;
 SemaphoreHandle_t sonar_mutex;
-can_msg_t rx_msg;
-void check_heartbeat();
+
+
+
 
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
@@ -59,10 +59,8 @@ bool period_init(void)
     sonar_mutex = xSemaphoreCreateMutex();
     sonar.init();
 
-    CAN_init(can1, 100, 10, 10, NULL, NULL);
-    const can_std_id_t slist[] = { CAN_gen_sid(can1, 100), CAN_gen_sid(can1, 120)};
-    CAN_setup_filter(slist, 2, NULL, 0, NULL, 0, NULL, 0);
-    CAN_reset_bus(can1);
+    initialize_can();
+
     return true; // Must return true upon success
 }
 
@@ -81,11 +79,14 @@ bool period_reg_tlm(void)
 
 void period_1Hz(uint32_t count)
 {
+    //
+    check_heartbeat();
+
     if(CAN_is_bus_off(can1))
         CAN_reset_bus(can1);
     send_distance_values();
 
-    static bool start_flag = false;
+        static bool start_flag = false;
         //if uart is not active send stop scan folowed by start scan
         if(start_flag)
         {
@@ -97,8 +98,6 @@ void period_1Hz(uint32_t count)
             rplidar.reset_core();
             start_flag = true;
         }
-
-    //LE.toggle(1);
 }
 
 void period_10Hz(uint32_t count)
@@ -107,7 +106,7 @@ void period_10Hz(uint32_t count)
     rplidar.flag = true;
     send_lane_distance_values();
 
-    check_heartbeat();
+
 
     if(xSemaphoreTake(sonar_mutex,1))
     {
@@ -122,15 +121,11 @@ void period_10Hz(uint32_t count)
         prev_count = count;
     }
 
-    //LE.toggle(2);
 }
 
 void period_100Hz(uint32_t count)
 {
 
-
-
-    //LE.toggle(3);
 }
 
 // 1Khz (1ms) is only run if Periodic Dispatcher was configured to run it at main():
@@ -150,13 +145,6 @@ void period_1000Hz(uint32_t count)
         prev_count = count;
     }
 
-    //LE.toggle(4);
 }
 
-void check_heartbeat()
-{
-    if(CAN_rx(can1,&rx_msg,1) && (rx_msg.msg_id == 120))
-        {
-                LE.toggle(3);
-        }
-}
+
