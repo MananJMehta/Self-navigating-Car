@@ -74,6 +74,7 @@ void CAN_GPS_Trasmit();
 void CAN_COMPASS_Transmit();
 void calibrate_compass();
 void stop_calibrate();
+void original_firmware();
 
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
@@ -111,6 +112,11 @@ void period_1Hz(uint32_t count)
     if (SW.getSwitch(2))
     {
         stop_calibrate();
+    }
+
+    if (SW.getSwitch(3))
+    {
+        original_firmware();
     }
 
     if(CAN_is_bus_off(can1))
@@ -249,4 +255,20 @@ void stop_calibrate()
     uint8_t buffer[1] = { 0 };
     buffer[0] = 0xF8;
     I2C2::getInstance().writeRegisters(addr, command_reg, &buffer[0], 1);
+}
+
+void original_firmware()
+{
+    int command_reg = 0;
+    int addr = 0xc0;
+    uint8_t buffer[1] = { 0 };
+    buffer[0] = 0x20;
+    I2C2::getInstance().writeRegisters(addr, command_reg, &buffer[0], 1);
+    delay_ms(30);
+    buffer[0] = 0x2A;
+    I2C2::getInstance().writeRegisters(addr, command_reg, &buffer[0], 1);
+    delay_ms(30);
+    buffer[0] = 0x60;
+    I2C2::getInstance().writeRegisters(addr, command_reg, &buffer[0], 1);
+    //printf("Calibration started\n");
 }
