@@ -35,11 +35,25 @@
 #include "gps_v1.hpp"
 #include "can.h"
 #include "_can_dbc/generated_can.h"
+#include "string.h"
 
 
 Uart2_GPS gps;
 HEARTBEAT_t hrt_buffer = {HEARTBEAT_cmd_NOOP};
 ANDROID_LOCATION_t ard_buffer = {0};
+
+//Compass
+COMPASS_t compass_msg = { 0 };
+
+bool dbc_app_send_can_msg(uint32_t mid, uint8_t dlc, uint8_t bytes[8])
+{
+    can_msg_t can_msg = { 0 };
+    can_msg.msg_id = mid;
+    can_msg.frame_fields.data_len = dlc;
+    memcpy(can_msg.data.bytes, bytes, dlc);
+    return CAN_tx(can1, &can_msg, 0);
+}
+
 
 static bool heartbeat_flag = false;
 
@@ -55,6 +69,8 @@ const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
 const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
 
 void CAN_GPS_Trasmit();
+
+void CAN_COMPASS_Transmit();
 
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
@@ -88,12 +104,16 @@ void period_1Hz(uint32_t count)
     }
 
     gps.parse_data();
+
+    CAN_COMPASS_Transmit();
     if(heartbeat_flag)
     {
         CAN_GPS_Trasmit();
     }
-//    u0_dbg_printf("Lat: %f\n", gps.getLatitude());
-//    u0_dbg_printf("Lon: %f\n", gps.getLongitude());
+    //u0_dbg_printf("Lat: %f\n", gps.getLatitude());
+    //u0_dbg_printf("Lon: %f\n", gps.getLongitude());
+    printf("Lat: %f\n", gps.getLatitude());
+    printf("Lon: %f\n", gps.getLongitude());
 
 //    LE.toggle(1);
 }
@@ -119,12 +139,17 @@ void period_10Hz(uint32_t count)
                     heartbeat_flag = true;
                     LE.toggle(1);
                 }
+                else if(hrt_buffer.HEARTBEAT_cmd == HEARTBEAT_cmd_NOOP)
+                {
+                    heartbeat_flag = true;
+                    LE.on(1);
+                }
                 break;
 
             case 135:
                 dbc_decode_ANDROID_LOCATION(&ard_buffer, can_msg_receive.data.bytes, &msg_hdr_receive);
-                u0_dbg_printf("Lat: %f\n", ard_buffer.ANDROID_CMD_lat);
-                u0_dbg_printf("Lon: %f\n", ard_buffer.ANDROID_CMD_long);
+                //u0_dbg_printf("Lat: %f\n", ard_buffer.ANDROID_CMD_lat);
+                //u0_dbg_printf("Lon: %f\n", ard_buffer.ANDROID_CMD_long);
                 break;
         }
     }
@@ -161,5 +186,26 @@ void CAN_GPS_Trasmit()
     else
     {
         LE.off(3);
+    }
+}
+
+void CAN_COMPASS_Transmit()
+{
+    int addr = 0xc0;
+    int reg = 0x02;
+    int bearing_int = 0;
+    float bearing_float = 0;
+    uint8_t buffer[2] = { 0 };
+
+    if (I2C2::getInstance().readRegisters(addr, reg, &buffer[0], 2))
+    {
+        bearing_int = buffer[0];
+        bearing_int <<= 8;
+        bearing_int += buffer[1];
+        bearing_float = (float)(bearing_int/10.00);
+        //u0_dbg_printf("Int = %d\n", bearing_int);
+        printf("Compass heading = %f\n", bearing_float);
+        compass_msg.CMP_BEARING = bearing_float;
+        dbc_encode_and_send_COMPASS(&compass_msg);
     }
 }
