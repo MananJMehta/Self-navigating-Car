@@ -37,13 +37,12 @@ void Uart2_GPS::receive()
 {
     if(Uart2::getInstance().gets(getBuffer(), UART_RECEIVE_BUFFER_SIZE, 50))
     {
-        LE.toggle(1);
+        LE.toggle(4);
     }
     else
     {
-        LE.on(1);
+        LE.on(4);
     }
-//    memset(gps_data, 0, sizeof(gps_data));
 }
 
 char* Uart2_GPS::getBuffer()
@@ -60,10 +59,9 @@ bool Uart2_GPS::parse_data()
 
         memcpy(lat, (buffer+20), 9);
         memcpy(lon, (buffer+32), 10);
-        u0_dbg_printf("lat: %s\n", lat);
 
-        latitude = (float)atof(lat);        // Limit float values---------------------------------------
-        longitude = (float)atof(lon);
+        latitude = ((float)atof(lat))/100;        // Change float values to 6 digits
+        longitude = -((float)atof(lon))/100;
 
         LE.toggle(2);
         return true;

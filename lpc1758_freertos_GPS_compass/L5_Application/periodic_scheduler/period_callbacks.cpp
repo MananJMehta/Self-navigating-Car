@@ -38,7 +38,10 @@
 
 
 Uart2_GPS gps;
-HEARTBEAT_t hrt_buffer;
+HEARTBEAT_t hrt_buffer = {HEARTBEAT_cmd_NOOP};
+ANDROID_LOCATION_t ard_buffer = {0};
+
+static bool heartbeat_flag = false;
 
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
@@ -52,7 +55,6 @@ const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
 const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
 
 void CAN_GPS_Trasmit();
-void CAN_HeartBeat_Receive();
 
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
@@ -86,10 +88,12 @@ void period_1Hz(uint32_t count)
     }
 
     gps.parse_data();
-    u0_dbg_printf("Lat: %f\n", gps.getLatitude());
- //   u0_dbg_printf("Lon: %f\n", gps.getLongitude());
-
-
+    if(heartbeat_flag)
+    {
+        CAN_GPS_Trasmit();
+    }
+//    u0_dbg_printf("Lat: %f\n", gps.getLatitude());
+//    u0_dbg_printf("Lon: %f\n", gps.getLongitude());
 
 //    LE.toggle(1);
 }
@@ -98,9 +102,32 @@ void period_10Hz(uint32_t count)
 {
     gps.receive();
 
-//    CAN_GPS_Trasmit();
-    CAN_HeartBeat_Receive();
+    can_msg_t can_msg_receive;
 
+    while(CAN_rx(can1, &can_msg_receive, 0))
+    {
+        dbc_msg_hdr_t msg_hdr_receive;
+        msg_hdr_receive.mid = can_msg_receive.msg_id;
+        msg_hdr_receive.dlc = can_msg_receive.frame_fields.data_len;
+
+        switch(can_msg_receive.msg_id)
+        {
+            case 120:
+                dbc_decode_HEARTBEAT(&hrt_buffer, can_msg_receive.data.bytes, &msg_hdr_receive);
+                if(hrt_buffer.HEARTBEAT_cmd == HEARTBEAT_cmd_SYNC)
+                {
+                    heartbeat_flag = true;
+                    LE.toggle(1);
+                }
+                break;
+
+            case 135:
+                dbc_decode_ANDROID_LOCATION(&ard_buffer, can_msg_receive.data.bytes, &msg_hdr_receive);
+                u0_dbg_printf("Lat: %f\n", ard_buffer.ANDROID_CMD_lat);
+                u0_dbg_printf("Lon: %f\n", ard_buffer.ANDROID_CMD_long);
+                break;
+        }
+    }
 }
 
 
@@ -127,28 +154,12 @@ void CAN_GPS_Trasmit()
     can_gps_transmit.msg_id = msg_hdr_transmit.mid;
     can_gps_transmit.frame_fields.data_len = msg_hdr_transmit.dlc;
 
-    CAN_tx(can1, &can_gps_transmit, 0);
-}
-
-void CAN_HeartBeat_Receive()
-{
-    can_msg_t can_hrt_receive;
-
-    if(CAN_rx(can1, &can_hrt_receive, 0))
+    if(CAN_tx(can1, &can_gps_transmit, 0))
     {
-        dbc_msg_hdr_t msg_hdr_receive;
-        msg_hdr_receive.mid = can_hrt_receive.msg_id;
-        msg_hdr_receive.dlc = can_hrt_receive.frame_fields.data_len;
-
-        dbc_decode_HEARTBEAT(&hrt_buffer, can_hrt_receive.data.bytes, &msg_hdr_receive);
-    }
-
-    if(hrt_buffer.HEARTBEAT_cmd == HEARTBEAT_cmd_SYNC)
-    {
-        LE.toggle(4);
+        LE.toggle(3);
     }
     else
     {
-        LE.off(4);
+        LE.off(3);
     }
 }
