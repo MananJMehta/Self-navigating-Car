@@ -63,12 +63,12 @@ bool Uart2_GPS::parse_data()
         latitude = ((float)atof(lat))/100;        // Change float values to 6 digits
         longitude = -((float)atof(lon))/100;
 
-        LE.toggle(2);
+        LE.on(2);
         return true;
     }
     else
     {
-        LE.on(2);
+        LE.off(2);
     }
 
     return false;

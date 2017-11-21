@@ -41,6 +41,7 @@
 
 
 Uart2_GPS gps;
+Compass compass;
 HEARTBEAT_t hrt_buffer = {HEARTBEAT_cmd_NOOP};
 ANDROID_LOCATION_t ard_buffer = {0};
 
@@ -73,9 +74,9 @@ const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
 void CAN_GPS_Trasmit();
 
 void CAN_COMPASS_Transmit();
-void calibrate_compass();
-void stop_calibrate();
-void original_firmware();
+//void calibrate_compass();
+//void stop_calibrate();
+//void original_firmware();
 
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
@@ -105,27 +106,29 @@ bool period_reg_tlm(void)
 
 void period_1Hz(uint32_t count)
 {
-    if (SW.getSwitch(1))
-    {
-        calibrate_compass();
-    }
-
-    if (SW.getSwitch(2))
-    {
-        stop_calibrate();
-    }
-
-    if (SW.getSwitch(3))
-    {
-        original_firmware();
-    }
 
     if(CAN_is_bus_off(can1))
     {
         CAN_reset_bus(can1);
     }
 
-    gps.parse_data();
+    if (SW.getSwitch(1))
+    {
+        //calibrate_compass();
+        compass.Calibrate_Compass();
+    }
+
+    if (SW.getSwitch(2))
+    {
+        //stop_calibrate();
+        compass.Stop_Calibrate();
+    }
+
+    if (SW.getSwitch(3))
+    {
+        compass.Original_Firmware_Calibration();
+        //original_firmware();
+    }
 
     //CAN_COMPASS_Transmit();
     if(heartbeat_flag)
@@ -135,8 +138,8 @@ void period_1Hz(uint32_t count)
     }
     //u0_dbg_printf("Lat: %f\n", gps.getLatitude());
     //u0_dbg_printf("Lon: %f\n", gps.getLongitude());
-    printf("Lat: %f\n", gps.getLatitude());
-    printf("Lon: %f\n", gps.getLongitude());
+    //printf("Lat: %f\n", gps.getLatitude());
+    //printf("Lon: %f\n", gps.getLongitude());
 
 //    LE.toggle(1);
 }
@@ -176,6 +179,14 @@ void period_10Hz(uint32_t count)
                 break;
         }
     }
+
+    gps.parse_data();
+
+    if(heartbeat_flag)
+    {
+        CAN_COMPASS_Transmit();
+        CAN_GPS_Trasmit();
+    }
 }
 
 
@@ -214,6 +225,15 @@ void CAN_GPS_Trasmit()
 
 void CAN_COMPASS_Transmit()
 {
+    float compass_heading_value = compass.Get_Compass_Heading();
+    printf("Compass heading = %f\n", compass_heading_value);
+    compass_msg.CMP_BEARING = compass_heading_value;
+    dbc_encode_and_send_COMPASS(&compass_msg);
+}
+
+#if 0
+void CAN_COMPASS_Transmit()
+{
     int addr = 0xc0;
     int reg = 0x02;
     int bearing_int = 0;
@@ -232,6 +252,8 @@ void CAN_COMPASS_Transmit()
         dbc_encode_and_send_COMPASS(&compass_msg);
     }
 }
+
+
 
 void calibrate_compass()
 {
@@ -273,3 +295,4 @@ void original_firmware()
     I2C2::getInstance().writeRegisters(addr, command_reg, &buffer[0], 1);
     //printf("Calibration started\n");
 }
+#endif
