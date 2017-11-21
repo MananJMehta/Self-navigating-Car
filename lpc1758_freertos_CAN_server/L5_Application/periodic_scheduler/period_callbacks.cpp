@@ -37,7 +37,7 @@
 #include "printf_lib.h"
 #include <cmath>
 #include <utility>
-
+#include <io.hpp>
 using namespace std;
 
 #define SONAR_CODE  0        //Uncomment to include SONAR code
@@ -218,9 +218,12 @@ void period_1Hz(uint32_t count)
     if(boot_t)
     {
         heartbeat_msg.HEARTBEAT_cmd = HEARTBEAT_cmd_REBOOT;
+        dbc_encode_and_send_HEARTBEAT(&heartbeat_msg);
+        heartbeat_msg.HEARTBEAT_cmd = HEARTBEAT_cmd_NOOP;
         boot_t = false;
     }
     dbc_encode_and_send_HEARTBEAT(&heartbeat_msg);
+
     LE.toggle(1);
     if(CAN_is_bus_off(can1))
     {
@@ -230,6 +233,16 @@ void period_1Hz(uint32_t count)
 
 void period_10Hz(uint32_t count)
 {
+    if(SW.getSwitch(2))
+    {
+        flag_speed = 0;
+        heartbeat_msg.HEARTBEAT_cmd = HEARTBEAT_cmd_NOOP;
+    }
+    if(SW.getSwitch(1))
+    {
+        flag_speed = 1;
+        heartbeat_msg.HEARTBEAT_cmd = HEARTBEAT_cmd_SYNC;
+    }
 
     can_msg_t can_msg;
     while(CAN_rx(canTest,&can_msg,0))

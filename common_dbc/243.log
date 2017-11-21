@@ -5,8 +5,8 @@ MSG_ID: 120 	MSG_TYPE: S 	MSG_NAME: HEARTBEAT
 	SIG_NAME: HEARTBEAT_cmd, STATUS: Invalid Max or Min value., ACTION: Value Set to default
 
 MSG_ID: 130 	MSG_TYPE: S 	MSG_NAME: ANDROID_CMD
-	SIG_NAME: ANDROID_CMD_kill, STATUS: Invalid Max or Min value., ACTION: Value Set to default
 	SIG_NAME: ANDROID_CMD_start, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: ANDROID_CMD_speed, STATUS: Invalid Max or Min value., ACTION: Value Set to default
 
 MSG_ID: 140 	MSG_TYPE: S 	MSG_NAME: CAR_CONTROL
 	SIG_NAME: CAR_CONTROL_speed, STATUS: Invalid Max or Min value., ACTION: Value Set to default
