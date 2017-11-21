@@ -167,9 +167,12 @@ uint8_t map_get_value(SENSOR_DATA_t y)
 //@params received can message from the lidar sensor
 //@returns steering rotation and car speed
 pair<uint8_t, uint8_t> update_lanes(SENSOR_DATA_t x)
-                                {
+        {
     static pair<uint8_t , uint8_t> return_value;
+    /*Aditya Change
     return_value.first=HARDLEFT;//steering
+    */
+    return_value.first=CENTER;
     return_value.second=0;//speed
 
     uint8_t i=map_get_value(x);
@@ -189,7 +192,7 @@ pair<uint8_t, uint8_t> update_lanes(SENSOR_DATA_t x)
     return_value.first = arr[i];
     return_value.second = flag_speed;
     return return_value;
-                                }
+        }
 
 //stops the car if the obstacle is too close based on sonar
 void stop_lidar (SENSOR_DATA_t& x)
