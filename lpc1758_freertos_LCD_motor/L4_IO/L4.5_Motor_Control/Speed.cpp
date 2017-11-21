@@ -32,27 +32,28 @@ void Speed::setSpeed(float speed) ///< @param sets floating-point speed of motor
 
 float Speed::maintain_speed(float val)
 {
-    if((rpm_s.rpms - RefCts.ref_count_medium) > 3)
+    if((rpm_s.rpms - RefCts.ref_count_medium) >= 2)
     {
         val=this->getSpeed() - 0.1;
     }
-    else if((rpm_s.rpms - RefCts.ref_count_medium) > 1)
+    else if((rpm_s.rpms - RefCts.ref_count_medium) >= 1)
     {
         val=this->getSpeed() - 0.05;
 
     }
-    else if((RefCts.ref_count_medium - rpm_s.rpms) > 2)
+    else if((RefCts.ref_count_medium - rpm_s.rpms) >= 2)
     {
         val=this->getSpeed() + 0.1;
 
     }
-    else if((RefCts.ref_count_medium - rpm_s.rpms) > 1)
+    else if((RefCts.ref_count_medium - rpm_s.rpms) >= 1)
     {
         val=this->getSpeed() + 0.05;
 
     }
 
     if(val >17) val = 17;
+    else if(val<15) val = 15;
     return val;
 }
 

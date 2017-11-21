@@ -275,7 +275,7 @@ const DISTANCE_VALUES_t                    DISTANCE_VALUES__MIA_MSG = {5};
 const uint32_t                             LIDAR_DATA_VALUES__MIA_MS = 3000;
 const LIDAR_DATA_VALUES_t                  LIDAR_DATA_VALUES__MIA_MSG = {5};
 
-
+int stopCount=0;
 bool master =false;
 void period_10Hz(uint32_t count)
 {
@@ -330,21 +330,36 @@ void period_10Hz(uint32_t count)
 
     //flag code - set flag
     flag = carControl.CAR_CONTROL_speed;
-    if(SW.getSwitch(1)==true)
-        flag=true;
-    if(SW.getSwitch(2)==true)
-        flag=false;
+
     //end set flag
 
     if(flag==false)
     {
-        spd.setSpeed(STOP);
-        val = STOP;
+        if(val>STOP)
+        {
+            LE.toggle(4);
+            if(stopCount == 0)
+            { spd.setSpeed(STOP);stopCount++;}
+            else if(stopCount == 1)
+            { spd.setSpeed(12);stopCount++;}
+            else if(stopCount == 2)
+            { spd.setSpeed(STOP);stopCount++;}
+            else if(stopCount == 3)
+            { spd.setSpeed(12);stopCount++;}
+            else if(stopCount == 4)
+            { stopCount++;}
+            else if(stopCount == 5)
+                       { spd.setSpeed(12);stopCount++;}
+//            else if(stopCount == 5)
+//            { spd.setSpeed(STOP);stopCount=0;}
+            val = STOP;
+        }
     }
     else if(flag==true )
     {
-        val =SLOW;
+        // val =SLOW;
         spd.setSpeed(val);
+        stopCount=0;
     }
 
 
