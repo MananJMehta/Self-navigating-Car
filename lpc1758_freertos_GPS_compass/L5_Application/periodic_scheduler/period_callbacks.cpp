@@ -37,6 +37,7 @@
 #include "_can_dbc/generated_can.h"
 #include "string.h"
 #include "utilities.h"
+#include "compass.hpp"
 
 
 Uart2_GPS gps;
@@ -126,10 +127,10 @@ void period_1Hz(uint32_t count)
 
     gps.parse_data();
 
-    CAN_COMPASS_Transmit();
+    //CAN_COMPASS_Transmit();
     if(heartbeat_flag)
     {
-        //CAN_COMPASS_Transmit();
+        CAN_COMPASS_Transmit();
         CAN_GPS_Trasmit();
     }
     //u0_dbg_printf("Lat: %f\n", gps.getLatitude());
