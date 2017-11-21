@@ -49,7 +49,7 @@ class Lidar_Sensor : public SingletonTemplate<Lidar_Sensor>
             uint16_t max;
         };
 
-        struct lane_params lane[8];//this should be placed .hpp and initialized in init
+//        struct lane_params lane[8];//this should be placed .hpp and initialized in init
 
         
         uint16_t quality_value = 0;
