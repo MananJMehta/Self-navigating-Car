@@ -40,15 +40,15 @@ void send_lidar_sonar_data()
 {
     SENSOR_DATA_t SensorData;
 
-    SensorData.LIDAR_neg80 = !rplidar.lane_lut[0];
-    SensorData.LIDAR_neg60 = !rplidar.lane_lut[1];
-    SensorData.LIDAR_neg40 = !rplidar.lane_lut[2];
-    SensorData.LIDAR_neg20 = !rplidar.lane_lut[3];
-    SensorData.LIDAR_0 = !rplidar.lane_lut[4];
-    SensorData.LIDAR_20 = !rplidar.lane_lut[5];
-    SensorData.LIDAR_40 = !rplidar.lane_lut[6];
-    SensorData.LIDAR_60 = !rplidar.lane_lut[7];
-    SensorData.LIDAR_80 = !rplidar.lane_lut[8];
+    SensorData.LIDAR_neg80 = rplidar.lane_lut[0];
+    SensorData.LIDAR_neg60 = rplidar.lane_lut[1];
+    SensorData.LIDAR_neg40 = rplidar.lane_lut[2];
+    SensorData.LIDAR_neg20 = rplidar.lane_lut[3];
+    SensorData.LIDAR_0 = rplidar.lane_lut[4];
+    SensorData.LIDAR_20 = rplidar.lane_lut[5];
+    SensorData.LIDAR_40 = rplidar.lane_lut[6];
+    SensorData.LIDAR_60 = rplidar.lane_lut[7];
+    SensorData.LIDAR_80 = rplidar.lane_lut[8];
     SensorData.SONAR_left = sonar.leftDist;
     SensorData.SONAR_right = sonar.rightDist;
     SensorData.SONAR_back = sonar.backDist;

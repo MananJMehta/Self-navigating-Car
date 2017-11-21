@@ -182,9 +182,9 @@ bool Lidar_Sensor::update_lane_lut()
     angle_value_deg = get_angle_value();//return angle in degrees
     distance_value_cm = get_distance_value();//return distance in cm
 
-    lane_algorithm();
+    if(lane_algorithm()) return true;
 
-    return true;
+    else return false;
 }
 
 bool Lidar_Sensor::angle_is_in_range_of_current_lane(uint8_t current_lane)
@@ -220,16 +220,18 @@ bool Lidar_Sensor::lane_algorithm(void)
     static bool local_lanes [9];
     static const float object_range = 150.0;
     static const uint8_t data = 5;
-    static uint16_t min = 0;
+    static uint16_t min = 600;
     static uint8_t current_lane = 4;//start at lane 4
     static uint8_t next_lane = 5;
 
     //data should be starting from lane 4 so there should be only 2 if statement
     //one that does cheking and processing for current lane and one that checks fort the next lane
+    if(((angle_value_deg>=270) && (angle_value_deg<=359)) | ((angle_value_deg<=90)&&(angle_value_deg>=0)))
+    {
     if(angle_is_in_range_of_current_lane(current_lane)) //in the range for current lane
     {
         //will catch all the data points minus the first
-       if(distance_value_cm <= object_range && distance_value_cm>=0)
+       if(distance_value_cm <= object_range && distance_value_cm>0)
         {
             if(distance_value_cm<min)
             {
@@ -251,20 +253,20 @@ bool Lidar_Sensor::lane_algorithm(void)
         }
         else
         {
-            local_lanes[current_lane] =false;
+            local_lanes[current_lane] = false;
         }
 
         lane_distances[current_lane] = min;//this will set lane_distance to the smallest value from prev lane
-        min = distance_value_cm;//set this equal to the first value in the lane
-        
-        if (next_lane == 8 && current_lane == 7)
+        min = 600;//set this equal to the first value in the lane
+        count = 0;//reset the count for this lane
+        if (next_lane == 8)
         {
             next_lane = 0;
-            current_lane++;
+            current_lane = 8;
         }
-        else if (next_lane == 0 && current_lane == 8)
+        else if (next_lane == 0)
         {
-            next_lane++;
+            next_lane = 1;
             current_lane = 0;
         }
         else
@@ -273,15 +275,25 @@ bool Lidar_Sensor::lane_algorithm(void)
             current_lane++;
         }
 
-        count = 0;//reset the count for this lane
+        if(distance_value_cm <= object_range && distance_value_cm>0)
+        {
+            if(distance_value_cm<min)
+            {
+                min = distance_value_cm;
+            }
+            count++;
+        }
     }
 
     else// data is not in sync. Wait, but send out error msg
     {
+
         return false;
     }
 
-    memcpy(lane_lut, local_lanes, sizeof(lane_lut));memcpy(lane_lut, local_lanes, sizeof(lane_lut));
+    }
+
+    memcpy(rplidar.lane_lut, local_lanes, sizeof(rplidar.lane_lut));
     return true;
 }
 

@@ -49,7 +49,7 @@ class Lidar_Sensor : public SingletonTemplate<Lidar_Sensor>
             uint16_t max;
         };
 
-        struct lane_params lane[8];//this should be placed .hpp and initialized in init
+        struct lane_params lane[9];//this should be placed .hpp and initialized in init
 
         
         uint16_t quality_value = 0;
@@ -74,6 +74,26 @@ class Lidar_Sensor : public SingletonTemplate<Lidar_Sensor>
         void send_lidar_command(lidar_cmd_t lidar_cmd);//we will send an enum data type
     private:
         Lidar_Sensor() {
+
+            lane[0].min = 270;
+            lane[1].min = 290;
+            lane[2].min = 310;
+            lane[3].min = 330;
+            lane[4].min = 350;
+            lane[5].min = 10;
+            lane[6].min = 30;
+            lane[7].min = 50;
+            lane[8].min = 70;
+
+            lane[0].max = 290;
+            lane[1].max = 310;
+            lane[2].max = 330;
+            lane[3].max = 350;
+            lane[4].max = 10;
+            lane[5].max = 30;
+            lane[6].max = 50;
+            lane[7].max = 70;
+            lane[8].max = 90;
 
             //create the lane array
             //0 means this lane is clear

@@ -83,7 +83,9 @@ bool lidar_data_acquisition::run(void* p)
                 LE.off(4);
             }
 
-            rplidar.update_lane_lut();
+            if (rplidar.update_lane_lut()) LE.on(1);
+            else LE.off(1);
+
     }
     return true;
 }
