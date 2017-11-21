@@ -21,21 +21,31 @@ public:
     int getSignalType(char* rx); //Send data on CAN bus
     int getCPNum(char* rx);
     void getLatLong(char* rx, int count); //Parse data to get Lat and Long
-    bool sendCanData(ANDROID_CMD_t android_cmd, ANDROID_LOCATION_t android_loc, can_msg_t can_msg, int signalType);
+    bool sendCanData(ANDROID_CMD_t android_cmd, ANDROID_LOCATION_t android_loc, can_msg_t can_msg_cmd, can_msg_t can_msg_loc, int signalType);
+    bool getCanData();
     bool sendSpeed();
     bool flushBuffer();
-    bool sendStartSpeed(ANDROID_CMD_t android_cmd, can_msg_t can_msg);
+    bool sendStartSpeed(ANDROID_CMD_t android_cmd, can_msg_t can_msg); //Send Speed entered with Start on CAN Bus
     bool sendLocation(ANDROID_LOCATION_t android_loc, can_msg_t can_msg);
+    bool sendCurrentData(int txType); //Send data to App based on type
     //int getSpeed(char* rx);
 
     double latitude[10];
     double longitude[10];
-    int speed;
+    double currentLat;
+    double currentLong;
+    double currentHeading;
+    float currentSpeed; //Send current speed to App
+    int speed; //Get desired speed from App
     int checkpointCounter;
 
     Bluetooth() {
         latitude[10] = 0;
         longitude[10] = 0;
+        currentLat = 0;
+        currentLong = 0;
+        currentHeading = 0;
+        currentSpeed = 0;
         speed = 0;
         checkpointCounter = sizeof(latitude) / sizeof(double);
     };

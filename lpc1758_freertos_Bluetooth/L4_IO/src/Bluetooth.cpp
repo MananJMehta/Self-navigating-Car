@@ -2,6 +2,7 @@
 #include "string.h"
 #include "stdlib.h"
 #include "io.hpp"
+#include "math.h"
 
 Uart2& u2 = Uart2::getInstance();
 //Bluetooth b;
@@ -42,20 +43,9 @@ int Bluetooth::getSignalType(char* rx) {
         char *speedChar = new char;
         char* endPos = new char;
 
-        endPos = strchr(rx, 'S');
-        int strLength = (int)(endPos - rx - 1);
 
-        printf("\n%\d",strLength);
 
-        speed = 3;
-
-        /*for(;strLength>0;strLength--)
-        {
-            speed = (speed*10)+ tempNum;
-            rx++;
-            temp = *rx;
-            tempNum = temp - '0';
-        }*/
+        //speed = 3;
 
         //printf("Speed: %d\n",speed);
         LE.on(1);
@@ -75,7 +65,7 @@ int Bluetooth::getSignalType(char* rx) {
     return signalType;
 }
 
-bool Bluetooth::sendCanData(ANDROID_CMD_t android_cmd, ANDROID_LOCATION_t android_loc, can_msg_t can_msg, int signalType) {
+bool Bluetooth::sendCanData(ANDROID_CMD_t android_cmd, ANDROID_LOCATION_t android_loc, can_msg_t can_msg_cmd, can_msg_t can_msg_loc, int signalType) {
 
     if(signalType == 1) {
         android_cmd.ANDROID_CMD_start = 1;
@@ -93,15 +83,66 @@ bool Bluetooth::sendCanData(ANDROID_CMD_t android_cmd, ANDROID_LOCATION_t androi
         android_loc.ANDROID_CMD_long = longitude[0];
     }
 
-    sendStartSpeed(android_cmd, can_msg);
-    sendLocation(android_loc, can_msg);
+    sendStartSpeed(android_cmd, can_msg_cmd);
+    sendLocation(android_loc, can_msg_loc);
 
     return true;
 }
 
+bool Bluetooth::getCanData() {
+    GPS_DATA_t gps_can_msg = {0};
+    COMPASS_t compass_can_msg = {0};
+    MOTOR_TELEMETRY_t motel_can_msg = {0};
+    can_msg_t can_msg;
+    dbc_msg_hdr_t can_msg_h;
+
+    while (CAN_rx(can1, &can_msg, 0))
+    {
+        can_msg_h.dlc = can_msg.frame_fields.data_len;
+        can_msg_h.mid = can_msg.msg_id;
+        switch(can_msg_h.mid) {
+            case 160:
+                dbc_decode_GPS_DATA(&gps_can_msg, can_msg.data.bytes, &can_msg_h);
+                if(gps_can_msg.GPS_LATITUDE != 0 && gps_can_msg.GPS_LONGITUDE != 0) {
+                    currentLat = gps_can_msg.GPS_LATITUDE;
+                    currentLong = gps_can_msg.GPS_LONGITUDE;
+                    sendCurrentData(1);
+                    LE.toggle(2);
+                }
+                printf("LAT: %f",gps_can_msg.GPS_LATITUDE);
+                break;
+
+            case 170:
+                dbc_decode_COMPASS(&compass_can_msg, can_msg.data.bytes, &can_msg_h);
+                if(compass_can_msg.CMP_HEADING != 0) {
+                    currentHeading = compass_can_msg.CMP_HEADING;
+                    sendCurrentData(2);
+                    LE.toggle(2);
+                }
+                printf("HEADING: %f",compass_can_msg.CMP_HEADING);
+                break;
+
+            case 190:
+                dbc_decode_MOTOR_TELEMETRY(&motel_can_msg, can_msg.data.bytes, &can_msg_h);
+                if(motel_can_msg.MOTOR_TELEMETRY_kph != 0) {
+                    currentSpeed = motel_can_msg.MOTOR_TELEMETRY_kph;
+                    sendCurrentData(3);
+                    LE.toggle(2);
+                }
+                printf("LAT: %f",gps_can_msg.GPS_LATITUDE);
+                break;
+        }
+    }
+    return true;
+}
 int Bluetooth::getCPNum(char* rx) {
     int cpNo= 0;
-    cpNo = rx[1] - '0';
+    int count = 1;
+    //cpNo = rx[1] - '0';
+    while(*(rx+count) != '(') {
+        cpNo = cpNo + ((int)rx[count] * pow(10, count));
+        count++;
+    }
     return cpNo;
 }
 
@@ -138,13 +179,14 @@ void Bluetooth::getLatLong(char* rx, int count) {
 }
 
 bool Bluetooth::sendSpeed() {
-    char desiredSpeed;
+    char* desiredSpeed = new char;
     if(SW.getSwitch(1)) {
-        desiredSpeed = '2';
-        if(u2.putChar(desiredSpeed, 0))
-            printf("Sent 2\n");
+
+                        desiredSpeed = "G|123.474457|35.343677";
+                                (u2.putline(desiredSpeed, 0));
+                                    printf("Sent 2\n");
     }
-    else if(SW.getSwitch(2)) {
+    /*else if(SW.getSwitch(2)) {
         desiredSpeed = '5';
         if(u2.putChar(desiredSpeed, 0))
             printf("Sent 5\n");
@@ -158,7 +200,7 @@ bool Bluetooth::sendSpeed() {
         desiredSpeed = '9';
         if(u2.putChar(desiredSpeed, 0))
             printf("Sent 9\n");
-        }
+        }*/
 
     return true;
 }
@@ -184,4 +226,24 @@ bool Bluetooth::sendLocation(ANDROID_LOCATION_t android_loc, can_msg_t can_msg) 
     return true;
 }
 
-
+bool Bluetooth::sendCurrentData(int txType) {
+    char* txData = new char;
+    switch(txType) {
+        case 1:
+            char lat[50];
+            char lng[50];
+            sprintf(txData,"G|%f|%f",currentLat,currentLong);
+            //txData = "G|" + lat + '|' + lng;
+            u2.putline(txData);
+            break;
+        case 2:
+            sprintf(txData,"C|%f",currentHeading);
+            u2.putline(txData);
+            break;
+        case 3:
+            sprintf(txData,"S|%f",currentSpeed);
+            u2.putline(txData);
+            break;
+    }
+    return true;
+}

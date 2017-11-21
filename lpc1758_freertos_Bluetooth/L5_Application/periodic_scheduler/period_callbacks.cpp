@@ -71,7 +71,7 @@ const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
 {
-    bluetooth.init(9600, 100, 100);
+    bluetooth.init(115200, 500, 500);
     initCan();
 
     return true; // Must return true upon success
@@ -96,7 +96,8 @@ void period_1Hz(uint32_t count)
 
     ANDROID_CMD_t android_cmd = {0};
     ANDROID_LOCATION_t android_loc = {0};
-    can_msg_t can_msg = {0};
+    can_msg_t can_msg_cmd = {0};
+    can_msg_t can_msg_loc = {0};
 
     if(bluetooth.getBluetoothData(rx, bufferLength, 1)) {
         printf("\nChar: %s\n",rx);
@@ -111,14 +112,14 @@ void period_1Hz(uint32_t count)
             bluetooth.getLatLong(rx, chkPointNo);
         }
 
-        bluetooth.sendCanData(android_cmd, android_loc, can_msg, signalType);
+        bluetooth.sendCanData(android_cmd, android_loc, can_msg_cmd, can_msg_loc, signalType);
+
         bluetooth.flushBuffer();
     }
     /*else
     {
         LE.toggle(2);
     }*/
-    bluetooth.sendSpeed();
 
     //canResetBus();
     //LE.toggle(1);
@@ -126,13 +127,13 @@ void period_1Hz(uint32_t count)
 
 void period_10Hz(uint32_t count)
 {
-
+    //bluetooth.getCanData();
+    bluetooth.sendSpeed();
     //LE.toggle(2);
 }
 
 void period_100Hz(uint32_t count)
 {
-
     //LE.toggle(3);
 }
 
