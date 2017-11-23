@@ -2,8 +2,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:background="@color/common_google_signin_btn_text_dark_pressed"
     android:layout_height="match_parent"
+    android:background="@color/common_google_signin_btn_text_dark_pressed"
     tools:context="sjsucmpe243.application.tatanano.MapsActivity">
 
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
@@ -11,14 +11,16 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        map:layout_constraintBottom_toBottomOf="parent"
+        map:layout_constraintEnd_toEndOf="parent"
+        map:layout_constraintStart_toStartOf="parent"
+        map:layout_constraintTop_toTopOf="parent"
         tools:context="sjsucmpe243.application.tatanano.MapsActivity"
-        tools:ignore="MissingConstraints"
-        tools:layout_editor_absoluteX="0dp"
-        tools:layout_editor_absoluteY="0dp" />
+        tools:ignore="MissingConstraints" />
 
-<!--    <android.support.design.widget.FloatingActionButton
+    <!--    <android.support.design.widget.FloatingActionButton
         android:id="@+id/bluetooth"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -44,8 +46,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/SendStart"
-        app:layout_constraintVertical_bias="0.0"
-        android:layout_marginRight="32dp" />
+        app:layout_constraintVertical_bias="0.0" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/SendStart"
@@ -56,8 +57,7 @@
         android:src="@drawable/ic_send_start"
         app:backgroundTint="@color/colorPrimary"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginRight="32dp" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/SendStop"
@@ -69,8 +69,7 @@
         android:visibility="invisible"
         app:backgroundTint="@color/colorPrimary"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginRight="32dp" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/speedText"
@@ -80,17 +79,18 @@
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:text="Actual Speed"
+        android:text="Speed"
         android:textSize="20sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.032"
+        app:layout_constraintHorizontal_bias="0.025"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.908" />
+        app:layout_constraintVertical_bias="0.811" />
 
     <TextView
+        android:id="@+id/textView3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
@@ -102,10 +102,10 @@
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.409"
+        app:layout_constraintHorizontal_bias="0.34"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.908" />
+        app:layout_constraintVertical_bias="0.811" />
 
     <TextView
         android:id="@+id/CurrPosText"
@@ -120,27 +120,10 @@
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.425"
+        app:layout_constraintHorizontal_bias="0.03"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.949" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:text="Current"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.94" />
+        app:layout_constraintVertical_bias="0.882" />
 
     <TextView
         android:id="@+id/HeadingText"
@@ -155,26 +138,25 @@
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.412"
+        app:layout_constraintHorizontal_bias="0.029"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintVertical_bias="0.924" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <ImageView
+        android:id="@+id/compass"
+        android:layout_width="@android:dimen/app_icon_size"
+        android:layout_height="@android:dimen/app_icon_size"
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:text="Heading"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:src="@drawable/compass"
+        app:layout_constraintBottom_toTopOf="@+id/speedText"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="0.101"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.982" />
+        app:layout_constraintVertical_bias="0.952" />
 
 </android.support.constraint.ConstraintLayout>

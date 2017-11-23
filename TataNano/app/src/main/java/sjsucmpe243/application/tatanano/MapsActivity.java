@@ -2,7 +2,6 @@ package sjsucmpe243.application.tatanano;
 
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -22,8 +21,8 @@ import android.support.v7.app.AlertDialog;
 import android.text.InputType;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -61,6 +60,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     InputStream rx_data;
     OutputStream tx_data;
     boolean Toggle_start_stop = false;
+    ImageView compass;
 
     AlertDialog.Builder alertDialogBuilder;
     AlertDialog alertDialog;
@@ -75,22 +75,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         actualSpeed = findViewById(R.id.speedText);
         currPosVal = findViewById(R.id.CurrPosText);
         headingVal = findViewById(R.id.HeadingText);
+
         try {
             rx_data = MainActivity.gotSocket.getInputStream();
             tx_data = MainActivity.gotSocket.getOutputStream();
         } catch (IOException e) {
             Log.e("TataNano : Bluetooth", "Socket is not connected yet. ");
         }
-        /**
-         * Thread that keeps running to receive and display data from the controller using bluetooth
-         */
+
         Thread t = new Thread() {
 
             @Override
             public void run() {
                 try {
                     while (!isInterrupted()) {
-                        Thread.sleep(100);
+
+                        Thread.sleep(1);
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -100,34 +100,54 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                         while(rx_data.available()>0) {
                                             test = test + ((char) (rx_data.read()) + "");
                                         }
+                                        // Glat|longCheadingSspeed&
                                         Log.d("RX DATA VALUE", test);
+                                        test = test.substring(0, test.indexOf('&')+1);
                                         String dataType = "", latVal = "", lngVal = "", headVal = "", speedVal = "";
                                         int pipePos = test.indexOf("|");
                                         if (pipePos != -1)
-                                        dataType = test.substring(0, pipePos);
-                                        if(dataType.equals("G")) {
-                                            if (pipePos + 1 != -1) {
-                                                test = test.substring(pipePos + 1);
-                                                pipePos = test.indexOf("|");
-                                                latVal = test.substring(0, pipePos);
-                                                lngVal = test.substring(pipePos + 1);
-                                                Log.d("GEO", latVal + ", " + lngVal);
-                                                currPosVal.setText(latVal + ", " + lngVal);
-                                            }
-                                        }
-                                        else if(dataType.equals("C")) {
-                                            if (pipePos + 1 != -1) {
-                                                headVal = test.substring(pipePos + 1);
-                                                Log.d("HEADING", headVal);
-                                                headingVal.setText(headVal);
-                                            }
-                                        }
-                                        else if(dataType.equals("S")) {
-                                            if (pipePos + 1 != -1) {
-                                                speedVal = test.substring(pipePos + 1);
-                                                Log.d("SPEED", speedVal);
-                                                actualSpeed.setText(speedVal);
-                                            }
+                                            dataType = test.substring(0,1);
+                                        if (dataType.equals("G")) {
+                                                if (test.length()>1) {
+                                                    test = test.substring(1);
+                                                    pipePos = test.indexOf("|");
+                                                    latVal = test.substring(0, pipePos);
+
+                                                    test = test.substring(pipePos + 1);
+                                                    pipePos = test.indexOf('C');
+                                                    lngVal = test.substring(0, pipePos);
+
+                                                    test = test.substring(pipePos);
+
+                                                    //Log.d("GEO", latVal + ", " + lngVal);
+                                                    currPosVal.setText(latVal + ", " + lngVal);
+                                                    headingVal.setText(test);
+                                                    if (test.substring(0,1).equals("C"))
+                                                    {
+                                                        headingVal.setText("inside if C");
+                                                        test = test.substring(1);
+                                                        pipePos = test.indexOf('S');
+                                                        headVal = test.substring(0,pipePos);
+                                                        test = test.substring(pipePos);
+
+                                                        //Log.d("Heading", headVal);
+                                                        headingVal.setText(headVal);
+                                                    }
+
+                                                    if (test.substring(0,1).equals("S"))
+                                                    {
+                                                        actualSpeed.setText("inside if S");
+                                                        test = test.substring(1);
+                                                        pipePos = test.indexOf('&');
+                                                        speedVal = test.substring(0,pipePos);
+
+                                                        //Log.d("Speed", speedVal);
+                                                        actualSpeed.setText(speedVal);
+
+                                                        test = "";
+                                                    }
+                                                    test = "";
+                                                }
                                         }
                                     }
                                 } catch (IOException e) {
@@ -136,7 +156,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             }
                         });
                     }
-                } catch (InterruptedException e) {
+                } catch (InterruptedException ignored) {
                 }
             }
         };
@@ -147,16 +167,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SendLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                StringBuilder outputString = new StringBuilder();
                 //LatLng temp = new LatLng(0,0);
 
                     Log.e("TataNano : Bluetooth", " Total check points are "+ Checkpoint_num );
-                    BTdata = "^" + String.valueOf(Checkpoint_num);
+                    outputString.append("^" + String.valueOf(Checkpoint_num));
 
                 for (LatLng temp : checkpoints) {
                         //Log.e("TataNano : Bluetooth", "(" + temp.latitude + "," + temp.longitude+")");
-                        BTdata += "(" + ((float) temp.latitude) + "," + ((float) temp.longitude)+")";
+                        outputString.append("(" + ((float) temp.latitude) + "," + ((float) temp.longitude)+")");
                 }
-                BTdata += "\n";
+                outputString.append("\n");
+                BTdata = outputString.toString();
                 Log.e("TataNano : Bluetooth", BTdata);
                 try {
                     tx_data.write(BTdata.getBytes());
@@ -192,6 +214,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             Log.e("TataNano : Bluetooth", " Could not sent. Null pointer exception" );
                         } catch (IOException e) {
                             Log.e("TataNano : Bluetooth", " Could not sent. IO exception" );
+                            MapsActivity.this.finish();
                         }
                         speedDialog.cancel();
                     }
@@ -268,15 +291,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         // to handle the case where the user grants the permission. See the documentation
                         // for ActivityCompat#requestPermissions for more details.
                         return;
-                    }
-
-                    try {
-                        if(rx_data.available()>0) {
-                            actualSpeed.setText(Integer.toString(rx_data.read()));
-                            Log.d("SPEED", Integer.toString(rx_data.read()));
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
                     }
 
                     if (temp != null && temp.isProviderEnabled(LocationManager.GPS_PROVIDER) && temp.getLastKnownLocation(LocationManager.GPS_PROVIDER) != null)

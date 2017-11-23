@@ -64,11 +64,11 @@ public class MainActivity extends AppCompatActivity {
         IntentFilter filter2 = new IntentFilter(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED);
         registerReceiver(mReceiver2, filter2);
 
-        heading = (TextView) findViewById(R.id.textView);
-        tag = (TextView) findViewById(R.id.textView2);
-        img = (ImageView) findViewById(R.id.imageView);
-        gifImg = (ImageView) findViewById(R.id.gifImageView);
-        pair = (Button) findViewById(R.id.pairWithCar);
+        heading = findViewById(R.id.textView);
+        tag = findViewById(R.id.textView2);
+        img = findViewById(R.id.imageView);
+        gifImg = findViewById(R.id.gifImageView);
+        pair = findViewById(R.id.pairWithCar);
 
 
         alertBuilder4BT = new AlertDialog.Builder(MainActivity.this);
@@ -113,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
                     heading.setTextColor(Color.GREEN);
                     heading.setText(R.string.BTConnected);
                     tag.setVisibility(View.VISIBLE);
+                    openMap();
                 } else {
                     Log.e("TataNano : Bluetooth","Unable to connect");
                     heading.setTextColor(Color.RED);
@@ -305,7 +306,7 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    public void openMap(View view){
+    public void openMap(){
         Intent openMap = new Intent(MainActivity.this,MapsActivity.class);
         startActivity(openMap);
     }
