@@ -74,8 +74,8 @@ enum {
 };
 
 //Define a critical distance for sonar
-#define sonar_critical 60
-#define sonar_warning 90
+#define sonar_critical 30
+#define sonar_warning 60
 
 uint8_t arr[9];
 uint8_t flag_speed = 0;
@@ -125,6 +125,7 @@ bool period_init(void)
     arr[6]=HARDLEFT;//hard left
     arr[8]=HARDLEFT;//extreme left
 
+    SW.init();
     return true; // Must return true upon success
 }
 
@@ -149,6 +150,12 @@ uint8_t map_get_value(SENSOR_DATA_t y)
         if(y.LIDAR_40 == 0)
             return 5;
     }
+
+    if(y.LIDAR_0 == 0 && y.LIDAR_20 == 0 && y.LIDAR_neg20 == 0 && y.LIDAR_40 == 1)
+        return 2;
+
+    if(y.LIDAR_0 == 0 && y.LIDAR_20 == 0 && y.LIDAR_neg20 == 0 && y.LIDAR_neg40 == 1)
+            return 1;
 
     if(y.LIDAR_0 == 0 && y.LIDAR_20 == 0 && y.LIDAR_neg20 == 0)
         return 0;
@@ -224,6 +231,10 @@ void period_1Hz(uint32_t count)
 
 void period_10Hz(uint32_t count)
 {
+    if(SW.getSwitch(2)) //Stop the car with SW 2
+        flag_speed = 0;
+    else if(SW.getSwitch(1)) //Start the car with SW 1
+        flag_speed = 1;
     can_msg_t can_msg;
     while(CAN_rx(canTest,&can_msg,0))
     {
@@ -236,9 +247,9 @@ void period_10Hz(uint32_t count)
             case 130:
                 if (dbc_decode_ANDROID_CMD(&and_msg, can_msg.data.bytes, &can_header))
                 {
-                    if(and_msg.ANDROID_CMD_start == 0)
+                    if(and_msg.ANDROID_CMD_start == 0) //Stop the car with SW 2
                         flag_speed = 0;
-                    else
+                    else if(and_msg.ANDROID_CMD_start == 0) //Start the car with SW 1
                         flag_speed = 1;
                 }
                 break;
@@ -251,6 +262,7 @@ void period_10Hz(uint32_t count)
                         stop_lidar(sensor_msg);
                     if(sensor_msg.SONAR_left > 14 && sensor_msg.SONAR_left <= sonar_warning)
                         sensor_msg.LIDAR_0 = 1;
+
                     pair<uint8_t , uint8_t> son;
                     son = update_lanes(sensor_msg);
                     master_motor_msg.CAR_CONTROL_steer = son.first;
