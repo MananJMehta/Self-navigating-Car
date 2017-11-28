@@ -110,9 +110,13 @@ float Uart2_GPS::getLongitude()
     return longitude;
 }
 
-
+//Function which returns the bearing angle
 float Uart2_GPS::bearingAngle(float lat, float lon)
 {
+    if (lat == 0.0 && lon == 0.0)
+    {
+        return 0;
+    }
     float dLon = lon - longitude;
     float x = cos(lat * PI/180.0) * sin(dLon * PI/180.0);
     float y = cos(latitude * PI/180.0) * sin(lat * PI/180.0)
@@ -128,6 +132,7 @@ float Uart2_GPS::bearingAngle(float lat, float lon)
     return bearing;
 }
 
+//Function which returns the distance between current location and checkpoint
 float Uart2_GPS::distanceCheckpoint(float lat, float lon)
 {
     float dLat = lat - latitude;

@@ -12,20 +12,17 @@
 
 float Compass::Get_Compass_Heading()
 {
-        int bearing_int = 0;
-        float bearing_float = 0;
+        int heading_int = 0;
+        float heading_float = 0;
         uint8_t buffer[2] = { 0 };
 
         if (I2C2::getInstance().readRegisters(COMPASS_I2C_ADDR, COMPASS_BEARING_16BIT_REG_ADDR, &buffer[0], READ_TWO_REGISTERS))
         {
-            bearing_int = buffer[0];
-            bearing_int <<= 8;
-            bearing_int += buffer[1];
-            bearing_float = (float)(bearing_int/10.00);
-            //u0_dbg_printf("Int = %d\n", bearing_int);
-            //printf("Compass heading = %f\n", bearing_float);
-            //compass_msg.CMP_BEARING = bearing_float;
-            return bearing_float;
+            heading_int = buffer[0];
+            heading_int <<= 8;
+            heading_int += buffer[1];
+            heading_float = (float)(heading_int/10.00);
+            return heading_float;
         }
         return 0;
 }
@@ -42,7 +39,6 @@ void Compass::Calibrate_Compass()
     delay_ms(30);
     buffer[0] = 0xF6;
     I2C2::getInstance().writeRegisters(COMPASS_I2C_ADDR, COMMAND_REG_ADDR, &buffer[0], READ_ONE_REGISTER);
-    //printf("Calibration started\n");
 }
 
 
@@ -64,5 +60,4 @@ void Compass::Original_Firmware_Calibration()
     delay_ms(30);
     buffer[0] = 0x60;
     I2C2::getInstance().writeRegisters(COMPASS_I2C_ADDR, COMMAND_REG_ADDR, &buffer[0], READ_ONE_REGISTER);
-    //printf("Calibration started\n");
 }

@@ -62,6 +62,9 @@ bool dbc_app_send_can_msg(uint32_t mid, uint8_t dlc, uint8_t bytes[8])
 
 static bool heartbeat_flag = false;
 
+static float checkpoint_lat = 0.0;
+static float checkpoint_long = 0.0;
+
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
 
@@ -136,19 +139,20 @@ void period_1Hz(uint32_t count)
     printf("Lat: %f\n", gps.getLatitude());
     printf("Lon: %f\n", gps.getLongitude());
 
-    float bearing_test = gps.bearingAngle(ARD_LAT_TEST, ARD_LON_TEST);
-    float distance_test = gps.distanceCheckpoint(ARD_LAT_TEST, ARD_LON_TEST);
-
-    printf("Dist: %f\n", distance_test);
-    printf("Bear: %f\n", bearing_test);
+//    float bearing_test = gps.bearingAngle(ARD_LAT_TEST, ARD_LON_TEST);
+//    float distance_test = gps.distanceCheckpoint(ARD_LAT_TEST, ARD_LON_TEST);
+//
+//    printf("Dist: %f\n", distance_test);
+//    printf("Bear: %f\n", bearing_test);
+//
+//    float heading_test = compass.Get_Compass_Heading();
+//    printf("Heading: %f\n", heading_test);
 
     if(heartbeat_flag)
     {
         CAN_GPS_Trasmit();
         CAN_COMPASS_Transmit();
     }
-
-    //    LE.toggle(1);
 }
 
 void period_10Hz(uint32_t count)
@@ -181,6 +185,8 @@ void period_10Hz(uint32_t count)
 
             case 135:
                 dbc_decode_ANDROID_LOCATION(&ard_buffer, can_msg_receive.data.bytes, &msg_hdr_receive);
+                checkpoint_lat = ard_buffer.ANDROID_CMD_lat;
+                checkpoint_long = ard_buffer.ANDROID_CMD_long;
                 //u0_dbg_printf("Lat: %f\n", ard_buffer.ANDROID_CMD_lat);
                 //u0_dbg_printf("Lon: %f\n", ard_buffer.ANDROID_CMD_long);
                 break;
@@ -191,14 +197,12 @@ void period_10Hz(uint32_t count)
 
 void period_100Hz(uint32_t count)
 {
-//    LE.toggle(3);
 }
 
 // 1Khz (1ms) is only run if Periodic Dispatcher was configured to run it at main():
 // scheduler_add_task(new periodicSchedulerTask(run_1Khz = true));
 void period_1000Hz(uint32_t count)
 {
-//    LE.toggle(4);
 }
 
 void CAN_GPS_Trasmit()
@@ -229,71 +233,15 @@ void CAN_COMPASS_Transmit()
     float compass_heading_value = compass.Get_Compass_Heading();
 //    printf("Compass heading = %f\n", compass_heading_value);
     compass_msg.CMP_HEADING = compass_heading_value;
+    float bearing_value = gps.bearingAngle(checkpoint_lat, checkpoint_long);
+//    printf("Bearing Angle = %f\n", bearing_value);
+    compass_msg.CMP_BEARING = bearing_value;
+    float deflection_angle = bearing_value - compass_heading_value;
+//    printf("Deflection Angle = %f\n", deflection_angle);
+    compass_msg.DEFLECTION_ANGLE = deflection_angle;
+    float distance_to_checkpoint = gps.distanceCheckpoint(checkpoint_lat, checkpoint_long);
+//    printf("Distance to checkpoint = %f\n", distance_to_checkpoint);
+    compass_msg.DISTANCE_CHECKPOINT = distance_to_checkpoint;
+
     dbc_encode_and_send_COMPASS(&compass_msg);
 }
-
-#if 0
-void CAN_COMPASS_Transmit()
-{
-    int addr = 0xc0;
-    int reg = 0x02;
-    int bearing_int = 0;
-    float bearing_float = 0;
-    uint8_t buffer[2] = { 0 };
-
-    if (I2C2::getInstance().readRegisters(addr, reg, &buffer[0], 2))
-    {
-        bearing_int = buffer[0];
-        bearing_int <<= 8;
-        bearing_int += buffer[1];
-        bearing_float = (float)(bearing_int/10.00);
-        //u0_dbg_printf("Int = %d\n", bearing_int);
-        printf("Compass heading = %f\n", bearing_float);
-        compass_msg.CMP_BEARING = bearing_float;
-        dbc_encode_and_send_COMPASS(&compass_msg);
-    }
-}
-
-
-
-void calibrate_compass()
-{
-    int command_reg = 0;
-    int addr = 0xc0;
-    uint8_t buffer[1] = { 0 };
-    buffer[0] = 0xF0;
-    I2C2::getInstance().writeRegisters(addr, command_reg, &buffer[0], 1);
-    delay_ms(30);
-    buffer[0] = 0xF5;
-    I2C2::getInstance().writeRegisters(addr, command_reg, &buffer[0], 1);
-    delay_ms(30);
-    buffer[0] = 0xF6;
-    I2C2::getInstance().writeRegisters(addr, command_reg, &buffer[0], 1);
-    //printf("Calibration started\n");
-}
-
-void stop_calibrate()
-{
-    int command_reg = 0;
-    int addr = 0xc0;
-    uint8_t buffer[1] = { 0 };
-    buffer[0] = 0xF8;
-    I2C2::getInstance().writeRegisters(addr, command_reg, &buffer[0], 1);
-}
-
-void original_firmware()
-{
-    int command_reg = 0;
-    int addr = 0xc0;
-    uint8_t buffer[1] = { 0 };
-    buffer[0] = 0x20;
-    I2C2::getInstance().writeRegisters(addr, command_reg, &buffer[0], 1);
-    delay_ms(30);
-    buffer[0] = 0x2A;
-    I2C2::getInstance().writeRegisters(addr, command_reg, &buffer[0], 1);
-    delay_ms(30);
-    buffer[0] = 0x60;
-    I2C2::getInstance().writeRegisters(addr, command_reg, &buffer[0], 1);
-    //printf("Calibration started\n");
-}
-#endif
