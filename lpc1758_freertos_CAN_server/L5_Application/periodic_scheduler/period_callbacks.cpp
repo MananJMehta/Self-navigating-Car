@@ -96,6 +96,11 @@ ANDROID_CMD_t and_msg ={0};
 CAR_CONTROL_t master_motor_msg = { 0 };
 HEARTBEAT_t heartbeat_msg;
 
+////////////////////////////////////////////////////////////
+//assuming speed values are coming from the motor controller
+uint8_t speed=0;
+///////////////////////////////////////////////////////////
+
 bool dbc_app_send_can_msg(uint32_t mid, uint8_t dlc, uint8_t bytes[8])
 {
     can_msg_t can_msg = { 0 };
@@ -174,10 +179,9 @@ uint8_t map_get_value(SENSOR_DATA_t y)
 //@returns steering rotation and car speed
 pair<uint8_t, uint8_t> update_lanes(SENSOR_DATA_t x)
 {
-    static pair<uint8_t , uint8_t> return_value;
-    return_value.first=HARDLEFT;//steering
-    return_value.second=0;//speed
-
+    uint8_t steering;
+    steering=CENTER;//steering
+    bool obstacle_flag = false;
     uint8_t i=map_get_value(x);
 
     if(i==9)
@@ -185,16 +189,28 @@ pair<uint8_t, uint8_t> update_lanes(SENSOR_DATA_t x)
         LE.on(2);
         LE.on(3);
         LE.on(4);
-        return return_value;
+        obstacle_flag = true;
     }
 
-    LE.off(2);
-    LE.off(3);
-    LE.off(4);
+    else
+    {
+        LE.off(2);
+        LE.off(3);
+        LE.off(4);
+        steering = arr[i];
+    }
 
-    return_value.first = arr[i];
-    return_value.second = flag_speed;
-    return return_value;
+
+    if(flag_speed == 0 || (obstacle_flag == true && speed > 0))
+        return make_pair(CENTER, 0);
+
+    if(obstacle_flag == true && speed == 0)
+        return make_pair(CENTER, 2);      //reverse
+
+    ////////Insert GPS logic here////////////
+
+
+    return make_pair(steering, 1);
 }
 
 //stops the car if the obstacle is too close based on sonar
