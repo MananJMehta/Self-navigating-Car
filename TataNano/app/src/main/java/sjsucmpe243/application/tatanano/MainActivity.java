@@ -20,6 +20,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.Set;
@@ -104,6 +105,17 @@ public class MainActivity extends AppCompatActivity {
             //playSound();
         }
 
+        gifImg.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (gotSocket.isConnected())
+                    openMap();
+                else {
+                    Toast.makeText(MainActivity.this, "Wait until we connect with car.", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
         pair.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -113,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
                     heading.setTextColor(Color.GREEN);
                     heading.setText(R.string.BTConnected);
                     tag.setVisibility(View.VISIBLE);
-                    openMap();
+                    //openMap();
                 } else {
                     Log.e("TataNano : Bluetooth","Unable to connect");
                     heading.setTextColor(Color.RED);
@@ -135,9 +147,20 @@ public class MainActivity extends AppCompatActivity {
             mp.release();
             mp.start();
         }
-
-
     }*/
+
+    Thread connectivityThread = new Thread() {
+
+        @Override
+        public void run() {
+            while(!connect2Car())
+            {
+                Log.e("TataNano : Bluetooth","Unable to connect");
+            }
+
+            Log.e("TataNano : Bluetooth","Connected");
+        }
+        };
 
     private void setMainpage_4_On() {
         heading.setText(R.string.BTOn);
@@ -255,6 +278,7 @@ public class MainActivity extends AppCompatActivity {
 
                     case BluetoothAdapter.STATE_ON:
                         setMainpage_4_On();
+                        connectivityThread.start();
                         //playSound();
 
                         if (dialog4BT.isShowing())

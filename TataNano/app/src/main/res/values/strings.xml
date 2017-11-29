@@ -2,6 +2,7 @@
     <string name="app_name">TataNano</string>
     <string name="title_activity_maps">Map</string>
     <string name="BTConnected">Bluetooth : Connected</string>
+    <string name="BTSearching">Bluetooth : Searching</string>
     <string name="BTDisconnected">Bluetooth : Try again</string>
     <string name="BTOff">Bluetooth : Off</string>
     <string name="BTOn">Bluetooth : On</string>
