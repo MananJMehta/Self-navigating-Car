@@ -36,8 +36,8 @@ bool Uart2_GPS::init()
 void Uart2_GPS::transmit()
 {
     Uart2::getInstance().putline(PMTK_SET_NMEA_OUTPUT_RMCONLY, portMAX_DELAY);
-    Uart2::getInstance().putline(PMTK_SET_NMEA_UPDATE_1HZ, portMAX_DELAY);
-    Uart2::getInstance().putline(PMTK_API_SET_FIX_CTL_1HZ, portMAX_DELAY);
+    Uart2::getInstance().putline(PMTK_SET_NMEA_UPDATE_5HZ, portMAX_DELAY);
+    Uart2::getInstance().putline(PMTK_API_SET_FIX_CTL_5HZ, portMAX_DELAY);
 //    Uart2::getInstance().putline(PGCMD_ANTENNA, portMAX_DELAY);
 }
 

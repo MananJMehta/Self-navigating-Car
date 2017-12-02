@@ -134,7 +134,7 @@ void period_1Hz(uint32_t count)
         //original_firmware();
     }
 
-    gps.parse_data();
+    //gps.parse_data();
 
     //printf("Lat: %f\n", gps.getLatitude());
     //printf("Lon: %f\n", gps.getLongitude());
@@ -148,13 +148,13 @@ void period_1Hz(uint32_t count)
 //    float heading_test = compass.Get_Compass_Heading();
 //    printf("Heading: %f\n", heading_test);
 
-    CAN_COMPASS_Transmit();
+    //CAN_COMPASS_Transmit();
 
-    if(heartbeat_flag)
-    {
-        CAN_GPS_Trasmit();
-        CAN_COMPASS_Transmit();
-    }
+//    if(heartbeat_flag)
+//    {
+//        CAN_GPS_Trasmit();
+//        CAN_COMPASS_Transmit();
+//    }
 }
 
 void period_10Hz(uint32_t count)
@@ -193,6 +193,14 @@ void period_10Hz(uint32_t count)
                 //u0_dbg_printf("Lon: %f\n", ard_buffer.ANDROID_CMD_long);
                 break;
         }
+    }
+
+    //sending GPS, Heading, Bearing, deflection, distance
+    gps.parse_data();
+    if(heartbeat_flag)
+    {
+        CAN_GPS_Trasmit();
+        CAN_COMPASS_Transmit();
     }
 }
 
@@ -239,6 +247,14 @@ void CAN_COMPASS_Transmit()
 //    printf("Bearing Angle = %f\n", bearing_value);
     compass_msg.CMP_BEARING = bearing_value;
     float deflection_angle = bearing_value - compass_heading_value;
+    if (deflection_angle > 180)
+    {
+        deflection_angle -= 360;
+    }
+    else if (deflection_angle < -180)
+    {
+        deflection_angle += 360;
+    }
 //    printf("Deflection Angle = %f\n", deflection_angle);
     compass_msg.DEFLECTION_ANGLE = deflection_angle;
     float distance_to_checkpoint = gps.distanceCheckpoint(checkpoint_lat, checkpoint_long);
