@@ -136,8 +136,8 @@ void period_1Hz(uint32_t count)
 
     gps.parse_data();
 
-    printf("Lat: %f\n", gps.getLatitude());
-    printf("Lon: %f\n", gps.getLongitude());
+    //printf("Lat: %f\n", gps.getLatitude());
+    //printf("Lon: %f\n", gps.getLongitude());
 
 //    float bearing_test = gps.bearingAngle(ARD_LAT_TEST, ARD_LON_TEST);
 //    float distance_test = gps.distanceCheckpoint(ARD_LAT_TEST, ARD_LON_TEST);
@@ -147,6 +147,8 @@ void period_1Hz(uint32_t count)
 //
 //    float heading_test = compass.Get_Compass_Heading();
 //    printf("Heading: %f\n", heading_test);
+
+    CAN_COMPASS_Transmit();
 
     if(heartbeat_flag)
     {
@@ -231,7 +233,7 @@ void CAN_GPS_Trasmit()
 void CAN_COMPASS_Transmit()
 {
     float compass_heading_value = compass.Get_Compass_Heading();
-//    printf("Compass heading = %f\n", compass_heading_value);
+    printf("Compass heading = %f\n", compass_heading_value);
     compass_msg.CMP_HEADING = compass_heading_value;
     float bearing_value = gps.bearingAngle(checkpoint_lat, checkpoint_long);
 //    printf("Bearing Angle = %f\n", bearing_value);
