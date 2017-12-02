@@ -31,8 +31,13 @@
 #include <stdint.h>
 #include "io.hpp"
 #include "periodic_callback.h"
+#include "lpc_pwm.hpp"
 
 
+PWM pwm(PWM::pwm2,8);
+float val = 14;
+uint32_t tmp = 0;
+bool flag = false;
 
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
@@ -48,6 +53,7 @@ const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
 {
+    pwm.set(14);
     return true; // Must return true upon success
 }
 
@@ -66,22 +72,112 @@ bool period_reg_tlm(void)
 
 void period_1Hz(uint32_t count)
 {
-    LE.toggle(1);
+    //LE.toggle(1);
+
 }
 
 void period_10Hz(uint32_t count)
 {
-    LE.toggle(2);
+    //LE.toggle(2);
+    if(SW.getSwitch(3))
+    {
+        flag = false;
+        val = 14;
+        pwm.set(val);
+        LD.clear();
+        LD.setRightDigit('S');
+    }else
+    if(SW.getSwitch(1))
+    {
+//        flag = false;
+//        val = val + 0.5;
+//        if(val > 18)
+//        {
+//            val = 14;
+//        }
+//        pwm.set(val);
+//        LD.clear();
+//        LD.setNumber(val);
+        flag = false;
+        val = 15.5;
+        pwm.set(val);
+        LD.clear();
+        LD.setRightDigit('F');
+    }else
+    if(SW.getSwitch(2))
+    {
+        flag = false;
+        val = val + 0.5;
+        if(val > 18)
+        {
+            val = 14;
+        }
+        pwm.set(val);
+        LD.clear();
+        LD.setNumber(val);
+//        flag = false;
+//        val = val - 1;
+//        if(val < 3)
+//        {
+//            val = 14;
+//        }
+//        pwm.set(val);
+//        LD.clear();
+//        LD.setNumber(val);
+    }else
+    if(SW.getSwitch(4))
+    {
+        flag = true;
+        tmp = count;
+    }
+
+    if(flag)
+    {
+        if(count - tmp > 5)
+        {
+            flag = false;
+        }
+        if(tmp == count)
+        {
+            if(val > 14)
+            {
+                val = 14;
+                pwm.set(val);
+                //LD.setNumber(val);
+            }
+        }
+        if((count - tmp) == 1)
+        {
+            val = 12.6;
+            pwm.set(val);
+            //LD.setNumber(val);
+        }
+        if((count - tmp) == 2)
+        {
+            val = 14;
+            pwm.set(val);
+            //LD.setNumber(val);
+        }
+        if((count - tmp) == 3)
+        {
+            val = 12.6;
+            pwm.set(val);
+            //LD.setNumber(val);
+            LD.clear();
+            LD.setRightDigit('B');
+        }
+}
+
 }
 
 void period_100Hz(uint32_t count)
 {
-    LE.toggle(3);
+    //LE.toggle(3);
 }
 
 // 1Khz (1ms) is only run if Periodic Dispatcher was configured to run it at main():
 // scheduler_add_task(new periodicSchedulerTask(run_1Khz = true));
 void period_1000Hz(uint32_t count)
 {
-    LE.toggle(4);
+    //LE.toggle(4);
 }
