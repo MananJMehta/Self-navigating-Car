@@ -10,6 +10,7 @@
 void initialize_can();
 bool check_heartbeat();
 void send_lidar_sonar_data();
+void send_lidar_lane_data();
 void send_distance_values();
 void add_some_data_to_msg(LIDAR_DATA_VALUES_t *from);
 void send_three_values(LIDAR_DATA_VALUES_t *from);

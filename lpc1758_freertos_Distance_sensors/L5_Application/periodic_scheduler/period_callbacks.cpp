@@ -104,6 +104,7 @@ void period_10Hz(uint32_t count)
 {
     static uint32_t prev_count = count;
     rplidar.flag = true;
+
     send_lane_distance_values();
 
 
@@ -116,7 +117,7 @@ void period_10Hz(uint32_t count)
 
     if ((count-prev_count) == 1)
     {
-
+        send_lidar_lane_data();
         send_lidar_sonar_data();
         prev_count = count;
     }

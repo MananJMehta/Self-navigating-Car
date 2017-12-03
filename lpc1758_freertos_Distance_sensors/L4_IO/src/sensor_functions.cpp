@@ -34,8 +34,7 @@ bool check_heartbeat()
     }
 }
 
-//this function will send lane data ad sonar sensor data should
-//be renamed appropriately
+///thinking about seperating sonar and lidar data
 void send_lidar_sonar_data()
 {
     SENSOR_DATA_t SensorData;
@@ -53,6 +52,7 @@ void send_lidar_sonar_data()
     SensorData.SONAR_right = sonar.rightDist;
     SensorData.SONAR_back = sonar.backDist;
 
+    //why are we printing?? Remove this if its not needed
     printf("\n %f %f %f",sonar.backDist,sonar.leftDist,sonar.rightDist);
 
     if(dbc_encode_and_send_SENSOR_DATA(&SensorData))
@@ -60,6 +60,34 @@ void send_lidar_sonar_data()
 
 }
 
+void send_lidar_lane_data()
+{
+    LIDAR_LANES_t LaneData;
+
+    LaneData.LIDAR_neg160 = rplidar.lane_lut[14];
+    LaneData.LIDAR_neg140 = rplidar.lane_lut[15];
+    LaneData.LIDAR_neg120 = rplidar.lane_lut[16];
+    LaneData.LIDAR_neg100 = rplidar.lane_lut[17];
+    LaneData.LIDAR_neg80 = rplidar.lane_lut[0];
+    LaneData.LIDAR_neg60 = rplidar.lane_lut[1];
+    LaneData.LIDAR_neg40 = rplidar.lane_lut[2];
+    LaneData.LIDAR_neg20 = rplidar.lane_lut[3];
+    LaneData.LIDAR_0 = rplidar.lane_lut[4];
+    LaneData.LIDAR_20 = rplidar.lane_lut[5];
+    LaneData.LIDAR_40 = rplidar.lane_lut[6];
+    LaneData.LIDAR_60 = rplidar.lane_lut[7];
+    LaneData.LIDAR_80 = rplidar.lane_lut[8];
+    LaneData.LIDAR_100 = rplidar.lane_lut[9];
+    LaneData.LIDAR_120 = rplidar.lane_lut[10];
+    LaneData.LIDAR_140 = rplidar.lane_lut[11];
+    LaneData.LIDAR_160 = rplidar.lane_lut[12];
+    LaneData.LIDAR_180 = rplidar.lane_lut[13];
+
+    dbc_encode_and_send_LIDAR_LANES(&LaneData);
+}
+
+
+//this was a test and has now benn deprecated, remove at yor earliest convenience
 void send_distance_values()
 {
     SENSOR_VALUES_t SensorValue;
@@ -72,6 +100,8 @@ void send_distance_values()
 
 }
 
+
+//this is deprecated
 void add_some_data_to_msg(LIDAR_DATA_VALUES_t *from)
 {
     static uint8_t count = 0;
@@ -96,6 +126,7 @@ void add_some_data_to_msg(LIDAR_DATA_VALUES_t *from)
     }
 }
 
+//this is deprecated
 void send_three_values(LIDAR_DATA_VALUES_t *from)
 {
     dbc_encode_and_send_LIDAR_DATA_VALUES(from);
@@ -104,23 +135,37 @@ void send_three_values(LIDAR_DATA_VALUES_t *from)
 
 void send_lane_distance_values ()
 {
-    LIDAR_LANE_VALUES_t data;
+    LIDAR_VALUES_0_TO_P100_t data1;
+    LIDAR_VALUES_P120_TO_N140_t data2;
+    LIDAR_VALUES_N120_TO_N20_t data3;
 
     if(rplidar.flag)
     {
-        data.LIDAR_DISTANCE_CM_N_40 = rplidar.lane_distances[2];
-        data.LIDAR_DISTANCE_CM_N_20 = rplidar.lane_distances[3];
-        data.LIDAR_DISTANCE_CM_0 = rplidar.lane_distances[4];
-        data.LIDAR_DISTANCE_CM_P_20 = rplidar.lane_distances[5];
-        data.LIDAR_DISTANCE_CM_P_40 = rplidar.lane_distances[6];
+        data1.LIDAR_DISTANCE_CM_0 = rplidar.lane_distances[4];
+        data1.LIDAR_DISTANCE_CM_P_20 = rplidar.lane_distances[5];
+        data1.LIDAR_DISTANCE_CM_P_40 = rplidar.lane_distances[6];
+        data1.LIDAR_DISTANCE_CM_P_60= rplidar.lane_distances[7];
+        data1.LIDAR_DISTANCE_CM_P_80 = rplidar.lane_distances[8];
+        data1.LIDAR_DISTANCE_CM_P_100 = rplidar.lane_distances[9];
 
-        for(uint8_t i = 2; i<=6;i++)
-        {
-            rplidar.lane_distances[i] = 0;
-        }
+        data2.LIDAR_DISTANCE_CM_P_120 = rplidar.lane_distances[10];
+        data2.LIDAR_DISTANCE_CM_P_140 = rplidar.lane_distances[11];
+        data2.LIDAR_DISTANCE_CM_P_160 = rplidar.lane_distances[12];
+        data2.LIDAR_DISTANCE_CM_P_180 = rplidar.lane_distances[13];
+        data2.LIDAR_DISTANCE_CM_N_160 = rplidar.lane_distances[14];
+        data2.LIDAR_DISTANCE_CM_N_140 = rplidar.lane_distances[15];
 
+        data3.LIDAR_DISTANCE_CM_N_120 = rplidar.lane_distances[16];
+        data3.LIDAR_DISTANCE_CM_N_100 = rplidar.lane_distances[17];
+        data3.LIDAR_DISTANCE_CM_N_80 = rplidar.lane_distances[0];
+        data3.LIDAR_DISTANCE_CM_N_60 = rplidar.lane_distances[1];
+        data3.LIDAR_DISTANCE_CM_N_40 = rplidar.lane_distances[2];
+        data3.LIDAR_DISTANCE_CM_N_20 = rplidar.lane_distances[3];
 
-        dbc_encode_and_send_LIDAR_LANE_VALUES(&data);
+        dbc_encode_and_send_LIDAR_VALUES_0_TO_P100(&data1);
+        dbc_encode_and_send_LIDAR_VALUES_P120_TO_N140(&data2);
+        dbc_encode_and_send_LIDAR_VALUES_N120_TO_N20(&data3);
+
         rplidar.flag = false;
     }
 }
