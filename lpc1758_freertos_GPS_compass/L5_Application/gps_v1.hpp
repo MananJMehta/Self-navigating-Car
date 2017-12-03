@@ -21,12 +21,14 @@ public:
     void receive();
     bool parse_data();
     char* getBuffer();
+    void setBuffer(char*);
     void setLatitude(float lat);
     void setLongitude(float lon);
     float getLatitude();
     float getLongitude();
     float bearingAngle(float lat, float lon);
     float distanceCheckpoint(float lat, float lon);
+    bool fixFlag;
 
 private:
     char buffer[UART_RECEIVE_BUFFER_SIZE];

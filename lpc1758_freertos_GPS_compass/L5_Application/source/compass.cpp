@@ -10,6 +10,8 @@
 #include "io.hpp"
 #include "utilities.h"
 
+#define COMPASS_OFFSET 10;
+
 float Compass::Get_Compass_Heading()
 {
         int heading_int = 0;
@@ -22,7 +24,7 @@ float Compass::Get_Compass_Heading()
             heading_int <<= 8;
             heading_int += buffer[1];
             heading_float = (float)(heading_int/10.00);
-            return heading_float;
+            return heading_float + COMPASS_OFFSET;
         }
         return 0;
 }
