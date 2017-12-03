@@ -197,7 +197,7 @@ public class MainActivity extends AppCompatActivity {
         Set<BluetoothDevice> pairedDevicesList = BTadpt.getBondedDevices();
 
         for (BluetoothDevice tempDevice : pairedDevicesList){
-            if (tempDevice.getAddress().equals("98:D3:33:80:67:F9") || tempDevice.getAddress().equals("DC:6D:CD:EE:92:36")){
+            if (tempDevice.getAddress().equals("98:D3:33:80:67:F9") || tempDevice.getAddress().equals("A8:96:75:B6:39:C5")){
 
                 Log.e("TataNano : Bluetooth","Found device " +tempDevice.getName() + " in paired devices list");
                 return tempDevice;
@@ -304,7 +304,7 @@ public class MainActivity extends AppCompatActivity {
 
                 Log.e("TataNano : Bluetooth","found new device.- "+deviceName+" "+deviceHardwareAddress);
 
-                if (deviceHardwareAddress.equals("98:D3:33:80:67:F9") || deviceHardwareAddress.equals("DC:6D:CD:EE:92:36")) {
+                if (deviceHardwareAddress.equals("98:D3:33:80:67:F9") || deviceHardwareAddress.equals("A8:96:75:B6:39:C5")) {
 
                     if (BTadpt.isDiscovering()) {
                         BTadpt.cancelDiscovery();
@@ -325,13 +325,13 @@ public class MainActivity extends AppCompatActivity {
 
             switch (action){
                 case BluetoothDevice.ACTION_ACL_CONNECTED:
-                    Log.e("TataNano : Bluetooth","Connected");
+                    //Log.e("TataNano : Bluetooth","Connected");
                     setMainpage_4_Connected();
                     BTadpt.cancelDiscovery();
                     runThread = false;
                     break;
                 case BluetoothDevice.ACTION_ACL_DISCONNECTED:
-                    Log.e("TataNano : Bluetooth","Trying to connect");
+                    //Log.e("TataNano : Bluetooth","Trying to connect");
                     setMainpage_4_Disconnected();
                     BTadpt.startDiscovery();
                     runThread = true;
@@ -351,6 +351,7 @@ public class MainActivity extends AppCompatActivity {
         unregisterReceiver(mReceiver1);
         unregisterReceiver(mReceiver2);
         BTadpt.disable();
+        connectivityThread.destroy();
         this.finish();
     }
 
