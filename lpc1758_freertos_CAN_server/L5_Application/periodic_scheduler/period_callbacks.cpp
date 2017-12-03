@@ -85,6 +85,8 @@ bool flag_navigation = false;
 bool flag_fix = false;
 bool flag_next = false;
 bool flag_free_run = false;
+bool flag_enable = false;
+uint8_t direction = CENTER;
 
 const SENSOR_DATA_t SENSOR_DATA__MIA_MSG = {1,1,1,1,1,1,1,1,1,15,15,15};
 const uint32_t SENSOR_DATA__MIA_MS = 500;
@@ -142,6 +144,7 @@ bool period_init(void)
 //@returns the bit with highest priority
 uint8_t map_get_value(SENSOR_DATA_t y)
 {
+    flag_enable = false;
     if (y.LIDAR_0 == 1)
     {
         if(y.LIDAR_20 == 1 && y.LIDAR_neg20 == 1 && y.LIDAR_40 == 1 && y.LIDAR_neg40 == 1)
@@ -160,9 +163,24 @@ uint8_t map_get_value(SENSOR_DATA_t y)
             return 5;
     }
 
-    if(y.LIDAR_0 == 0 && y.LIDAR_20 == 0 && y.LIDAR_neg20 == 0)
-        return 0;
-
+    if(y.LIDAR_0 == 0 && y.LIDAR_20 == 0 && y.LIDAR_neg20 == 0 && y.LIDAR_40 ==1)
+    {
+        return 2;
+    }
+    if(y.LIDAR_0 == 0 && y.LIDAR_20 == 0 && y.LIDAR_neg20 == 0 && y.LIDAR_neg40 ==1)
+    {
+        return 1;
+    }
+    if(y.LIDAR_0 == 0 && y.LIDAR_20 == 0 && y.LIDAR_neg20 == 0 )
+    {
+        if(flag_free_run)
+        {
+            return 0;
+        }else
+        {
+            return direction;
+        }
+    }
     if (y.LIDAR_0 == 0 && y.LIDAR_20 == 0 && y.LIDAR_neg20 == 1 )
         return 3;
 
@@ -230,54 +248,59 @@ bool reached_destination(COMPASS_t x)
     }
 }
 
-pair<uint8_t, uint8_t> correct_guidance(COMPASS_t x)
+void correct_guidance(COMPASS_t x)
 {
     static pair<uint8_t, uint8_t> return_value;
     return_value.second = 1;
     return_value.first = CENTER;
     if (x.DEFLECTION_ANGLE <= 5 && x.DEFLECTION_ANGLE >= -5)
     {
-        return_value.first = CENTER;
+        direction = 0; //CENTER
+        //return_value.first = CENTER;
 
     }else
     if (x.DEFLECTION_ANGLE > 5 && x.DEFLECTION_ANGLE <= 25 )
     {
      //soft right
-        return_value.first = SOFTRIGHT;
+        direction = 1;  //SOFTRIGHT;
+        //return_value.first = SOFTRIGHT;
 
     }else
     if (x.DEFLECTION_ANGLE > 25 && x.DEFLECTION_ANGLE <= 60)
     {
      //right
-        return_value.first = RIGHT;
+        direction = 3;//RIGHT;
+        //return_value.first = RIGHT;
 
     }else
     if(x.DEFLECTION_ANGLE > 60 && x.DEFLECTION_ANGLE <= 180)
     {
        //hard right
-        return_value.first = HARDRIGHT;
+        direction = 5;//HARDRIGHT;
+        //return_value.first = HARDRIGHT;
 
     }else
     if (x.DEFLECTION_ANGLE < -5 && x.DEFLECTION_ANGLE >= -25 )
     {
      //soft left
-        return_value.first = SOFTLEFT;
+        direction = 2;//SOFTLEFT;
+        //return_value.first = SOFTLEFT;
 
     }else
     if (x.DEFLECTION_ANGLE < -25 && x.DEFLECTION_ANGLE >= -60)
     {
      //left
-        return_value.first = LEFT;
+        direction = 4;//LEFT;
+        //return_value.first = LEFT;
 
     }else
     if(x.DEFLECTION_ANGLE < -60 && x.DEFLECTION_ANGLE >= -180)
     {
        //hard left
-        return_value.first = HARDLEFT;
+        direction = 6;//HARDLEFT;
+        //return_value.first = HARDLEFT;
 
     }
-
-    return return_value;
 
 }
 
@@ -410,15 +433,15 @@ void period_10Hz(uint32_t count)
                     {
                         if(!reached_destination(compass_msg))
                         {
-                            pair<uint8_t, uint8_t> son;
-                            son = correct_guidance(compass_msg);
-                            master_motor_msg.CAR_CONTROL_steer = son.first;
-                            master_motor_msg.CAR_CONTROL_speed = son.second;
-                            dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
+                            //pair<uint8_t, uint8_t> son;
+                            //son = correct_guidance(compass_msg);
+                            //master_motor_msg.CAR_CONTROL_steer = son.first;
+                            //master_motor_msg.CAR_CONTROL_speed = son.second;
+                            //dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
+                            correct_guidance(compass_msg);
                         }else
                         {
-                            master_motor_msg.CAR_CONTROL_steer = CENTER;
-                            master_motor_msg.CAR_CONTROL_speed = 0;
+                            flag_speed = 0;
                         }
                     }
                 }
