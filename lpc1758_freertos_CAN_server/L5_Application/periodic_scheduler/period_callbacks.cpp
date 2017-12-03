@@ -76,10 +76,15 @@ const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
 //Define a critical distance for sonar
 #define sonar_critical 60
 #define sonar_warning 90
+#define cep 10
 
 uint8_t arr[9];
 uint8_t flag_speed = 0;
 bool boot_t = true;
+bool flag_navigation = false;
+bool flag_fix = false;
+bool flag_next = false;
+bool flag_free_run = false;
 
 const SENSOR_DATA_t SENSOR_DATA__MIA_MSG = {1,1,1,1,1,1,1,1,1,15,15,15};
 const uint32_t SENSOR_DATA__MIA_MS = 500;
@@ -95,7 +100,11 @@ can_t canTest = can1;
 SENSOR_DATA_t sensor_msg = { 0 };
 ANDROID_CMD_t and_msg ={0};
 CAR_CONTROL_t master_motor_msg = { 0 };
+MASTER_REQUEST_t request_msg = {0};
 HEARTBEAT_t heartbeat_msg;
+COMPASS_t compass_msg = {0};
+GPS_DATA_t gps_msg = {0};
+ANDROID_LOCATION_t locate_msg = {0};
 
 bool dbc_app_send_can_msg(uint32_t mid, uint8_t dlc, uint8_t bytes[8])
 {
@@ -167,11 +176,11 @@ uint8_t map_get_value(SENSOR_DATA_t y)
 //@params received can message from the lidar sensor
 //@returns steering rotation and car speed
 pair<uint8_t, uint8_t> update_lanes(SENSOR_DATA_t x)
-        {
+{
     static pair<uint8_t , uint8_t> return_value;
     /*Aditya Change
-    return_value.first=HARDLEFT;//steering
-    */
+return_value.first=HARDLEFT;//steering
+     */
     return_value.first=CENTER;
     return_value.second=0;//speed
 
@@ -192,7 +201,7 @@ pair<uint8_t, uint8_t> update_lanes(SENSOR_DATA_t x)
     return_value.first = arr[i];
     return_value.second = flag_speed;
     return return_value;
-        }
+}
 
 //stops the car if the obstacle is too close based on sonar
 void stop_lidar (SENSOR_DATA_t& x)
@@ -202,6 +211,74 @@ void stop_lidar (SENSOR_DATA_t& x)
     x.LIDAR_40 = 1;
     x.LIDAR_neg20 = 1;
     x.LIDAR_neg40 = 1;
+}
+
+bool reached_destination(COMPASS_t x)
+{
+    if (x.DISTANCE_CHECKPOINT > cep)
+    {
+        return false;
+    }
+    else
+    {
+        if(flag_next)
+        {
+            request_msg.MASTER_REQUEST_cmd = 0xf;
+            dbc_encode_and_send_MASTER_REQUEST(&request_msg);
+        }
+        return true;
+    }
+}
+
+pair<uint8_t, uint8_t> correct_guidance(COMPASS_t x)
+{
+    static pair<uint8_t, uint8_t> return_value;
+    return_value.second = 1;
+    return_value.first = CENTER;
+    if (x.DEFLECTION_ANGLE <= 5 && x.DEFLECTION_ANGLE >= -5)
+    {
+        return_value.first = CENTER;
+
+    }else
+    if (x.DEFLECTION_ANGLE > 5 && x.DEFLECTION_ANGLE <= 25 )
+    {
+     //soft right
+        return_value.first = SOFTRIGHT;
+
+    }else
+    if (x.DEFLECTION_ANGLE > 25 && x.DEFLECTION_ANGLE <= 60)
+    {
+     //right
+        return_value.first = RIGHT;
+
+    }else
+    if(x.DEFLECTION_ANGLE > 60 && x.DEFLECTION_ANGLE <= 180)
+    {
+       //hard right
+        return_value.first = HARDRIGHT;
+
+    }else
+    if (x.DEFLECTION_ANGLE < -5 && x.DEFLECTION_ANGLE >= -25 )
+    {
+     //soft left
+        return_value.first = SOFTLEFT;
+
+    }else
+    if (x.DEFLECTION_ANGLE < -25 && x.DEFLECTION_ANGLE >= -60)
+    {
+     //left
+        return_value.first = LEFT;
+
+    }else
+    if(x.DEFLECTION_ANGLE < -60 && x.DEFLECTION_ANGLE >= -180)
+    {
+       //hard left
+        return_value.first = HARDLEFT;
+
+    }
+
+    return return_value;
+
 }
 
 /// Register any telemetry variables
@@ -218,15 +295,17 @@ bool period_reg_tlm(void)
 void period_1Hz(uint32_t count)
 {
     //heartbeat_msg.HEARTBEAT_cmd = HEARTBEAT_cmd_SYNC;
-    if(boot_t)
+    if(!boot_t)
+    {
+        dbc_encode_and_send_HEARTBEAT(&heartbeat_msg);
+
+    }else
     {
         heartbeat_msg.HEARTBEAT_cmd = HEARTBEAT_cmd_REBOOT;
         dbc_encode_and_send_HEARTBEAT(&heartbeat_msg);
         heartbeat_msg.HEARTBEAT_cmd = HEARTBEAT_cmd_NOOP;
         boot_t = false;
     }
-    dbc_encode_and_send_HEARTBEAT(&heartbeat_msg);
-
     LE.toggle(1);
     if(CAN_is_bus_off(can1))
     {
@@ -246,6 +325,12 @@ void period_10Hz(uint32_t count)
         flag_speed = 1;
         heartbeat_msg.HEARTBEAT_cmd = HEARTBEAT_cmd_SYNC;
     }
+    if(SW.getSwitch(3))
+    {
+        compass_msg.DISTANCE_CHECKPOINT = 5; //CEP is 10
+    }
+
+
 
     can_msg_t can_msg;
     while(CAN_rx(canTest,&can_msg,0))
@@ -261,31 +346,100 @@ void period_10Hz(uint32_t count)
                     if(and_msg.ANDROID_CMD_start == 0)
                     {
                         flag_speed = 0;
+                        flag_navigation = false;
+                        flag_free_run = false;
                         heartbeat_msg.HEARTBEAT_cmd = HEARTBEAT_cmd_NOOP;
                     }
                     else
                     {
-                        flag_speed = 1;
+                        if(and_msg.ANDROID_CMD_mode)
+                        {
+                            flag_navigation = true;
+                            request_msg.MASTER_REQUEST_cmd = 0xf;
+                            dbc_encode_and_send_MASTER_REQUEST(&request_msg);
+                        }else
+                        {
+                            flag_navigation = false;
+                            flag_free_run = true;
+                            flag_speed = 1;
+                        }
+
                         heartbeat_msg.HEARTBEAT_cmd = HEARTBEAT_cmd_SYNC;
                     }
                 }
                 break;
-            case 150:
-                /*Sonar Priorities are higher than LIDAR as LIDAR's range will be larger*/
-                if (dbc_decode_SENSOR_DATA(&sensor_msg, can_msg.data.bytes, &can_header))
+            case 135:
+                if (dbc_decode_ANDROID_LOCATION(&locate_msg,can_msg.data.bytes, &can_header))
                 {
-                    if(sensor_msg.SONAR_left > 14 && sensor_msg.SONAR_left <= sonar_critical)
-                        stop_lidar(sensor_msg);
-                    if(sensor_msg.SONAR_left > 14 && sensor_msg.SONAR_left <= sonar_warning)
-                        sensor_msg.LIDAR_0 = 1;
-                    pair<uint8_t , uint8_t> son;
-                    son = update_lanes(sensor_msg);
-                    master_motor_msg.CAR_CONTROL_steer = son.first;
-                    master_motor_msg.CAR_CONTROL_speed = son.second;
-                    dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
+                    if(locate_msg.ANDROID_CMD_isLast)
+                    {
+                        flag_next = true;
+                    }else
+                    {
+                        flag_next = false;
+                    }
                 }
                 break;
-
+            case 150:
+                    /*Sonar Priorities are higher than LIDAR as LIDAR's range will be larger*/
+                    if (dbc_decode_SENSOR_DATA(&sensor_msg, can_msg.data.bytes, &can_header))
+                    {
+//                        if(sensor_msg.SONAR_left > 14 && sensor_msg.SONAR_left <= sonar_critical)
+//                        {
+//                            stop_lidar(sensor_msg);
+//                        }
+//                        if(sensor_msg.SONAR_left > 14 && sensor_msg.SONAR_left <= sonar_warning)
+//                        {
+//                            sensor_msg.LIDAR_0 = 1;
+//                        }
+                        pair<uint8_t , uint8_t> son;
+                        son.first = CENTER;
+                        if (flag_fix || flag_free_run)
+                        {
+                            son = update_lanes(sensor_msg);
+                        }
+                        master_motor_msg.CAR_CONTROL_steer = son.first;
+                        master_motor_msg.CAR_CONTROL_speed = son.second;
+                        dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
+                    }
+                break;
+            case 170:
+                if(flag_navigation)
+                {
+                    if (dbc_decode_COMPASS(&compass_msg, can_msg.data.bytes,&can_header))
+                    {
+                        if(!reached_destination(compass_msg))
+                        {
+                            pair<uint8_t, uint8_t> son;
+                            son = correct_guidance(compass_msg);
+                            master_motor_msg.CAR_CONTROL_steer = son.first;
+                            master_motor_msg.CAR_CONTROL_speed = son.second;
+                            dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
+                        }else
+                        {
+                            master_motor_msg.CAR_CONTROL_steer = CENTER;
+                            master_motor_msg.CAR_CONTROL_speed = 0;
+                        }
+                    }
+                }
+                break;
+            case 160:
+                if(flag_navigation)
+                {
+                    if(dbc_decode_GPS_DATA(&gps_msg, can_msg.data.bytes, &can_header))
+                    {
+                        if(gps_msg.GPS_FIX)
+                        {
+                            flag_fix = true;
+                            flag_speed = 1;
+                        }else
+                        {
+                            flag_fix = false;
+                            flag_speed = 0;
+                        }
+                    }
+                }
+                break;
 
         }
     }
