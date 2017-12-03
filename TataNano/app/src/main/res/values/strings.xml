@@ -8,4 +8,10 @@
     <string name="BTOn">Bluetooth : On</string>
     <string name="TapOnCar">Tap on Car</string>
     <string name="pair">Pair</string>
+    <string name="freerun">Free run</string>
+    <string name="alertBoxInfo">"Valid input is 1 to 10 km/h.
+        \n(Type 55 for free run)\n\nIn free run GPS and Compass
+        will be ignored and default speed will be 3 km/h."</string>
+    <string name="send">Send</string>
+    <string name="desired_speed">Desired Speed</string>
 </resources>

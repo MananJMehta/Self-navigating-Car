@@ -17,7 +17,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -35,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
     ImageView img,gifImg;
     //MediaPlayer mp = MediaPlayer.create(getApplicationContext(), R.raw.startcar);
     static BluetoothDevice tatanano;
-    Button pair;
+    volatile boolean runThread = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,15 +61,15 @@ public class MainActivity extends AppCompatActivity {
         IntentFilter filter1 = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         registerReceiver(mReceiver1, filter1);
 
-        IntentFilter filter2 = new IntentFilter(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED);
+        IntentFilter filter2 = new IntentFilter();
+        filter2.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
+        filter2.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
         registerReceiver(mReceiver2, filter2);
 
         heading = findViewById(R.id.textView);
         tag = findViewById(R.id.textView2);
         img = findViewById(R.id.imageView);
         gifImg = findViewById(R.id.gifImageView);
-        pair = findViewById(R.id.pairWithCar);
-
 
         alertBuilder4BT = new AlertDialog.Builder(MainActivity.this);
         alertBuilder4BT.setTitle("Unable to connect to car.");
@@ -116,25 +115,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        pair.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                if (connect2Car()){
-                    Log.e("TataNano : Bluetooth","Connected");
-                    heading.setTextColor(Color.GREEN);
-                    heading.setText(R.string.BTConnected);
-                    tag.setVisibility(View.VISIBLE);
-                    //openMap();
-                } else {
-                    Log.e("TataNano : Bluetooth","Unable to connect");
-                    heading.setTextColor(Color.RED);
-                    heading.setText(R.string.BTDisconnected);
-                    tag.setVisibility(View.INVISIBLE);
-                }
-            }
-        });
+        connectivityThread.start();
     }
+
 
     /*private void stopSound() {
         if (mp.isPlaying() && mp!=null)
@@ -153,12 +136,9 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void run() {
-            while(!connect2Car())
-            {
-                Log.e("TataNano : Bluetooth","Unable to connect");
+            while (runThread) {
+                while (!connect2Car()) ;
             }
-
-            Log.e("TataNano : Bluetooth","Connected");
         }
         };
 
@@ -175,6 +155,24 @@ public class MainActivity extends AppCompatActivity {
         heading.setTextColor(Color.RED);
         gifImg.setVisibility(View.INVISIBLE);
         img.setVisibility(View.VISIBLE);
+        tag.setVisibility(View.INVISIBLE);
+    }
+
+    private void setMainpage_4_Connected() {
+
+        heading.setText(R.string.BTConnected);
+        heading.setTextColor(Color.GREEN);
+        gifImg.setVisibility(View.VISIBLE);
+        gifImg.setClickable(true);
+        tag.setVisibility(View.VISIBLE);
+    }
+
+    private void setMainpage_4_Disconnected() {
+
+        heading.setText(R.string.BTSearching);
+        heading.setTextColor(Color.RED);
+        gifImg.setVisibility(View.VISIBLE);
+        gifImg.setClickable(false);
         tag.setVisibility(View.INVISIBLE);
     }
 
@@ -278,7 +276,6 @@ public class MainActivity extends AppCompatActivity {
 
                     case BluetoothAdapter.STATE_ON:
                         setMainpage_4_On();
-                        connectivityThread.start();
                         //playSound();
 
                         if (dialog4BT.isShowing())
@@ -311,10 +308,8 @@ public class MainActivity extends AppCompatActivity {
 
                     if (BTadpt.isDiscovering()) {
                         BTadpt.cancelDiscovery();
+                        Log.e("TataNano : Bluetooth", "Stopped discovery.");
                     }
-
-                    Log.e("TataNano : Bluetooth", "Stopped discovery.");
-
                     attempt2Connect(device);
                 }
             }
@@ -326,7 +321,22 @@ public class MainActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
 
-            Log.e("Bluetooth connection", action);
+            assert action != null;
+
+            switch (action){
+                case BluetoothDevice.ACTION_ACL_CONNECTED:
+                    Log.e("TataNano : Bluetooth","Connected");
+                    setMainpage_4_Connected();
+                    BTadpt.cancelDiscovery();
+                    runThread = false;
+                    break;
+                case BluetoothDevice.ACTION_ACL_DISCONNECTED:
+                    Log.e("TataNano : Bluetooth","Trying to connect");
+                    setMainpage_4_Disconnected();
+                    BTadpt.startDiscovery();
+                    runThread = true;
+                    break;
+            }
         }
     };
 
@@ -340,6 +350,7 @@ public class MainActivity extends AppCompatActivity {
         unregisterReceiver(mReceiver);
         unregisterReceiver(mReceiver1);
         unregisterReceiver(mReceiver2);
+        BTadpt.disable();
         this.finish();
     }
 

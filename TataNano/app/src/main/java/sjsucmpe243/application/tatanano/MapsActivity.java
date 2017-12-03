@@ -2,6 +2,7 @@ package sjsucmpe243.application.tatanano;
 
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -20,11 +21,14 @@ import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.text.InputType;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -96,57 +100,56 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             public void run() {
                                 try {
                                     if(rx_data.available()>0) {
-                                        String test = "";
+                                        StringBuilder test = new StringBuilder();
                                         while(rx_data.available()>0) {
-                                            test = test + ((char) (rx_data.read()) + "");
+                                            test.append((char) (rx_data.read())).append("");
                                         }
-                                        // Glat|longCheadingSspeed&
-                                        Log.d("RX DATA VALUE", test);
-                                        test = test.substring(0, test.indexOf('&')+1);
-                                        String dataType = "", latVal = "", lngVal = "", headVal = "", speedVal = "";
+                                        Log.d("RX DATA VALUE", test.toString());
+                                        test = new StringBuilder(test.substring(0, test.toString().indexOf('&') + 1));
+                                        String dataType = "", latVal, lngVal, headVal, speedVal;
+
                                         int pipePos = test.indexOf("|");
                                         if (pipePos != -1)
                                             dataType = test.substring(0,1);
+
                                         if (dataType.equals("G")) {
                                                 if (test.length()>1) {
-                                                    test = test.substring(1);
+                                                    test = new StringBuilder(test.substring(1));
                                                     pipePos = test.indexOf("|");
                                                     latVal = test.substring(0, pipePos);
 
-                                                    test = test.substring(pipePos + 1);
-                                                    pipePos = test.indexOf('C');
+                                                    test = new StringBuilder(test.substring(pipePos + 1));
+                                                    pipePos = test.toString().indexOf('C');
                                                     lngVal = test.substring(0, pipePos);
 
-                                                    test = test.substring(pipePos);
+                                                    test = new StringBuilder(test.substring(pipePos));
 
-                                                    //Log.d("GEO", latVal + ", " + lngVal);
-                                                    currPosVal.setText(latVal + ", " + lngVal);
-                                                    headingVal.setText(test);
+                                                    currPosVal.setText(String.format("%s, %s", latVal, lngVal));
+                                                    headingVal.setText(test.toString());
                                                     if (test.substring(0,1).equals("C"))
                                                     {
-                                                        headingVal.setText("inside if C");
-                                                        test = test.substring(1);
-                                                        pipePos = test.indexOf('S');
+                                                        test = new StringBuilder(test.substring(1));
+                                                        pipePos = test.toString().indexOf('S');
                                                         headVal = test.substring(0,pipePos);
-                                                        test = test.substring(pipePos);
+                                                        test = new StringBuilder(test.substring(pipePos));
 
                                                         //Log.d("Heading", headVal);
                                                         headingVal.setText(headVal);
+                                                        //compass.setRotation(Float.parseFloat(headVal));
                                                     }
 
                                                     if (test.substring(0,1).equals("S"))
                                                     {
-                                                        actualSpeed.setText("inside if S");
-                                                        test = test.substring(1);
-                                                        pipePos = test.indexOf('&');
+                                                        test = new StringBuilder(test.substring(1));
+                                                        pipePos = test.toString().indexOf('&');
                                                         speedVal = test.substring(0,pipePos);
 
                                                         //Log.d("Speed", speedVal);
                                                         actualSpeed.setText(speedVal);
 
-                                                        test = "";
+                                                        test = new StringBuilder();
                                                     }
-                                                    test = "";
+                                                    test = new StringBuilder();
                                                 }
                                         }
                                     }
@@ -171,11 +174,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 //LatLng temp = new LatLng(0,0);
 
                     Log.e("TataNano : Bluetooth", " Total check points are "+ Checkpoint_num );
-                    outputString.append("^" + String.valueOf(Checkpoint_num));
+                    outputString.append("^").append(String.valueOf(Checkpoint_num));
 
                 for (LatLng temp : checkpoints) {
                         //Log.e("TataNano : Bluetooth", "(" + temp.latitude + "," + temp.longitude+")");
-                        outputString.append("(" + ((float) temp.latitude) + "," + ((float) temp.longitude)+")");
+                        outputString.append("(").append((float) temp.latitude).append(",").append((float) temp.longitude).append(")");
                 }
                 outputString.append("\n");
                 BTdata = outputString.toString();
@@ -193,22 +196,42 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onClick(View v) {
 
+                final String freeRuntail = "-Start\n";
                 final EditText speed = new EditText(MapsActivity.this);
                 speed.setInputType(InputType.TYPE_CLASS_NUMBER);
                 speedDialogBuilder = new AlertDialog.Builder(MapsActivity.this);
                 speedDialogBuilder.setTitle("Enter desired speed");
                 speedDialog = speedDialogBuilder
-                .setMessage("Valid input is 1 to 10 km/h")
+                .setMessage("Valid input is 1 to 10 km/h.\n(Type 55 for free run)\n\nIn free run GPS and Compass value will be ignored and default speed will be 3 km/h.")
                 .setCancelable(false)
                 .setView(speed)
                 .setPositiveButton("Set and Send", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                     if(!speed.getText().toString().equals("")) {
-                        BTdata = "$Start" + speed.getText().toString() + "\n";
+
+                        if (Integer.parseInt(speed.getText().toString()) > 10) {
+                            if (Integer.parseInt(speed.getText().toString()) == 55) {
+                                speed.setText("3-");
+                                Toast.makeText(MapsActivity.this, "Free Run set.", Toast.LENGTH_SHORT).show();
+                            }
+                            else {
+                                speed.setText("10");
+                                Toast.makeText(MapsActivity.this, "Maximum possible value is 10. Speed has been set to 10.", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                        else if (Integer.parseInt(speed.getText().toString()) < 1) {
+                            speed.setText("1");
+                            Toast.makeText(MapsActivity.this,"Minimum possible value is 1. Speed has been set to 1.",Toast.LENGTH_SHORT).show();
+                        }
+
+
+                        BTdata = "$" + speed.getText().toString()+"Start\n";
+
+
                         try {
                             tx_data.write(BTdata.getBytes());
-                            Log.e("TataNano : Bluetooth", " Start command sent" + speed.getText().toString() );
+                            Log.e("TataNano : Bluetooth", " Start command sent: " + BTdata );
                             Toggle_start_stop = true;
                         } catch (NullPointerException e) {
                             Log.e("TataNano : Bluetooth", " Could not sent. Null pointer exception" );
@@ -254,6 +277,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
         registerReceiver(mReceiver, filter);
+
+        IntentFilter filter2 = new IntentFilter();
+        filter2.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
+        filter2.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+        registerReceiver(mReceiver2, filter2);
 
         alertDialogBuilder = new AlertDialog.Builder(MapsActivity.this);
         alertDialogBuilder.setTitle("Unable to locate you.");
@@ -468,6 +496,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         break;
 
                 }
+            }
+        }
+    };
+
+    private final BroadcastReceiver mReceiver2 = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+
+            assert action != null;
+
+            switch (action){
+                case BluetoothDevice.ACTION_ACL_CONNECTED:
+                    break;
+                case BluetoothDevice.ACTION_ACL_DISCONNECTED:
+                    Toast.makeText(MapsActivity.this,"Connection lost with car. Searching car.",Toast.LENGTH_LONG).show();
+                    MapsActivity.this.finish();
+                    break;
             }
         }
     };
