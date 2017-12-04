@@ -85,7 +85,6 @@ bool flag_navigation = false;
 bool flag_fix = false;
 bool flag_next = false;
 bool flag_free_run = false;
-bool flag_enable = false;
 uint8_t direction = CENTER;
 
 const SENSOR_DATA_t SENSOR_DATA__MIA_MSG = {1,1,1,1,1,1,1,1,1,15,15,15};
@@ -140,11 +139,37 @@ bool period_init(void)
     return true; // Must return true upon success
 }
 
+//checks if the lane specified by the bearing angle is free
+//@params the direction specified by void correct_guidance(COMPASS_t x)
+//@params lidar lanes
+//@return whether the lane is free
+
+bool check_direction_free(SENSOR_DATA_t y)
+{
+    if(direction == 0  && (y.LIDAR_0 == 0 && y.LIDAR_20 == 0 && y.LIDAR_neg20 == 0 ))
+        return true;
+
+    if((direction == 1 || direction == 3) && (y.LIDAR_0 == 0 && y.LIDAR_20 == 0 && y.LIDAR_40 == 0 ))
+        return true;
+
+    if(direction == 5 && (y.LIDAR_60 == 0 && y.LIDAR_20 == 0 && y.LIDAR_40 == 0 ))
+            return true;
+
+    if((direction == 2 || direction == 4) && (y.LIDAR_0 == 0 && y.LIDAR_neg20 == 0 && y.LIDAR_neg40 == 0 ))
+        return true;
+
+    if(direction == 6 && (y.LIDAR_neg60 == 0 && y.LIDAR_neg20 == 0 && y.LIDAR_neg40 == 0 ))
+            return true;
+
+    return false;
+}
+
 //reads data from the CAN message
 //@returns the bit with highest priority
 uint8_t map_get_value(SENSOR_DATA_t y)
 {
-    flag_enable = false;
+    if(check_direction_free(y))
+        return direction;
     if (y.LIDAR_0 == 1)
     {
         if(y.LIDAR_20 == 1 && y.LIDAR_neg20 == 1 && y.LIDAR_40 == 1 && y.LIDAR_neg40 == 1)
@@ -407,14 +432,14 @@ void period_10Hz(uint32_t count)
                     /*Sonar Priorities are higher than LIDAR as LIDAR's range will be larger*/
                     if (dbc_decode_SENSOR_DATA(&sensor_msg, can_msg.data.bytes, &can_header))
                     {
-//                        if(sensor_msg.SONAR_left > 14 && sensor_msg.SONAR_left <= sonar_critical)
-//                        {
-//                            stop_lidar(sensor_msg);
-//                        }
-//                        if(sensor_msg.SONAR_left > 14 && sensor_msg.SONAR_left <= sonar_warning)
-//                        {
-//                            sensor_msg.LIDAR_0 = 1;
-//                        }
+                        if(sensor_msg.SONAR_left > 14 && sensor_msg.SONAR_left <= sonar_critical)
+                        {
+                            stop_lidar(sensor_msg);
+                        }
+                        if(sensor_msg.SONAR_left > 14 && sensor_msg.SONAR_left <= sonar_warning)
+                        {
+                            sensor_msg.LIDAR_0 = 1;
+                        }
                         pair<uint8_t , uint8_t> son;
                         son.first = CENTER;
                         if (flag_fix || flag_free_run)
