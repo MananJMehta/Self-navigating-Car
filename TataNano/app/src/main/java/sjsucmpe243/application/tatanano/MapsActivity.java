@@ -59,10 +59,10 @@
         TextView actualSpeed, currPosVal, headingVal, bearing, deflection, distance;
         InputStream rx_data;
         OutputStream tx_data;
-        boolean Toggle_start_stop = false;
+        boolean Toggle_start_stop = false, thread_flag = false;
         Thread t;
 
-        String dataType = "", latVal="0", lngVal="0", headVal="0", speedVal="0",bearingVal="0", deflectionVal="0",distanceVal="0";
+        String dataType = "0", latVal="0", lngVal="0", headVal="0", speedVal="0",bearingVal="0", deflectionVal="0",distanceVal="0";
 
         AlertDialog.Builder alertDialogBuilder;
         AlertDialog alertDialog;
@@ -88,146 +88,63 @@
                 Log.e("TataNano : Bluetooth", "Socket is not connected yet. ");
             }
 
-            t = new Thread() {
 
+
+            t = new Thread() {
+                StringBuilder test;
+                int geoPos,pipePos, headPos, speedPos, bearingPos,deflectionPos, distancePos, endPos;
                 @Override
                 public void run() {
                     try {
                         while (!isInterrupted()) {
 
-                            Thread.sleep(1);
+                            Thread.sleep(100);
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    try {
-                                        if(rx_data.available()>0) {
-                                            StringBuilder test = new StringBuilder();
-
-                                            while(rx_data.available()>0) {
-                                                test.append((char) (rx_data.read())).append("");
-                                            }
-                                            if (test.indexOf("&")!=-1) //If we have a '&' symbol at the end
-                                            {
-                                                /**
-                                                 * Remove all the elements after '&' if there are any
-                                                 */
-                                                test = new StringBuilder(test.substring(0, test.indexOf("&")+1));
-                                            }
-                                            else
-                                            {
-                                                Log.d("DATA", "Complete String not found");
+                                    if(thread_flag) {
+                                        try {
+                                            if (rx_data.available() > 0) {
+                                                test = new StringBuilder();
+                                                do {
+                                                    test.append((char) (rx_data.read())).append("");
+                                                } while (test.indexOf("&") == -1);
+                                            } else {
+                                                test = new StringBuilder("0");
                                             }
 
-                                            Log.d("RX DATA VALUE", test.toString()); //Print Sanitized code
 
-                                            if(test.indexOf("G")==0 && (test.indexOf("&")==test.length()-1)) {
-                                                /**
-                                                 * Enter only if the first Character is 'G' and
-                                                 * the last element is '&'
-                                                 */
+                                            Log.d("RX DATA VALUE", test.toString());
 
-                                                //test = new StringBuilder(test.substring(0, test.toString().indexOf('&') + 1));
-
-                                                int pipePos = test.indexOf("|");        //Get the index of '|'
-                                                if (pipePos != -1)
-                                                    dataType = test.substring(0, 1);    //Get the first character
-
-                                                if (dataType.equals("G")) {
-                                                    if (test.length() > 1) {
-                                                        test = new StringBuilder(test.substring(1));                //starts after 'G'
-                                                        pipePos = test.indexOf("|");
-                                                        try {
-                                                            latVal = test.substring(0, pipePos);
-                                                            test = new StringBuilder(test.substring(pipePos + 1));  //starts after first '|'
-                                                            pipePos = test.toString().indexOf('H');
-                                                            lngVal = test.substring(0, pipePos);
-                                                            test = new StringBuilder(test.substring(pipePos));            //starts with 'H'
-                                                        } catch (StringIndexOutOfBoundsException e) {
-                                                            e.printStackTrace();
-                                                        }
-
-                                                        try {
-                                                            currPosVal.setText(String.format("%s, %s", latVal, lngVal));
-                                                            headingVal.setText(test.toString());
-                                                        } catch (NullPointerException e) {
-                                                            Log.e("TataNano : Bluetooth", "null pointer at setting value of Location.");
-                                                        }
-
-                                                        if (test.substring(0, 1).equals("H")) {
-                                                            test = new StringBuilder(test.substring(1));            //starts after 'H'
-                                                            pipePos = test.toString().indexOf('S');
-                                                            headVal = test.substring(0, pipePos);
-                                                            test = new StringBuilder(test.substring(pipePos));            //starts with 'S'
-
-                                                            try {
-                                                                headingVal.setText(headVal);
-                                                            } catch (NullPointerException e) {
-                                                                Log.e("TataNano : Bluetooth", "null pointer at setting value of heading.");
-                                                            }
-                                                        }
-
-                                                        if (test.substring(0, 1).equals("S")) {
-                                                            test = new StringBuilder(test.substring(1));            //starts after 'S'
-                                                                pipePos = test.toString().indexOf('B');
-                                                            speedVal = test.substring(0, pipePos);
-                                                            test = new StringBuilder(test.substring(pipePos));             //starts with 'B'
-
-                                                            try {
-                                                                actualSpeed.setText(speedVal);
-                                                            } catch (NullPointerException e) {
-                                                                Log.e("TataNano : Bluetooth", "null pointer at setting value of speed ");
-                                                            }
-                                                        }
-
-                                                        if (test.substring(0, 1).equals("B")) {
-                                                            test = new StringBuilder(test.substring(1));            //starts after 'B'
-                                                            pipePos = test.toString().indexOf('A');
-                                                            bearingVal = test.substring(0, pipePos);
-                                                            test = new StringBuilder(test.substring(pipePos));             //starts with 'A'
-
-                                                            try {
-                                                                bearing.setText(bearingVal);
-                                                            } catch (NullPointerException e) {
-                                                                Log.e("TataNano : Bluetooth", "null pointer at setting value of bearing ");
-                                                            }
-                                                        }
-
-                                                        if (test.substring(0, 1).equals("A")) {
-                                                            test = new StringBuilder(test.substring(1));
-                                                            pipePos = test.toString().indexOf('D');
-                                                            deflectionVal = test.substring(0, pipePos);
-                                                            test = new StringBuilder(test.substring(pipePos));
-
-                                                            try {
-                                                                deflection.setText(deflectionVal);
-                                                            } catch (NullPointerException e) {
-                                                                Log.e("TataNano : Bluetooth", "null pointer at setting value of deflection " + deflectionVal);
-                                                            }
-                                                        }
-
-                                                        if (test.substring(0, 1).equals("D")) {
-                                                            test = new StringBuilder(test.substring(1));
-                                                            pipePos = test.toString().indexOf('&');
-
-                                                            distanceVal = test.substring(0, pipePos);
-                                                            //test = new StringBuilder(test.substring(pipePos));
-
-                                                            try {
-                                                                distance.setText(distanceVal);
-                                                            } catch (NullPointerException e) {
-                                                                Log.e("TataNano : Bluetooth", "null pointer at setting value of distance " + distanceVal);
-                                                            }
-                                                        }
-                                                    }
-                                                }
+                                            pipePos = test.indexOf("|");
+                                            if (pipePos != -1) {
+                                                dataType = test.substring(0, 1);
+                                                Log.e("DATA TYPE", dataType);
+                                            } else {
+                                                Log.e("NO PIPE", dataType);
                                             }
-                                            else
-                                            {
-                                                Log.e("RX ERROR", "Did not receive the correct data");
+
+                                            geoPos = test.indexOf("G");
+                                            pipePos = test.indexOf("|");
+                                            headPos = test.indexOf("H");
+                                            speedPos = test.indexOf("S");
+                                            bearingPos = test.indexOf("B");
+                                            deflectionPos = test.indexOf("A");
+                                            distancePos = test.indexOf("D");
+                                            endPos = test.indexOf("&");
+
+                                            if(geoPos!=-1 && pipePos!=-1 && headPos!=-1 && speedPos!=-1 && bearingPos!=-1 && deflectionPos!=-1 && distancePos!=-1 && endPos!=-1) {
+                                                currPosVal.setText(test.substring(geoPos + 1, pipePos) + " , " + test.substring(pipePos + 1, headPos));
+                                                headingVal.setText(test.substring(headPos + 1, speedPos));
+                                                actualSpeed.setText(test.substring(speedPos + 1, bearingPos));
+                                                bearing.setText(test.substring(bearingPos + 1, deflectionPos));
+                                                deflection.setText(test.substring(deflectionPos + 1, distancePos));
+                                                distance.setText(test.substring(distancePos + 1, endPos));
                                             }
+
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
                                         }
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
                                     }
                                 }
                             });
@@ -279,6 +196,7 @@
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                         if(!speed.getText().toString().equals("")) {
+                            thread_flag = true;
 
                             if (Integer.parseInt(speed.getText().toString()) > 10) {
                                 if (Integer.parseInt(speed.getText().toString()) == 55) {
