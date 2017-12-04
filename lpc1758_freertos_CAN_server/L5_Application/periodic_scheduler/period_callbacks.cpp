@@ -76,7 +76,7 @@ const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
 //Define a critical distance for sonar
 #define sonar_critical 60
 #define sonar_warning 90
-#define cep 10
+#define cep 4
 
 uint8_t arr[9];
 uint8_t flag_speed = 0;
@@ -278,20 +278,20 @@ void correct_guidance(COMPASS_t x)
     static pair<uint8_t, uint8_t> return_value;
     return_value.second = 1;
     return_value.first = CENTER;
-    if (x.DEFLECTION_ANGLE <= 5 && x.DEFLECTION_ANGLE >= -5)
+    if (x.DEFLECTION_ANGLE <= 15 && x.DEFLECTION_ANGLE >= -15)
     {
         direction = 0; //CENTER
         //return_value.first = CENTER;
 
     }else
-    if (x.DEFLECTION_ANGLE > 5 && x.DEFLECTION_ANGLE <= 25 )
+    if (x.DEFLECTION_ANGLE > 15 && x.DEFLECTION_ANGLE <= 35 )
     {
      //soft right
         direction = 1;  //SOFTRIGHT;
         //return_value.first = SOFTRIGHT;
 
     }else
-    if (x.DEFLECTION_ANGLE > 25 && x.DEFLECTION_ANGLE <= 60)
+    if (x.DEFLECTION_ANGLE > 35 && x.DEFLECTION_ANGLE <= 60)
     {
      //right
         direction = 3;//RIGHT;
@@ -305,14 +305,14 @@ void correct_guidance(COMPASS_t x)
         //return_value.first = HARDRIGHT;
 
     }else
-    if (x.DEFLECTION_ANGLE < -5 && x.DEFLECTION_ANGLE >= -25 )
+    if (x.DEFLECTION_ANGLE < -15 && x.DEFLECTION_ANGLE >= -35 )
     {
      //soft left
         direction = 2;//SOFTLEFT;
         //return_value.first = SOFTLEFT;
 
     }else
-    if (x.DEFLECTION_ANGLE < -25 && x.DEFLECTION_ANGLE >= -60)
+    if (x.DEFLECTION_ANGLE < -35 && x.DEFLECTION_ANGLE >= -60)
     {
      //left
         direction = 4;//LEFT;
@@ -421,10 +421,10 @@ void period_10Hz(uint32_t count)
                 {
                     if(locate_msg.ANDROID_CMD_isLast)
                     {
-                        flag_next = true;
+                        flag_next = false;
                     }else
                     {
-                        flag_next = false;
+                        flag_next = true;
                     }
                 }
                 break;
@@ -432,6 +432,15 @@ void period_10Hz(uint32_t count)
                     /*Sonar Priorities are higher than LIDAR as LIDAR's range will be larger*/
                     if (dbc_decode_SENSOR_DATA(&sensor_msg, can_msg.data.bytes, &can_header))
                     {
+                        if(sensor_msg.SONAR_left < 100)
+                        {
+                            LD.clear();
+                            LD.setNumber(sensor_msg.SONAR_left);
+                        }else
+                        {
+                            LD.clear();
+                            LD.setNumber(99);
+                        }
                         if(sensor_msg.SONAR_left > 14 && sensor_msg.SONAR_left <= sonar_critical)
                         {
                             stop_lidar(sensor_msg);
