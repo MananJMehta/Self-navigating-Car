@@ -61,7 +61,7 @@ bool dbc_app_send_can_msg(uint32_t mid, uint8_t dlc, uint8_t bytes[8])
 Speed spd;
 Steering str;
 float val = SLOW;
-bool flag=false;
+int flag=false;
 MOTOR_TELEMETRY_t telemetry;
 /**
  * This is the stack size of the dispatcher task that triggers the period tasks to run.
@@ -259,6 +259,7 @@ GPS_DATA_t gps_can_msg;
 HEARTBEAT_t heartbeat;
 LIDAR_DATA_VALUES_t lidar_data_can_msg;
 DISTANCE_VALUES_t lidar_dist_can_msg;
+ANDROID_CMD_t androidcmd;
 
 const uint32_t                             CAR_CONTROL__MIA_MS=1000;
 const CAR_CONTROL_t                        CAR_CONTROL__MIA_MSG={0,15};
@@ -293,6 +294,9 @@ void period_10Hz(uint32_t count)
             case 120:
                 dbc_decode_HEARTBEAT(&heartbeat,msg.data.bytes,&header);
                 LE.toggle(1);
+                break;
+            case 130:
+                dbc_decode_ANDROID_CMD(&androidcmd, msg.data.bytes, &header);
                 break;
             case 140:
                 dbc_decode_CAR_CONTROL(&carControl,msg.data.bytes,&header);
@@ -337,27 +341,14 @@ void period_10Hz(uint32_t count)
     {
         if(val>STOP)
         {
-            LE.toggle(4);
-            if(stopCount == 0)
-            { spd.setSpeed(STOP);stopCount++;}
-            else if(stopCount == 1)
-            { spd.setSpeed(12);stopCount++;}
-            else if(stopCount == 2)
-            { spd.setSpeed(STOP);stopCount++;}
-            else if(stopCount == 3)
-            { spd.setSpeed(12);stopCount++;}
-            else if(stopCount == 4)
-            { stopCount++;}
-            else if(stopCount == 5)
-                       { spd.setSpeed(12);stopCount++;}
-//            else if(stopCount == 5)
-//            { spd.setSpeed(STOP);stopCount=0;}
+
             val = STOP;
         }
     }
-    else if(flag==true )
+    else if(flag>0 )
     {
-        // val =SLOW;
+
+        spd.RefCts.ref_count_medium=androidcmd.ANDROID_CMD_speed;
         spd.setSpeed(val);
         stopCount=0;
     }
