@@ -62,7 +62,7 @@
         boolean Toggle_start_stop = false, thread_flag = false;
         Thread t;
 
-        String dataType = "0", latVal="0", lngVal="0", headVal="0", speedVal="0",bearingVal="0", deflectionVal="0",distanceVal="0";
+        String dataType = "0",speedVal="0",latVal="", lngVal="";
 
         AlertDialog.Builder alertDialogBuilder;
         AlertDialog alertDialog;
@@ -133,13 +133,29 @@
                                             distancePos = test.indexOf("D");
                                             endPos = test.indexOf("&");
 
-                                            if(geoPos!=-1 && pipePos!=-1 && headPos!=-1 && speedPos!=-1 && bearingPos!=-1 && deflectionPos!=-1 && distancePos!=-1 && endPos!=-1) {
-                                                currPosVal.setText(test.substring(geoPos + 1, pipePos) + " , " + test.substring(pipePos + 1, headPos));
-                                                headingVal.setText(test.substring(headPos + 1, speedPos));
-                                                actualSpeed.setText(test.substring(speedPos + 1, bearingPos));
-                                                bearing.setText(test.substring(bearingPos + 1, deflectionPos));
-                                                deflection.setText(test.substring(deflectionPos + 1, distancePos));
-                                                distance.setText(test.substring(distancePos + 1, endPos));
+                                            if(geoPos!=-1 && pipePos!=-1 && headPos!=-1 && speedPos!=-1 &&
+                                                    bearingPos!=-1 && deflectionPos!=-1 && distancePos!=-1 && endPos!=-1) {
+
+                                                //Printing Location data here.
+                                                latVal = test.substring(geoPos + 1, pipePos);
+                                                lngVal = test.substring(pipePos + 1, headPos);
+                                                currPosVal.setText(String.format("%s: %s,%s","Location", latVal, lngVal));
+
+                                                //Printing heading val here
+                                                headingVal.setText(String.format("Heading: %s", test.substring(headPos + 1, speedPos)));
+
+                                                //Printing speed
+                                                speedVal = test.substring(speedPos + 1, bearingPos);
+                                                actualSpeed.setText(String.format("Speed: %s %s", speedVal, "m/s"));
+
+                                                //printing bearing value
+                                                bearing.setText(String.format("Bearing: %s", test.substring(bearingPos + 1, deflectionPos)));
+
+                                                //deflection or correction needed in current direction
+                                                deflection.setText(String.format("Deflection: %s", test.substring(deflectionPos + 1, distancePos)));
+
+                                                //distance of car to next checkpoint
+                                                distance.setText(String.format("Distance: %s", test.substring(distancePos + 1, endPos)));
                                             }
 
                                         } catch (IOException e) {
@@ -171,6 +187,8 @@
                     outputString.append("\n");
                     BTdata = outputString.toString();
                     Log.e("TataNano : Bluetooth", BTdata);
+                    Toast.makeText(MapsActivity.this,"Sent "+ Checkpoint_num + " checkpoints",Toast.LENGTH_SHORT).show();
+
                     try {
                         tx_data.write(BTdata.getBytes());
                     } catch (IOException e) {
@@ -340,10 +358,10 @@
 
                     } else {
 
-                        if (Float.parseFloat(speedVal) > 0.75 && prevLatLng != null && myLatLng != null) {
+                        if (Float.parseFloat(speedVal) > 0.25 && prevLatLng != null && myLatLng != null) {
 
-                            myLatLng = new LatLng(location.getLatitude(), location.getLongitude());
-                            //myLatLng = new LatLng(Double.parseDouble(latVal),Double.parseDouble(lngVal));
+                            //myLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+                            myLatLng = new LatLng(Double.parseDouble(latVal),Double.parseDouble(lngVal));
 
                             mMap.addPolyline(new PolylineOptions().add(prevLatLng, myLatLng).width(5).color(Color.BLUE).geodesic(true));
 
@@ -449,8 +467,8 @@
             locMan.removeUpdates(locLis);
             unregisterReceiver(mReceiver);
             unregisterReceiver(mReceiver2);
-            //t.destroy();
-            //this.finish();
+            t.destroy();
+            this.finish();
         }
 
         private final BroadcastReceiver mReceiver = new BroadcastReceiver() {

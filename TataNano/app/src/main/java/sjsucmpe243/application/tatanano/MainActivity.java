@@ -140,10 +140,10 @@ public class MainActivity extends AppCompatActivity {
                 while (!connect2Car()) ;
             }
         }
-        };
+    };
 
     private void setMainpage_4_On() {
-        heading.setText(R.string.BTOn);
+        heading.setText(R.string.BTSearching);
         heading.setTextColor(Color.GREEN);
         gifImg.setVisibility(View.VISIBLE);
         img.setVisibility(View.INVISIBLE);
