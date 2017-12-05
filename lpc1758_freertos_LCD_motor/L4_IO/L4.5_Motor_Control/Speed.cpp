@@ -63,7 +63,7 @@ float Speed::rpm_meter()
     rpm_s.rps = rpm_s.cut_count - rpm_s.old_count;
 
     LD.setNumber(rpm_s.rpms);
-    rpm_s.speed = (36.5 * rpm_s.rps * 3600) / (4*1000*100);
+    rpm_s.speed = (36.5 * rpm_s.rps * 3600) / (3*1000*100);
     rpm_s.ReferenceRps = rpm_s.ReferencSpeed * 4* 1000 *100 / (36.5 * 3600);
     rpm_s.old_count = rpm_s.cut_count;
 

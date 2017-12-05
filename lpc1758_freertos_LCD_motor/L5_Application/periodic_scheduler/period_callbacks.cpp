@@ -282,7 +282,7 @@ void period_10Hz(uint32_t count)
 {
     static uint32_t counter; //Counter to for checking the period of every second
     counter++;
-
+    static uint32_t tmp=0;
     while(CAN_rx(can1,&msg,0))
     {
 
@@ -330,29 +330,61 @@ void period_10Hz(uint32_t count)
         LE.on(3);
     else LE.off(3);
 
-    str.setDirection(carControl.CAR_CONTROL_steer);
+    if(val > (STOP- 0.5) || val<( STOP + 0.5))
+        str.setDirection(carControl.CAR_CONTROL_steer);
 
     //flag code - set flag
     flag = carControl.CAR_CONTROL_speed;
-
     //end set flag
 
-    if(flag==false)
+    if(flag==0)
     {
-        if(val>STOP)
+        if(val>STOP || val <STOP)
         {
 
             val = STOP;
+            //tmp = count;
         }
+        tmp = count;
     }
-    else if(flag>0 )
+    else if(flag == 1 )
     {
 
-        spd.RefCts.ref_count_medium=androidcmd.ANDROID_CMD_speed;
+        // spd.RefCts.ref_count_medium=androidcmd.ANDROID_CMD_speed;
         spd.setSpeed(val);
-        stopCount=0;
+        tmp = count;
     }
+    else if (flag ==2)
+    {
+        if(tmp>(count +5)) flag =0;
+        if(tmp == count)
+        {
+            if(val > 14)
+            {
+                spd.setSpeed(STOP);
+            }
+        }
+        if((count - tmp) == 1)
+        {
+            spd.setSpeed(SLOWREVERSE);
+        }
+        if((count - tmp) == 2)
+        {
 
+            spd.setSpeed(STOP);
+
+        }
+        if((count - tmp) == 3)
+        {
+
+            spd.setSpeed(SLOWREVERSE);
+
+            LD.clear();
+            LD.setRightDigit('B');
+            tmp = 0;
+        }
+        val=STOP;
+    }
 
     if(count%2==0)
         val=spd.speed_check(flag,val);

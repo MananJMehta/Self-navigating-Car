@@ -18,8 +18,8 @@
 #define SLOW        15.6
 #define VERYSLOW    15
 #define STOP        14
-#define REVERSESLOW 15
-#define REVERSEFAST 15
+#define SLOWREVERSE 12.6
+#define REVERSEFAST 12
 
 class Speed: public PWM
 
