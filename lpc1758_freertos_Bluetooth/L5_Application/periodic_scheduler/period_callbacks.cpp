@@ -40,9 +40,18 @@
 #include "uart2.hpp"
 #include "string.h"
 
-#define bufferLength 600
+#define bufferLength 1000
+#define rxQueue 1000
+#define txQueue 1000
 
 Bluetooth bluetooth;
+
+int mode = 0;
+int cpNo = 0;
+
+ANDROID_CMD_t android_cmd = {0};
+ANDROID_LOCATION_t android_loc = {0};
+can_msg_t can_msg_cmd = {0};
 
 //CAN init
 void initCan() {
@@ -71,7 +80,7 @@ const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3);
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
 {
-    bluetooth.init(115200, 500, 500);
+    bluetooth.init(115200, rxQueue, rxQueue);
     initCan();
 
     return true; // Must return true upon success
@@ -92,27 +101,34 @@ bool period_reg_tlm(void)
 void period_1Hz(uint32_t count)
 {
     //char rx[bufferLength]={0}; //Receive Buffer
-    char* rx = new char;
+    canResetBus();
 
-    ANDROID_CMD_t android_cmd = {0};
-    ANDROID_LOCATION_t android_loc = {0};
-    can_msg_t can_msg_cmd = {0};
-    can_msg_t can_msg_loc = {0};
+    char* rx = new char[500];
+
+    //can_msg_t can_msg_loc = {0};
+
+    bluetooth.getCanData();
+
 
     if(bluetooth.getBluetoothData(rx, bufferLength, 1)) {
-        printf("\nChar: %s\n",rx);
-        LE.on(3);
+        //printf("\nChar: %s\n",rx);
+        LE.on(1);
 
         int signalType = bluetooth.getSignalType(rx);
-        printf("%d\n",signalType);
-
+        //printf("%d\n",signalType);
+        if(signalType == 1) {
+            bluetooth.getDesiredSpeed(rx);
+        }
         if(signalType == 3) {
-            int chkPointNo = bluetooth.getCPNum(rx);
-            printf("Chk Pt: %d\n",chkPointNo);
-            bluetooth.getLatLong(rx, chkPointNo);
+            //chkPointNo = bluetooth.getCPNum(rx);
+            //cpNo = bluetooth.getCPNum(rx);
+            bluetooth.getCPNum(rx);
+            //printf("Chk Pt: %d\n",cpNo);
+            //bluetooth.getLatLong(rx, chkPointNo);
+            bluetooth.getLatLong(rx);
         }
 
-        bluetooth.sendCanData(android_cmd, android_loc, can_msg_cmd, can_msg_loc, signalType);
+        bluetooth.sendCanData(android_cmd, android_loc, can_msg_cmd, signalType);//, chkPointNo);
 
         bluetooth.flushBuffer();
     }
@@ -123,12 +139,12 @@ void period_1Hz(uint32_t count)
 
     //canResetBus();
     //LE.toggle(1);
+    //bluetooth.sendSpeed();
+    delete [] rx;
 }
 
 void period_10Hz(uint32_t count)
 {
-    //bluetooth.getCanData();
-    bluetooth.sendSpeed();
     //LE.toggle(2);
 }
 
