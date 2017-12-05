@@ -32,7 +32,6 @@
 #include "io.hpp"
 #include "periodic_callback.h"
 #include "uart2.hpp"
-#include "_can_dbc/generated_can.h"
 #include "can.h"
 #include "eint.h"
 #include "gpio.hpp"
@@ -43,7 +42,7 @@
 #include "eint.h"
 #include "string.h"
 
-//#define LCD
+#define LCD
 /// This is the stack size used for each of the period tasks (1Hz, 10Hz, 100Hz, and 1000Hz)
 const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
 const uint32_t PERIOD_MONITOR_TASK_STACK_SIZE_BYTES = (512 * 3); ///check
@@ -62,7 +61,19 @@ Speed spd;
 Steering str;
 float val = SLOW;
 int flag=false;
+
+can_msg_t msg;
+CAR_CONTROL_t carControl;
+SENSOR_DATA_t sensor_can_msg;
+COMPASS_t compass_can_msg;
+GPS_DATA_t gps_can_msg;
+HEARTBEAT_t heartbeat;
+LIDAR_DATA_VALUES_t lidar_data_can_msg;
+DISTANCE_VALUES_t lidar_dist_can_msg;
+ANDROID_CMD_t androidcmd;
 MOTOR_TELEMETRY_t telemetry;
+ANDROID_LOCATION_t androidLocation;
+
 /**
  * This is the stack size of the dispatcher task that triggers the period tasks to run.
  * Minimum 1500 bytes are needed in order to write a debug file if the period tasks overrun.
@@ -80,12 +91,7 @@ void initialize_motor_feedback()
 {
     eint3_enable_port2(5,eint_rising_edge,callBack);
 }
-//enum lcd_led{Sensor, Motor, Comm, Geo};
-enum lcd_digits{Miles_covered, Miles_remaining, Dest_lat, Dest_long, Current_lat, Current_long};
-enum lcd_health{System, Battery, Degree0, Degree20, Degree40, Degree60, Degree80, Degree_neg20, Degree_neg40, Degree_neg60, Degree_neg80};
-enum lcd_status{Off, On};
-enum lcd_ultrasound{Ultrasound_left, Ultrasound_front, Ultrasound_right};
-enum lcd_form{Main_page, Sensor_page, Distance_page, GPS_page};
+
 
 /**
  * Global variables to pass data for in 1 Hz scheduler from 10 Hz scheduler
@@ -112,14 +118,14 @@ bool period_init(void)
     if(!str.init())
         LD.setNumber(2);
     spd.setSpeed(STOP);
-    str.setDirection(CENTER); //Aditya : this part might be extra/ already set in init
+
 #ifdef LCD
     Uart2& u2 = Uart2::getInstance();
     u2.init(115200);
 #endif
 
     return true; // Must return true upon success
-    return true; // Must return true upon success
+
 }
 
 /// Register any telemetry variables
@@ -129,65 +135,7 @@ bool period_reg_tlm(void)
     return true; // Must return true upon success
 }
 #ifdef LCD
-/**
- * Send readings of LCD's Main Page
- */
-void update_LCD_main_page()
-{
-    /**
-     * TODO - These two lines can be removed during implementation
-     * Pass the calculated speed instead
-     */
-    int value = get_random_int(20);
-    char random_speed = value;
 
-    display_speedometer(random_speed); //TODO - Set this to speed
-    display_LCD_large_led(Battery, On);
-}
-
-/**
- * Send readings of LCD's Distance Page
- */
-void update_LCD_distance_page()
-{
-    //Display LCD Numbers
-    //TODO - Send Miles
-    display_lcd_numbers(Miles_covered, 1234);  //Scaled by 100 (1234 will display as 12.34)
-    display_lcd_numbers(Miles_remaining, 5678); //Scaled by 100
-}
-
-/**
- * Send readings of LCD's GPS Page
- */
-void update_LCD_GPS_page()
-{
-    //TODO - Set this to dest_lat_val and other coordinate variables
-    display_lcd_geo(Dest_lat, 132456789); //Scaled by 1 million (1000000)
-    display_lcd_geo(Dest_long, 223654321);
-    display_lcd_geo(Current_lat, 356112789);
-    display_lcd_geo(Current_long, 432345678);
-}
-
-/**
- * Send readings of LCD's Main Page
- */
-void update_LCD_sensor_page()
-{
-    //Display Ultrasound Sensor readings
-    display_lcd_bar(Ultrasound_left, us_left * 15); //Scaling up by 15 to display in LED
-    display_lcd_bar(Ultrasound_front, us_front * 15);
-    display_lcd_bar(Ultrasound_right, us_right * 15);
-
-    display_LCD_large_led(Degree0, deg_0);
-    display_LCD_large_led(Degree20, deg_20);
-    display_LCD_large_led(Degree40, deg_40);
-    display_LCD_large_led(Degree60, deg_60);
-    display_LCD_large_led(Degree80, deg_80);
-    display_LCD_large_led(Degree_neg20, deg_neg20);
-    display_LCD_large_led(Degree_neg40, deg_neg40);
-    display_LCD_large_led(Degree_neg60, deg_neg60);
-    display_LCD_large_led(Degree_neg80, deg_neg80);
-}
 
 /**
  * Below are your periodic functions.
@@ -205,43 +153,29 @@ void check_bus()
 void period_1Hz(uint32_t count)
 {
     telemetry.MOTOR_TELEMETRY_kph= spd.rpm_meter();
-    printf("%f\n",telemetry.MOTOR_TELEMETRY_kph);
     check_bus();
 #ifdef LCD
     display_bus_reset();
-
-
-    if (getButtonState()) //Check if the startStop button is pressed in LCD
-    {
-        display_LCD_large_led(System, On);
-    }
-    else
-    {
-        display_LCD_large_led(System, Off);
-    }
-
-
     /**
      * Check which form (Page) of LCD is active
-     */
-    char form = check_form();
-
-    /**
      * Display the information of the Active LCD Page
      */
+
+    char form = check_form();
+
     switch(form)
     {
         case Main_page:
-            update_LCD_main_page();
+            update_LCD_main_page(telemetry.MOTOR_TELEMETRY_kph,androidcmd.ANDROID_CMD_mode);
             break;
         case Distance_page:
-            update_LCD_distance_page();
+            update_LCD_distance_page(  (spd.rpm_s.cut_count*12.12),compass_can_msg.DISTANCE_CHECKPOINT);
             break;
         case Sensor_page:
-            update_LCD_sensor_page();
+            update_LCD_sensor_page(sensor_can_msg);
             break;
         case GPS_page:
-            update_LCD_GPS_page();
+            update_LCD_GPS_page(gps_can_msg, androidLocation);
             break;
         default:
             //Do something to throw error
@@ -251,15 +185,7 @@ void period_1Hz(uint32_t count)
 }
 
 
-can_msg_t msg;
-CAR_CONTROL_t carControl;
-SENSOR_DATA_t sensor_can_msg;
-COMPASS_t compass_can_msg;
-GPS_DATA_t gps_can_msg;
-HEARTBEAT_t heartbeat;
-LIDAR_DATA_VALUES_t lidar_data_can_msg;
-DISTANCE_VALUES_t lidar_dist_can_msg;
-ANDROID_CMD_t androidcmd;
+
 
 const uint32_t                             CAR_CONTROL__MIA_MS=1000;
 const CAR_CONTROL_t                        CAR_CONTROL__MIA_MSG={0,15};
@@ -298,6 +224,9 @@ void period_10Hz(uint32_t count)
             case 130:
                 dbc_decode_ANDROID_CMD(&androidcmd, msg.data.bytes, &header);
                 break;
+            case 135:
+                dbc_decode_ANDROID_LOCATION(&androidLocation, msg.data.bytes, &header);
+                break;
             case 140:
                 dbc_decode_CAR_CONTROL(&carControl,msg.data.bytes,&header);
                 break;
@@ -329,7 +258,12 @@ void period_10Hz(uint32_t count)
     if(dbc_handle_mia_CAR_CONTROL(&carControl,100))
         LE.on(3);
     else LE.off(3);
-
+if(heartbeat.HEARTBEAT_cmd == HEARTBEAT_cmd_NOOP)
+{
+    str.setDirection(carControl.CAR_CONTROL_steer);
+    spd.setSpeed(STOP);
+    }
+else{
     if(val > (STOP- 0.5) || val<( STOP + 0.5))
         str.setDirection(carControl.CAR_CONTROL_steer);
 
@@ -391,54 +325,54 @@ void period_10Hz(uint32_t count)
     //end flag code
     telemetry.MOTOR_TELEMETRY_pwm=val;
     dbc_encode_and_send_MOTOR_TELEMETRY(&telemetry);
+}
 
-
-#ifdef LCD
-    //Update values from CAN every 10 iterations (every 1 Second)
-    if (counter % 10 == 0) {
-
-        /**
-         * Set Lidar sensor values for LCD display
-         */
-        deg_0 = sensor_can_msg.LIDAR_0;
-        deg_20 = sensor_can_msg.LIDAR_20;
-        deg_40 = sensor_can_msg.LIDAR_40;
-        deg_60 = sensor_can_msg.LIDAR_60;
-        deg_80 = sensor_can_msg.LIDAR_80;
-        deg_neg20 = sensor_can_msg.LIDAR_neg20;
-        deg_neg40 = sensor_can_msg.LIDAR_neg40;
-        deg_neg60 = sensor_can_msg.LIDAR_neg60;
-        deg_neg80 = sensor_can_msg.LIDAR_neg80;
-
-        /**
-         * Set Ultrasound sensor values for LCD display
-         */
-        us_left = sensor_can_msg.SONAR_left;
-        us_right = sensor_can_msg.SONAR_right;
-        us_front = sensor_can_msg.SONAR_back;
-
-        /**
-         * Set GPS Coordinates values for LCD Display
-         */
-        current_lat_val = gps_can_msg.GPS_LATITUDE;
-        current_long_val = gps_can_msg.GPS_LONGITUDE;
-
-        /**
-         * TODO - Need to update the speed value, distance remaining,
-         * distance covered, destination latitude and destination
-         * longitude once the DBC file is updated
-         */
-
-
-        /**
-         * dest_lat_val = ;
-         * dest_long_val = ;
-         * speed = ;
-         * distance_covered = ;
-         * distance_remaining = ;
-         */
-    }
-#endif
+//#ifdef LCD
+//    //Update values from CAN every 10 iterations (every 1 Second)
+//    if (counter % 10 == 0) {
+//
+//        /**
+//         * Set Lidar sensor values for LCD display
+//         */
+//        deg_0 = sensor_can_msg.LIDAR_0;
+//        deg_20 = sensor_can_msg.LIDAR_20;
+//        deg_40 = sensor_can_msg.LIDAR_40;
+//        deg_60 = sensor_can_msg.LIDAR_60;
+//        deg_80 = sensor_can_msg.LIDAR_80;
+//        deg_neg20 = sensor_can_msg.LIDAR_neg20;
+//        deg_neg40 = sensor_can_msg.LIDAR_neg40;
+//        deg_neg60 = sensor_can_msg.LIDAR_neg60;
+//        deg_neg80 = sensor_can_msg.LIDAR_neg80;
+//
+//        /**
+//         * Set Ultrasound sensor values for LCD display
+//         */
+//        us_left = sensor_can_msg.SONAR_left;
+//        us_right = sensor_can_msg.SONAR_right;
+//        us_front = sensor_can_msg.SONAR_back;
+//
+//        /**
+//         * Set GPS Coordinates values for LCD Display
+//         */
+//        current_lat_val = gps_can_msg.GPS_LATITUDE;
+//        current_long_val = gps_can_msg.GPS_LONGITUDE;
+//
+//        /**
+//         * TODO - Need to update the speed value, distance remaining,
+//         * distance covered, destination latitude and destination
+//         * longitude once the DBC file is updated
+//         */
+//
+//
+//        /**
+//         * dest_lat_val = ;
+//         * dest_long_val = ;
+//         * speed = ;
+//         * distance_covered = ;
+//         * distance_remaining = ;
+//         */
+//    }
+//#endif
 }
 
 void period_100Hz(uint32_t count)

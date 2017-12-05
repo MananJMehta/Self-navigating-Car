@@ -192,3 +192,67 @@ void display_lcd_startStop()
 }
 
 
+
+/**
+ * Send readings of LCD's Distance Page
+ */
+void update_LCD_distance_page(float covered, int remain)
+{
+    //Display LCD Numbers
+    //TODO - Send Miles
+    covered = covered*100;
+    remain = remain*100;
+    display_lcd_numbers(Miles_covered, covered);  //Scaled by 100 (1234 will display as 12.34)
+    display_lcd_numbers(Miles_remaining, remain); //Scaled by 100
+}
+
+/**
+ * Send readings of LCD's Main Page
+ */
+void update_LCD_main_page(float value, uint32_t status)
+{
+    /**
+     * TODO - These two lines can be removed during implementation
+     * Pass the calculated speed instead
+     * if status == 1, Navigation Mode
+     * else free run mode
+     */
+
+    display_speedometer((char)value); //TODO - Set this to speed
+    display_LCD_large_led(Battery, status);
+    display_LCD_large_led(System, !status);
+}
+
+
+/**
+ * Send readings of LCD's GPS Page
+ */
+void update_LCD_GPS_page(GPS_DATA_t gps, ANDROID_LOCATION_t androidDist)
+{
+    //TODO - Set this to dest_lat_val and other coordinate variables
+    display_lcd_geo(Dest_lat, androidDist.ANDROID_CMD_lat*1000000); //Scaled by 1 million (1000000)
+    display_lcd_geo(Dest_long,androidDist.ANDROID_CMD_long*1000000 );
+    display_lcd_geo(Current_lat, gps.GPS_LATITUDE*1000000);
+    display_lcd_geo(Current_long,gps.GPS_LONGITUDE*1000000);
+}
+/**
+ * Send readings of LCD's Main Page
+ */
+void update_LCD_sensor_page(SENSOR_DATA_t sen)
+{
+    //Display Ultrasound Sensor readings
+    display_lcd_bar(Ultrasound_left, 249-sen.SONAR_left); //Scaling up by 15 to display in LED
+    display_lcd_bar(Ultrasound_front, 0);
+    display_lcd_bar(Ultrasound_right, 0);
+
+    display_LCD_large_led(Degree0, sen.LIDAR_0);
+    display_LCD_large_led(Degree20, sen.LIDAR_20);
+    display_LCD_large_led(Degree40, sen.LIDAR_40);
+    display_LCD_large_led(Degree60, sen.LIDAR_60);
+    display_LCD_large_led(Degree80, sen.LIDAR_80);
+    display_LCD_large_led(Degree_neg20, sen.LIDAR_neg20);
+    display_LCD_large_led(Degree_neg40, sen.LIDAR_neg40);
+    display_LCD_large_led(Degree_neg60, sen.LIDAR_neg60);
+    display_LCD_large_led(Degree_neg80, sen.LIDAR_neg80);
+}
+
