@@ -44,6 +44,6 @@ void display_lcd_geo(uint8_t placeholder, uint32_t geo);
 void convert16_to_hex(uint16_t number, uint8_t *lsb_val, uint8_t *msb_val);
 void update_LCD_main_page(float value, uint32_t status);
 void update_LCD_distance_page(float covered, int remain);
-void update_LCD_GPS_page(GPS_DATA_t gps, ANDROID_LOCATION_t androidDist);
-void update_LCD_sensor_page(SENSOR_DATA_t sen);
+//void update_LCD_GPS_page(GPS_DATA_t gps, ANDROID_LOCATION_t androidDist);
+//void update_LCD_sensor_page(SENSOR_DATA_t sen);
 #endif /* LCD_HPP_ */

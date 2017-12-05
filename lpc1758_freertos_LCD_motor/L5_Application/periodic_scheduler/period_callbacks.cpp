@@ -103,6 +103,39 @@ uint16_t dest_lat_val, dest_long_val, current_lat_val, current_long_val;
 
 
 
+
+/**
+ * Send readings of LCD's GPS Page
+ */
+void update_LCD_GPS_page(GPS_DATA_t gps, ANDROID_LOCATION_t androidDist)
+{
+    //TODO - Set this to dest_lat_val and other coordinate variables
+    display_lcd_geo(Dest_lat, androidDist.ANDROID_CMD_lat*1000000); //Scaled by 1 million (1000000)
+    display_lcd_geo(Dest_long,androidDist.ANDROID_CMD_long*1000000 );
+    display_lcd_geo(Current_lat, gps.GPS_LATITUDE*1000000);
+    display_lcd_geo(Current_long,gps.GPS_LONGITUDE*1000000);
+}
+/**
+ * Send readings of LCD's Main Page
+ */
+void update_LCD_sensor_page(SENSOR_DATA_t sen)
+{
+    //Display Ultrasound Sensor readings
+    display_lcd_bar(Ultrasound_left, 0); //Scaling up by 15 to display in LED
+    display_lcd_bar(Ultrasound_front, 249-sen.SONAR_left);
+    display_lcd_bar(Ultrasound_right, 0);
+
+    display_LCD_large_led(Degree0, sen.LIDAR_0);
+    display_LCD_large_led(Degree20, sen.LIDAR_20);
+    display_LCD_large_led(Degree40, sen.LIDAR_40);
+    display_LCD_large_led(Degree60, sen.LIDAR_60);
+    display_LCD_large_led(Degree80, sen.LIDAR_80);
+    display_LCD_large_led(Degree_neg20, sen.LIDAR_neg20);
+    display_LCD_large_led(Degree_neg40, sen.LIDAR_neg40);
+    display_LCD_large_led(Degree_neg60, sen.LIDAR_neg60);
+    display_LCD_large_led(Degree_neg80, sen.LIDAR_neg80);
+}
+
 /// Called once before the RTOS is started, this is a good place to initialize things once
 bool period_init(void)
 {
@@ -153,6 +186,7 @@ void check_bus()
 void period_1Hz(uint32_t count)
 {
     telemetry.MOTOR_TELEMETRY_kph= spd.rpm_meter();
+    printf("speed:%i\n", telemetry.MOTOR_TELEMETRY_kph);
     check_bus();
 #ifdef LCD
     display_bus_reset();
@@ -258,121 +292,122 @@ void period_10Hz(uint32_t count)
     if(dbc_handle_mia_CAR_CONTROL(&carControl,100))
         LE.on(3);
     else LE.off(3);
-if(heartbeat.HEARTBEAT_cmd == HEARTBEAT_cmd_NOOP)
-{
-    str.setDirection(carControl.CAR_CONTROL_steer);
-    spd.setSpeed(STOP);
-    }
-else{
-    if(val > (STOP- 0.5) || val<( STOP + 0.5))
-        str.setDirection(carControl.CAR_CONTROL_steer);
-
-    //flag code - set flag
-    flag = carControl.CAR_CONTROL_speed;
-    //end set flag
-
-    if(flag==0)
+    if(heartbeat.HEARTBEAT_cmd == HEARTBEAT_cmd_NOOP)
     {
-        if(val>STOP || val <STOP)
+        str.setDirection(CENTER);
+        spd.setSpeed(STOP);
+        LE.on(4);
+    }
+    else{
+        if(val > (STOP- 0.5) || val<( STOP + 0.5))
+            str.setDirection(carControl.CAR_CONTROL_steer);
+        LE.off(4);
+        //flag code - set flag
+        flag = carControl.CAR_CONTROL_speed;
+        //end set flag
+
+        if(flag==0)
         {
-
-            val = STOP;
-            //tmp = count;
-        }
-        tmp = count;
-    }
-    else if(flag == 1 )
-    {
-
-        // spd.RefCts.ref_count_medium=androidcmd.ANDROID_CMD_speed;
-        spd.setSpeed(val);
-        tmp = count;
-    }
-    else if (flag ==2)
-    {
-        if(tmp>(count +5)) flag =0;
-        if(tmp == count)
-        {
-            if(val > 14)
+            if(val>STOP || val <STOP)
             {
-                spd.setSpeed(STOP);
+
+                val = STOP;
+                //tmp = count;
             }
+            tmp = count;
         }
-        if((count - tmp) == 1)
-        {
-            spd.setSpeed(SLOWREVERSE);
-        }
-        if((count - tmp) == 2)
+        else if(flag == 1 )
         {
 
-            spd.setSpeed(STOP);
-
+            // spd.RefCts.ref_count_medium=androidcmd.ANDROID_CMD_speed;
+            spd.setSpeed(val);
+            tmp = count;
         }
-        if((count - tmp) == 3)
+        else if (flag ==2)
         {
+            if(tmp>(count +5)) flag =0;
+            if(tmp == count)
+            {
+                if(val > 14)
+                {
+                    spd.setSpeed(STOP);
+                }
+            }
+            if((count - tmp) == 1)
+            {
+                spd.setSpeed(SLOWREVERSE);
+            }
+            if((count - tmp) == 2)
+            {
 
-            spd.setSpeed(SLOWREVERSE);
+                spd.setSpeed(STOP);
 
-            LD.clear();
-            LD.setRightDigit('B');
-            tmp = 0;
+            }
+            if((count - tmp) == 3)
+            {
+
+                spd.setSpeed(SLOWREVERSE);
+
+                LD.clear();
+                LD.setRightDigit('B');
+                tmp = 0;
+            }
+            val=STOP;
         }
-        val=STOP;
+
+        if(count%2==0)
+            val=spd.speed_check(flag,val);
+        //end flag code
+        telemetry.MOTOR_TELEMETRY_pwm=val;
+        dbc_encode_and_send_MOTOR_TELEMETRY(&telemetry);
     }
 
-    if(count%2==0)
-        val=spd.speed_check(flag,val);
-    //end flag code
-    telemetry.MOTOR_TELEMETRY_pwm=val;
-    dbc_encode_and_send_MOTOR_TELEMETRY(&telemetry);
-}
-
-//#ifdef LCD
-//    //Update values from CAN every 10 iterations (every 1 Second)
-//    if (counter % 10 == 0) {
-//
-//        /**
-//         * Set Lidar sensor values for LCD display
-//         */
-//        deg_0 = sensor_can_msg.LIDAR_0;
-//        deg_20 = sensor_can_msg.LIDAR_20;
-//        deg_40 = sensor_can_msg.LIDAR_40;
-//        deg_60 = sensor_can_msg.LIDAR_60;
-//        deg_80 = sensor_can_msg.LIDAR_80;
-//        deg_neg20 = sensor_can_msg.LIDAR_neg20;
-//        deg_neg40 = sensor_can_msg.LIDAR_neg40;
-//        deg_neg60 = sensor_can_msg.LIDAR_neg60;
-//        deg_neg80 = sensor_can_msg.LIDAR_neg80;
-//
-//        /**
-//         * Set Ultrasound sensor values for LCD display
-//         */
-//        us_left = sensor_can_msg.SONAR_left;
-//        us_right = sensor_can_msg.SONAR_right;
-//        us_front = sensor_can_msg.SONAR_back;
-//
-//        /**
-//         * Set GPS Coordinates values for LCD Display
-//         */
-//        current_lat_val = gps_can_msg.GPS_LATITUDE;
-//        current_long_val = gps_can_msg.GPS_LONGITUDE;
-//
-//        /**
-//         * TODO - Need to update the speed value, distance remaining,
-//         * distance covered, destination latitude and destination
-//         * longitude once the DBC file is updated
-//         */
-//
-//
-//        /**
-//         * dest_lat_val = ;
-//         * dest_long_val = ;
-//         * speed = ;
-//         * distance_covered = ;
-//         * distance_remaining = ;
-//         */
-//    }
-//#endif
+    //#ifdef LCD
+    //    //Update values from CAN every 10 iterations (every 1 Second)
+    //    if (counter % 10 == 0) {
+    //
+    //        /**
+    //         * Set Lidar sensor values for LCD display
+    //         */
+    //        deg_0 = sensor_can_msg.LIDAR_0;
+    //        deg_20 = sensor_can_msg.LIDAR_20;
+    //        deg_40 = sensor_can_msg.LIDAR_40;
+    //        deg_60 = sensor_can_msg.LIDAR_60;
+    //        deg_80 = sensor_can_msg.LIDAR_80;
+    //        deg_neg20 = sensor_can_msg.LIDAR_neg20;
+    //        deg_neg40 = sensor_can_msg.LIDAR_neg40;
+    //        deg_neg60 = sensor_can_msg.LIDAR_neg60;
+    //        deg_neg80 = sensor_can_msg.LIDAR_neg80;
+    //
+    //        /**
+    //         * Set Ultrasound sensor values for LCD display
+    //         */
+    //        us_left = sensor_can_msg.SONAR_left;
+    //        us_right = sensor_can_msg.SONAR_right;
+    //        us_front = sensor_can_msg.SONAR_back;
+    //
+    //        /**
+    //         * Set GPS Coordinates values for LCD Display
+    //         */
+    //        current_lat_val = gps_can_msg.GPS_LATITUDE;
+    //        current_long_val = gps_can_msg.GPS_LONGITUDE;
+    //
+    //        /**
+    //         * TODO - Need to update the speed value, distance remaining,
+    //         * distance covered, destination latitude and destination
+    //         * longitude once the DBC file is updated
+    //         */
+    //
+    //
+    //        /**
+    //         * dest_lat_val = ;
+    //         * dest_long_val = ;
+    //         * speed = ;
+    //         * distance_covered = ;
+    //         * distance_remaining = ;
+    //         */
+    //    }
+    //#endif
 }
 
 void period_100Hz(uint32_t count)
