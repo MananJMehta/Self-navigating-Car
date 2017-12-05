@@ -76,7 +76,7 @@ const uint32_t PERIOD_TASKS_STACK_SIZE_BYTES = (512 * 4);
 //Define a critical distance for sonar
 #define sonar_critical 60
 #define sonar_warning 90
-#define cep 4
+#define cep 7
 
 uint8_t arr[9];
 uint8_t flag_speed = 0;
@@ -234,6 +234,8 @@ return_value.first=HARDLEFT;//steering
         LE.on(2);
         LE.on(3);
         LE.on(4);
+        return_value.first = CENTER;
+        return_value.second = 2;
         return return_value;
     }
 
@@ -373,11 +375,22 @@ void period_10Hz(uint32_t count)
         flag_speed = 1;
         heartbeat_msg.HEARTBEAT_cmd = HEARTBEAT_cmd_SYNC;
     }
-    if(SW.getSwitch(3))
-    {
-        compass_msg.DISTANCE_CHECKPOINT = 5; //CEP is 10
-    }
-
+//    if(SW.getSwitch(3))
+//    {
+//        master_motor_msg.CAR_CONTROL_steer = CENTER;
+//        master_motor_msg.CAR_CONTROL_speed = 2;
+//        dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
+//        LD.setLeftDigit('L');
+//        LD.setRightDigit('L');
+//    }
+//    if(SW.getSwitch(4))
+//    {
+//        master_motor_msg.CAR_CONTROL_steer = CENTER;
+//       master_motor_msg.CAR_CONTROL_speed = 1;
+//       dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
+//       LD.setLeftDigit('F');
+//       LD.setRightDigit('F');
+//    }
 
 
     can_msg_t can_msg;
