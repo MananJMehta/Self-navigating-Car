@@ -14,14 +14,19 @@
 #include "printf_lib.h"
 #include "GPS_Commands.h"
 #include "gps_v1.hpp"
+#include "eint.h"
+#include "gpio.hpp"
 
 using namespace std;
 
 #define R   6371.0
 #define PI  3.14159
 
+GPIO gpio2_0(P2_0);
+
 bool Uart2_GPS::init()
 {
+    gpio2_0.setAsInput();
     fixFlag = false;
 //    Uart2::getInstance().init(9600, UART_RECEIVE_BUFFER_SIZE, UART_TRANSMIT_BUFFER_SIZE);   // Initial GPS baud rate should be 9600
 //    Uart2::getInstance().putline(PMTK_SET_BAUD_57600, portMAX_DELAY);
@@ -151,4 +156,9 @@ float Uart2_GPS::distanceCheckpoint(float lat, float lon)
     float C = 2 * atan2(sqrt(A), sqrt(1-A));
 
     return R * C * 1000;
+}
+
+bool Uart2_GPS::fixLED()    //
+{
+    return gpio2_0.read();
 }

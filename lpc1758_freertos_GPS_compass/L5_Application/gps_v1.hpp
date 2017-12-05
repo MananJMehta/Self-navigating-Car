@@ -28,6 +28,7 @@ public:
     float getLongitude();
     float bearingAngle(float lat, float lon);
     float distanceCheckpoint(float lat, float lon);
+    bool fixLED();
     bool fixFlag;
 
 private:

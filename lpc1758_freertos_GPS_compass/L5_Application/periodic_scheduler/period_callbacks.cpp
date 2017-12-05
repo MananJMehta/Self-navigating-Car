@@ -110,6 +110,23 @@ bool period_reg_tlm(void)
 
 void period_1Hz(uint32_t count)
 {
+/*    static int fixLED_count = 0;
+    if(gps.fixLED())
+    {
+        fixLED_count++;
+        if(fixLED_count > 2)
+        {
+            gps.fixFlag = false;
+            LE.off(2);
+        }
+    }
+    else
+    {
+        fixLED_count = 0;
+        gps.fixFlag = true;
+        LE.on(2);
+    }*/
+
 
     if(CAN_is_bus_off(can1))
     {
@@ -134,14 +151,13 @@ void period_1Hz(uint32_t count)
         //original_firmware();
     }
 
-//    printf("Lat: %f\n", gps.getLatitude());
-//    printf("Lon: %f\n", gps.getLongitude());
+    printf("Lat: %f\n", gps.getLatitude());
+    printf("Lon: %f\n", gps.getLongitude());
 
 //    float bearing_test = gps.bearingAngle(checkpoint_lat, checkpoint_long);
- //   float distance_test = gps.distanceCheckpoint(checkpoint_lat, checkpoint_long);
-
-//    float heading_test = compass.Get_Compass_Heading();
-//    printf("Heading: %f\n", heading_test);
+//    float distance_test = gps.distanceCheckpoint(checkpoint_lat, checkpoint_long);
+    float heading_test = compass.Get_Compass_Heading();
+    printf("Heading: %f\n", heading_test);
 //    printf("Bearing: %f\n", bearing_test);
 //    printf("Distance: %f\n", distance_test);
 }
@@ -149,7 +165,6 @@ void period_1Hz(uint32_t count)
 void period_10Hz(uint32_t count)
 {
     gps.receive();
-
     can_msg_t can_msg_receive;
 
     while(CAN_rx(can1, &can_msg_receive, 0))
@@ -178,18 +193,18 @@ void period_10Hz(uint32_t count)
                 dbc_decode_ANDROID_LOCATION(&ard_buffer, can_msg_receive.data.bytes, &msg_hdr_receive);
                 checkpoint_lat = ard_buffer.ANDROID_CMD_lat;
                 checkpoint_long = ard_buffer.ANDROID_CMD_long;
-                printf("Lat: %f\n", ard_buffer.ANDROID_CMD_lat);
-                printf("Lon: %f\n", ard_buffer.ANDROID_CMD_long);
+//                printf("Lat: %f\n", ard_buffer.ANDROID_CMD_lat);
+//                printf("Lon: %f\n", ard_buffer.ANDROID_CMD_long);
                 break;
         }
-    }
 
-    //sending GPS, Heading, Bearing, deflection, distance
-    gps.parse_data();
-    if(heartbeat_flag)
-    {
-        CAN_GPS_Trasmit();
-        CAN_COMPASS_Transmit();
+        //sending GPS, Heading, Bearing, deflection, distance
+        gps.parse_data();
+        if(heartbeat_flag)
+        {
+            CAN_GPS_Trasmit();
+            CAN_COMPASS_Transmit();
+        }
     }
 }
 
@@ -211,8 +226,8 @@ void CAN_GPS_Trasmit()
     gps_buffer_transmit.GPS_LONGITUDE = gps.getLongitude();
     gps_buffer_transmit.GPS_FIX = gps.fixFlag;
 
-//    printf("Lat: %f\n",  gps_buffer_transmit.GPS_LATITUDE);
-//    printf("Lon: %f\n", gps_buffer_transmit.GPS_LONGITUDE);
+    printf("CAN Lat: %f\n",  gps_buffer_transmit.GPS_LATITUDE);
+    printf("CAN Lon: %f\n", gps_buffer_transmit.GPS_LONGITUDE);
 
     can_msg_t can_gps_transmit = {0};
     dbc_msg_hdr_t msg_hdr_transmit = dbc_encode_GPS_DATA(can_gps_transmit.data.bytes, &gps_buffer_transmit);
