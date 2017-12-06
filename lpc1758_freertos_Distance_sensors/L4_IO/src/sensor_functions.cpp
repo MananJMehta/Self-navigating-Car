@@ -28,23 +28,23 @@ bool check_heartbeat()
     }
     if(dbc_decode_HEARTBEAT(&heart, rx_msg.data.bytes, &heart_hdr))
     {
-//        //write some code here
-//        if(heart.HEARTBEAT_cmd == HEARTBEAT_cmd_SYNC)
-//        {
-//            sync_flag = true;
-//        }
-//        else if(heart.HEARTBEAT_cmd == HEARTBEAT_cmd_NOOP)
-//        {
-//            noop_flag = true;
-//        }
-//        else if(heart.HEARTBEAT_cmd == HEARTBEAT_cmd_REBOOT)
-//        {
-//            reboot_flag = true;
-//        }
-//        else
-//        {
-//            //die
-//        }
+        //write some code here
+        if(heart.HEARTBEAT_cmd == HEARTBEAT_cmd_SYNC)
+        {
+            sync_flag = true;
+        }
+        else if(heart.HEARTBEAT_cmd == HEARTBEAT_cmd_NOOP)
+        {
+            noop_flag = true;
+        }
+        else if(heart.HEARTBEAT_cmd == HEARTBEAT_cmd_REBOOT)
+        {
+            reboot_flag = true;
+        }
+        else
+        {
+            //die
+        }
 
         return true;
     }
