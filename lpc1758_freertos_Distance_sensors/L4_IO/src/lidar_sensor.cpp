@@ -251,7 +251,7 @@ bool Lidar_Sensor::lane_algorithm(void)
 {
     static uint8_t count = 0;
     static bool local_lanes [18];
-    static const float object_range = 200;
+    static const float object_range = 30;//set to 200
     static const uint8_t data = 5;
     static uint16_t min = 600;
     static uint8_t current_lane = 4;//start at lane 4

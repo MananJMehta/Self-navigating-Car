@@ -3,7 +3,9 @@
 
 extern Sonar_Sensor sonar;
 
-
+bool sync_flag = true;//set this false for actual run
+bool noop_flag = false;
+bool reboot_flag = false;
 
 
 void initialize_can()
@@ -21,11 +23,29 @@ bool check_heartbeat()
     can_msg_t rx_msg;
 
     if(CAN_rx(can1,&rx_msg,1) && (rx_msg.msg_id == 120))
-        {
-                LE.toggle(3);
-        }
+    {
+            LE.toggle(3);
+    }
     if(dbc_decode_HEARTBEAT(&heart, rx_msg.data.bytes, &heart_hdr))
     {
+//        //write some code here
+//        if(heart.HEARTBEAT_cmd == HEARTBEAT_cmd_SYNC)
+//        {
+//            sync_flag = true;
+//        }
+//        else if(heart.HEARTBEAT_cmd == HEARTBEAT_cmd_NOOP)
+//        {
+//            noop_flag = true;
+//        }
+//        else if(heart.HEARTBEAT_cmd == HEARTBEAT_cmd_REBOOT)
+//        {
+//            reboot_flag = true;
+//        }
+//        else
+//        {
+//            //die
+//        }
+
         return true;
     }
     else
@@ -54,9 +74,11 @@ void send_lidar_sonar_data()
 
     //why are we printing?? Remove this if its not needed
     printf("\n %f %f %f",sonar.backDist,sonar.leftDist,sonar.rightDist);
-
-    if(dbc_encode_and_send_SENSOR_DATA(&SensorData))
-        LE.toggle(4);
+    if(sync_flag && !noop_flag)
+    {
+        if(dbc_encode_and_send_SENSOR_DATA(&SensorData))
+            LE.toggle(4);
+    }
 
 }
 
@@ -82,8 +104,10 @@ void send_lidar_lane_data()
     LaneData.LIDAR_140 = rplidar.lane_lut[11];
     LaneData.LIDAR_160 = rplidar.lane_lut[12];
     LaneData.LIDAR_180 = rplidar.lane_lut[13];
-
-    dbc_encode_and_send_LIDAR_LANES(&LaneData);
+    if(sync_flag && !noop_flag)
+    {
+        dbc_encode_and_send_LIDAR_LANES(&LaneData);
+    }
 }
 
 
@@ -96,7 +120,10 @@ void send_distance_values()
     SensorValue.LIDAR_ANGLE_DEG = rplidar.angle_value_deg;
     SensorValue.LIDAR_QUALITY_DEG = rplidar.quality_value;
     //add the Sonar Sensor code here
-    dbc_encode_and_send_SENSOR_VALUES(&SensorValue);
+    if(sync_flag && !noop_flag)
+    {
+        dbc_encode_and_send_SENSOR_VALUES(&SensorValue);
+    }
 
 }
 
@@ -129,7 +156,10 @@ void add_some_data_to_msg(LIDAR_DATA_VALUES_t *from)
 //this is deprecated
 void send_three_values(LIDAR_DATA_VALUES_t *from)
 {
-    dbc_encode_and_send_LIDAR_DATA_VALUES(from);
+    if(sync_flag && !noop_flag)
+    {
+        dbc_encode_and_send_LIDAR_DATA_VALUES(from);
+    }
 }
 
 
@@ -162,9 +192,12 @@ void send_lane_distance_values ()
         data3.LIDAR_DISTANCE_CM_N_40 = rplidar.lane_distances[2];
         data3.LIDAR_DISTANCE_CM_N_20 = rplidar.lane_distances[3];
 
-        dbc_encode_and_send_LIDAR_VALUES_0_TO_P100(&data1);
-        dbc_encode_and_send_LIDAR_VALUES_P120_TO_N140(&data2);
-        dbc_encode_and_send_LIDAR_VALUES_N120_TO_N20(&data3);
+        if(sync_flag && !noop_flag)
+        {
+            dbc_encode_and_send_LIDAR_VALUES_0_TO_P100(&data1);
+            dbc_encode_and_send_LIDAR_VALUES_P120_TO_N140(&data2);
+            dbc_encode_and_send_LIDAR_VALUES_N120_TO_N20(&data3);
+        }
 
         rplidar.flag = false;
     }
