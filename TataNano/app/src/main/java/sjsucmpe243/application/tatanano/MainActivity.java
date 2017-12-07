@@ -31,10 +31,9 @@ public class MainActivity extends AppCompatActivity {
     BluetoothAdapter BTadpt = BluetoothAdapter.getDefaultAdapter();
     static BluetoothSocket gotSocket;
     TextView heading,tag;
-    ImageView img,gifImg;
+    ImageView gifImg;
     //MediaPlayer mp = MediaPlayer.create(getApplicationContext(), R.raw.startcar);
     static BluetoothDevice tatanano;
-    volatile boolean runThread = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,7 +67,6 @@ public class MainActivity extends AppCompatActivity {
 
         heading = findViewById(R.id.textView);
         tag = findViewById(R.id.textView2);
-        img = findViewById(R.id.imageView);
         gifImg = findViewById(R.id.gifImageView);
 
         alertBuilder4BT = new AlertDialog.Builder(MainActivity.this);
@@ -90,7 +88,6 @@ public class MainActivity extends AppCompatActivity {
                         dialog4BT.cancel();
                     }
                 });
-
         dialog4BT = alertBuilder4BT.create();
 
         if (!BTadpt.isEnabled()){
@@ -107,14 +104,14 @@ public class MainActivity extends AppCompatActivity {
         gifImg.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (gotSocket.isConnected())
+                if (gotSocket != null && gotSocket.isConnected())
                     openMap();
-                else {
+                else
                     Toast.makeText(MainActivity.this, "Wait until we connect with car.", Toast.LENGTH_SHORT).show();
-                }
             }
         });
 
+        connectivityThread.setDaemon(true);
         connectivityThread.start();
     }
 
@@ -136,17 +133,94 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void run() {
-            while (runThread) {
-                while (!connect2Car()) ;
-            }
+                if (!connect2Car()) ;
         }
     };
+
+    private boolean connect2Car() {
+
+        //tatanano = findCarInPairedDevices();
+        if (tatanano != null) {
+            return (attempt2Connect(tatanano));
+        }
+        else {
+            Log.e("TataNano : Bluetooth","device not found in paired devices list");
+            if (!BTadpt.isDiscovering()){
+                Log.e("TataNano : Bluetooth","started discovering.");
+                if (!BTadpt.isDiscovering())
+                BTadpt.startDiscovery();
+            }
+            return false;
+        }
+    }
+
+    private BluetoothDevice findCarInPairedDevices(){
+
+        Set<BluetoothDevice> pairedDevicesList = BTadpt.getBondedDevices();
+
+        for (BluetoothDevice tempDevice : pairedDevicesList){
+            if (tempDevice.getAddress().equals("98:D3:33:80:67:F9")){
+
+                Log.e("TataNano : Bluetooth","Found device " +tempDevice.getName() + " in paired devices list");
+                return tempDevice;
+            }
+        }
+        return null;
+    }
+
+    private boolean attempt2Connect(BluetoothDevice bt) {
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
+            for (ParcelUuid allUUIDS : bt.getUuids()){
+                Log.e("TataNano : Bluetooth",allUUIDS.toString());
+            }
+        }
+
+        ParcelUuid[] selectedOne = new ParcelUuid[0];
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
+            selectedOne = bt.getUuids();
+        }
+
+            Log.e("TataNano : Bluetooth", "Trying this. " + selectedOne[0].getUuid().toString());
+            try {
+                gotSocket = bt.createRfcommSocketToServiceRecord(selectedOne[0].getUuid());
+            } catch (IOException e) {
+                //Log.e("TataNano : Bluetooth", "Error creating Rfcomm Socket");
+                return false;
+            }
+
+            if (BTadpt.isDiscovering())
+                BTadpt.cancelDiscovery();
+
+            try {
+
+                if (gotSocket != null) {
+                    gotSocket.connect();
+                }
+
+                //Log.e("TataNano : Bluetooth", "connected to " + bt.getName());
+
+                return true;
+            } catch (IOException e) {
+
+                //Log.e("TataNano : Bluetooth", "unable to connect to " + bt.getName());
+
+                try {
+                    gotSocket.close();
+                    return false;
+                } catch (IOException e1) {
+                    //Log.e("TataNano : Bluetooth", "unable to close socket.");
+                    return false;
+                }
+
+            }
+    }
 
     private void setMainpage_4_On() {
         heading.setText(R.string.BTSearching);
         heading.setTextColor(Color.GREEN);
         gifImg.setVisibility(View.VISIBLE);
-        img.setVisibility(View.INVISIBLE);
     }
 
     private void setMainpage_4_Off() {
@@ -154,7 +228,6 @@ public class MainActivity extends AppCompatActivity {
         heading.setText(R.string.BTOff);
         heading.setTextColor(Color.RED);
         gifImg.setVisibility(View.INVISIBLE);
-        img.setVisibility(View.VISIBLE);
         tag.setVisibility(View.INVISIBLE);
     }
 
@@ -176,85 +249,6 @@ public class MainActivity extends AppCompatActivity {
         tag.setVisibility(View.INVISIBLE);
     }
 
-    private boolean connect2Car() {
-
-        tatanano = findCarInPairedDevices();
-        if (tatanano != null) {
-            return (attempt2Connect(tatanano));
-        }
-        else {
-            Log.e("TataNano : Bluetooth","device not found in paired devices list");
-            if (!BTadpt.isDiscovering()){
-                Log.e("TataNano : Bluetooth","started discovering.");
-                BTadpt.startDiscovery();
-            }
-            return false;
-        }
-    }
-
-    private BluetoothDevice findCarInPairedDevices(){
-
-        Set<BluetoothDevice> pairedDevicesList = BTadpt.getBondedDevices();
-
-        for (BluetoothDevice tempDevice : pairedDevicesList){
-            if (tempDevice.getAddress().equals("98:D3:33:80:67:F9") || tempDevice.getAddress().equals("A8:96:75:B6:39:C5")){
-
-                Log.e("TataNano : Bluetooth","Found device " +tempDevice.getName() + " in paired devices list");
-                return tempDevice;
-            }
-        }
-        return null;
-    }
-
-    private boolean attempt2Connect(BluetoothDevice bt){
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
-            for (ParcelUuid allUUIDS : bt.getUuids()){
-                Log.e("TataNano : Bluetooth",allUUIDS.toString());
-            }
-        }
-
-        ParcelUuid[] selectedOne = new ParcelUuid[0];
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
-            selectedOne = bt.getUuids();
-        }
-        Log.e("TataNano : Bluetooth","Trying this. "+selectedOne[selectedOne.length-1].getUuid().toString());
-
-        try {
-            gotSocket = bt.createRfcommSocketToServiceRecord(selectedOne[selectedOne.length-1].getUuid());
-        } catch (IOException e) {
-            Log.e("TataNano : Bluetooth","Error creating Rfcomm Socket");
-            return false;
-        }
-
-        if (BTadpt.isDiscovering())
-            BTadpt.cancelDiscovery();
-
-        try {
-
-            if (gotSocket != null) {
-                gotSocket.connect();
-            }
-
-            Log.e("TataNano : Bluetooth", "connected to " + bt.getName());
-
-            return true;
-        } catch (IOException e) {
-
-            Log.e("TataNano : Bluetooth", "unable to connect to " + bt.getName());
-
-            try {
-                gotSocket.close();
-                return false;
-            } catch (IOException e1) {
-                Log.e("TataNano : Bluetooth", "unable to close socket.");
-                return false;
-            }
-
-        }
-    }
-
-
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -275,6 +269,10 @@ public class MainActivity extends AppCompatActivity {
                         break;
 
                     case BluetoothAdapter.STATE_ON:
+                        if (!(connectivityThread.isAlive()))
+                            connectivityThread.run();
+                        else
+                            connectivityThread.start();
                         setMainpage_4_On();
                         //playSound();
 
@@ -294,7 +292,7 @@ public class MainActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
 
-            Log.e("TataNano : Bluetooth",action);
+            Log.e("TataNano : BT discovery",action);
 
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
 
@@ -304,12 +302,15 @@ public class MainActivity extends AppCompatActivity {
 
                 Log.e("TataNano : Bluetooth","found new device.- "+deviceName+" "+deviceHardwareAddress);
 
-                if (deviceHardwareAddress.equals("98:D3:33:80:67:F9") || deviceHardwareAddress.equals("A8:96:75:B6:39:C5")) {
+                if (deviceHardwareAddress.equals("98:D3:33:80:67:F9")) {
 
                     if (BTadpt.isDiscovering()) {
                         BTadpt.cancelDiscovery();
                         Log.e("TataNano : Bluetooth", "Stopped discovery.");
                     }
+
+                    Log.e("TataNano : Bluetooth",device.getBondState()+"");
+                    tatanano = device;
                     attempt2Connect(device);
                 }
             }
@@ -325,16 +326,15 @@ public class MainActivity extends AppCompatActivity {
 
             switch (action){
                 case BluetoothDevice.ACTION_ACL_CONNECTED:
-                    //Log.e("TataNano : Bluetooth","Connected");
+                    Log.e("TataNano : Bluetooth","Connected");
                     setMainpage_4_Connected();
                     BTadpt.cancelDiscovery();
-                    runThread = false;
                     break;
                 case BluetoothDevice.ACTION_ACL_DISCONNECTED:
-                    //Log.e("TataNano : Bluetooth","Trying to connect");
+                    Log.e("TataNano : Bluetooth","Trying to connect");
                     setMainpage_4_Disconnected();
-                    BTadpt.startDiscovery();
-                    runThread = true;
+                    if (!BTadpt.isDiscovering())
+                        BTadpt.startDiscovery();
                     break;
             }
         }
@@ -351,7 +351,6 @@ public class MainActivity extends AppCompatActivity {
         unregisterReceiver(mReceiver1);
         unregisterReceiver(mReceiver2);
         BTadpt.disable();
-        connectivityThread.destroy();
         this.finish();
     }
 

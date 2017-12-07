@@ -77,15 +77,16 @@
         android:id="@+id/speedText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="128dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:text="Speed"
         android:textSize="14sp"
         android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.024"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:layout_editor_absoluteY="369dp" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
         android:id="@+id/CurrPosText"
@@ -140,8 +141,8 @@
         android:text="Bearing Value"
         android:textSize="14sp"
         android:textStyle="bold"
-        app:layout_constraintEnd_toStartOf="@+id/SendLocation"
-        app:layout_constraintHorizontal_bias="0.038"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.028"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/HeadingText" />
 
@@ -154,8 +155,8 @@
         android:text="Deflection angle"
         android:textSize="14sp"
         android:textStyle="bold"
-        app:layout_constraintEnd_toStartOf="@+id/SendLocation"
-        app:layout_constraintHorizontal_bias="0.041"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.03"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/bearingText" />
 
@@ -170,8 +171,8 @@
         android:textSize="14sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/SendLocation"
-        app:layout_constraintHorizontal_bias="0.033"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.025"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/deflectionAngle"
         app:layout_constraintVertical_bias="0.0" />

@@ -1,12 +1,12 @@
 <resources>
     <string name="app_name">TataNano</string>
     <string name="title_activity_maps">Map</string>
-    <string name="BTConnected">Bluetooth : Connected</string>
-    <string name="BTSearching">Bluetooth : Searching</string>
-    <string name="BTDisconnected">Bluetooth : Try again</string>
+    <string name="BTConnected">Connected</string>
+    <string name="BTSearching">Searching</string>
+    <string name="BTDisconnected">Try again</string>
     <string name="BTOff">Bluetooth : Off</string>
     <string name="BTOn">Bluetooth : On</string>
-    <string name="TapOnCar">Tap on Car</string>
+    <string name="Tap">Tap on screen</string>
     <string name="alertBoxInfo">"Valid input is 1 to 10 km/h.
         \n(Type 55 for free run)\n\nIn free run GPS and Compass
         will be ignored and default speed will be 3 km/h."</string>
