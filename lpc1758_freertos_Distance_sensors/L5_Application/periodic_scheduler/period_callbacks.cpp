@@ -80,7 +80,7 @@ bool period_reg_tlm(void)
 void period_1Hz(uint32_t count)
 {
     //
-    check_heartbeat();
+
 
     if(CAN_is_bus_off(can1))
         CAN_reset_bus(can1);
@@ -104,6 +104,8 @@ void period_10Hz(uint32_t count)
 {
     static uint32_t prev_count = count;
     rplidar.flag = true;
+
+    check_heartbeat();
 
     send_lane_distance_values();
 
