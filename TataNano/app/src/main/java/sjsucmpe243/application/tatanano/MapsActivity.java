@@ -63,7 +63,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     boolean Toggle_start_stop = false;
     Thread t;
 
-    String speedVal="0",latVal="0", lngVal="0";
+    String speedVal="0",latVal="0.000000", lngVal="0.000000";
 
     AlertDialog.Builder alertDialogBuilder;
     AlertDialog alertDialog;
@@ -366,7 +366,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     if (Float.parseFloat(speedVal) >= 0 && prevLatLng != null && myLatLng != null) {
 
                         //myLatLng = new LatLng(location.getLatitude(), location.getLongitude());
-                        myLatLng = new LatLng(Double.parseDouble(latVal),Double.parseDouble(lngVal));
+                        if ((!latVal.equals("0.000000")) && (!lngVal.equals("0.000000")) )
+                            myLatLng = new LatLng(Double.parseDouble(latVal),Double.parseDouble(lngVal));
 
                         mMap.addPolyline(new PolylineOptions().add(prevLatLng, myLatLng).width(5).color(Color.BLUE).geodesic(true));
 
