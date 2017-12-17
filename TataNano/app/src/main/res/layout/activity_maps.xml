@@ -48,7 +48,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/SendStart"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintVertical_bias="0.0"
+        android:layout_marginRight="16dp" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/SendStart"
@@ -59,7 +60,8 @@
         android:src="@drawable/ic_send_start"
         app:backgroundTint="@color/colorPrimary"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginRight="16dp" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/SendStop"
@@ -71,7 +73,8 @@
         android:visibility="invisible"
         app:backgroundTint="@color/colorPrimary"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginRight="16dp" />
 
     <ImageView
         android:id="@+id/compass"
@@ -81,7 +84,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="100dp"
-        android:src="@drawable/autoinfo"
+        android:src="@drawable/autoinfo1"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -96,14 +99,14 @@
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:text="SpeedVal"
+        android:text="@string/carspeed"
         android:textSize="13sp"
         app:layout_constraintBottom_toBottomOf="@+id/compass"
         app:layout_constraintEnd_toEndOf="@+id/compass"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="0.047"
         app:layout_constraintStart_toEndOf="@+id/speedLable"
         app:layout_constraintTop_toTopOf="@+id/compass"
-        app:layout_constraintVertical_bias="0.133" />
+        app:layout_constraintVertical_bias="0.084" />
 
     <TextView
         android:id="@+id/CurrPosText"
@@ -112,31 +115,31 @@
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:text="LocationVal"
+        android:text="@string/carLocation"
         android:textSize="13sp"
         app:layout_constraintBottom_toBottomOf="@+id/compass"
         app:layout_constraintEnd_toEndOf="@+id/compass"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/CurrPosLable"
         app:layout_constraintTop_toTopOf="@+id/compass"
-        app:layout_constraintVertical_bias="0.246" />
+        app:layout_constraintVertical_bias="0.193" />
 
     <TextView
         android:id="@+id/HeadingText"
         android:layout_width="wrap_content"
-        android:layout_height="17dp"
+        android:layout_height="19dp"
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:text="HeadingVal"
+        android:text="@string/carHeadingval"
         android:textSize="13sp"
         app:layout_constraintBottom_toBottomOf="@+id/compass"
         app:layout_constraintEnd_toEndOf="@+id/compass"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/HeadingLable"
         app:layout_constraintTop_toTopOf="@+id/compass"
-        app:layout_constraintVertical_bias="0.363" />
+        app:layout_constraintVertical_bias="0.326" />
 
     <TextView
         android:id="@+id/bearingText"
@@ -146,14 +149,14 @@
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:text="BearingVal"
+        android:text="@string/CarBearingval"
         android:textSize="13sp"
         app:layout_constraintBottom_toBottomOf="@+id/compass"
         app:layout_constraintEnd_toEndOf="@+id/compass"
-        app:layout_constraintHorizontal_bias="0.04"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/bearingLable"
         app:layout_constraintTop_toTopOf="@+id/compass"
-        app:layout_constraintVertical_bias="0.482" />
+        app:layout_constraintVertical_bias="0.433" />
 
     <TextView
         android:id="@+id/deflectionAngle"
@@ -163,14 +166,14 @@
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:text="DeflectionVal"
+        android:text="@string/carDeflectionval"
         android:textSize="13sp"
         app:layout_constraintBottom_toBottomOf="@+id/compass"
         app:layout_constraintEnd_toEndOf="@+id/compass"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/deflectionAngleLable"
         app:layout_constraintTop_toTopOf="@+id/compass"
-        app:layout_constraintVertical_bias="0.945" />
+        app:layout_constraintVertical_bias="0.868" />
 
     <TextView
         android:id="@+id/distance2Checkpoint"
@@ -180,14 +183,14 @@
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:text="DistanceVal"
+        android:text="@string/carDistanceval"
         android:textSize="13sp"
         app:layout_constraintBottom_toBottomOf="@+id/compass"
         app:layout_constraintEnd_toEndOf="@+id/compass"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/distance2CheckpointLable"
         app:layout_constraintTop_toTopOf="@+id/compass"
-        app:layout_constraintVertical_bias="0.725" />
+        app:layout_constraintVertical_bias="0.661" />
 
     <TextView
         android:id="@+id/speedLable"
@@ -196,78 +199,78 @@
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
-        android:text="Speed:"
+        android:text="@string/speedlable"
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="@+id/compass"
         app:layout_constraintEnd_toEndOf="@+id/compass"
+        app:layout_constraintHorizontal_bias="0.242"
         app:layout_constraintStart_toStartOf="@+id/compass"
         app:layout_constraintTop_toTopOf="@+id/compass"
-        app:layout_constraintVertical_bias="0.18"
-        app:layout_constraintHorizontal_bias="0.259"/>
+        app:layout_constraintVertical_bias="0.131" />
 
     <TextView
         android:id="@+id/CurrPosLable"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Pos:"
+        android:text="@string/CurrPosLable"
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="@+id/compass"
         app:layout_constraintEnd_toEndOf="@+id/compass"
-        app:layout_constraintHorizontal_bias="0.262"
+        app:layout_constraintHorizontal_bias="0.245"
         app:layout_constraintStart_toStartOf="@+id/compass"
         app:layout_constraintTop_toTopOf="@+id/compass"
-        app:layout_constraintVertical_bias="0.281" />
+        app:layout_constraintVertical_bias="0.237" />
 
     <TextView
         android:id="@+id/HeadingLable"
         android:layout_width="wrap_content"
         android:layout_height="17dp"
-        android:text="Heading:"
+        android:text="@string/HeadingLable"
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="@+id/compass"
         app:layout_constraintEnd_toEndOf="@+id/compass"
-        app:layout_constraintHorizontal_bias="0.284"
+        app:layout_constraintHorizontal_bias="0.266"
         app:layout_constraintStart_toStartOf="@+id/compass"
         app:layout_constraintTop_toTopOf="@+id/compass"
-        app:layout_constraintVertical_bias="0.377" />
+        app:layout_constraintVertical_bias="0.339" />
 
     <TextView
         android:id="@+id/bearingLable"
         android:layout_width="wrap_content"
         android:layout_height="17dp"
-        android:text="Bearing:"
+        android:text="@string/bearingVal"
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="@+id/compass"
         app:layout_constraintEnd_toEndOf="@+id/compass"
-        app:layout_constraintHorizontal_bias="0.281"
+        app:layout_constraintHorizontal_bias="0.264"
         app:layout_constraintStart_toStartOf="@+id/compass"
         app:layout_constraintTop_toTopOf="@+id/compass"
-        app:layout_constraintVertical_bias="0.484" />
+        app:layout_constraintVertical_bias="0.446" />
 
     <TextView
         android:id="@+id/deflectionAngleLable"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Deflection:"
+        android:text="@string/deflectionVal"
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="@+id/compass"
         app:layout_constraintEnd_toEndOf="@+id/compass"
-        app:layout_constraintHorizontal_bias="0.295"
+        app:layout_constraintHorizontal_bias="0.276"
         app:layout_constraintStart_toStartOf="@+id/compass"
         app:layout_constraintTop_toTopOf="@+id/compass"
-        app:layout_constraintVertical_bias="0.587" />
+        app:layout_constraintVertical_bias="0.55" />
 
     <TextView
         android:id="@+id/distance2CheckpointLable"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Distance:"
+        android:text="@string/distanceVal"
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="@+id/compass"
         app:layout_constraintEnd_toEndOf="@+id/compass"
-        app:layout_constraintHorizontal_bias="0.287"
+        app:layout_constraintHorizontal_bias="0.273"
         app:layout_constraintStart_toStartOf="@+id/compass"
         app:layout_constraintTop_toTopOf="@+id/compass"
-        app:layout_constraintVertical_bias="0.687" />
+        app:layout_constraintVertical_bias="0.65" />
 
 </android.support.constraint.ConstraintLayout>

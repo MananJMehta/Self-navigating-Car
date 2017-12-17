@@ -103,18 +103,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                    try {
-                                        if (rx_data.available() > 0) {
-                                            test = new StringBuilder();
-                                            do {
-                                                test.append((char) (rx_data.read())).append("");
-                                            } while (test.indexOf("&") == -1);
+                                try {
+                                    if (rx_data.available() > 0) {
+                                        test = new StringBuilder();
+                                        do {
+                                            test.append((char) (rx_data.read())).append("");
+                                        } while (test.indexOf("&") == -1);
 
-                                            rx_data.skip(test.length());
-                                            Log.d("RX DATA VALUE", test.toString());
-                                        } else {
-                                            test = new StringBuilder("0");
-                                        }
+                                        rx_data.skip(test.length());
+                                        Log.d("RX DATA VALUE", test.toString());
+                                    } else {
+                                        test = new StringBuilder("0");
+                                    }
 
                                         /*pipePos = test.indexOf("|");
                                         if (pipePos != -1) {
@@ -124,51 +124,51 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                             Log.e("NO PIPE", dataType);
                                         }
 */
-                                        geoPos = test.indexOf("G");
-                                        pipePos = test.indexOf("|");
-                                        headPos = test.indexOf("H");
-                                        speedPos = test.indexOf("S");
-                                        bearingPos = test.indexOf("B");
-                                        deflectionPos = test.indexOf("A");
-                                        distancePos = test.indexOf("D");
-                                        endPos = test.indexOf("&");
+                                    geoPos = test.indexOf("G");
+                                    pipePos = test.indexOf("|");
+                                    headPos = test.indexOf("H");
+                                    speedPos = test.indexOf("S");
+                                    bearingPos = test.indexOf("B");
+                                    deflectionPos = test.indexOf("A");
+                                    distancePos = test.indexOf("D");
+                                    endPos = test.indexOf("&");
 
-                                        if(geoPos!=-1 && pipePos!=-1 && headPos!=-1) {
+                                    if(geoPos!=-1 && pipePos!=-1 && headPos!=-1) {
 
-                                            //Printing Location data here.
-                                            latVal = test.substring(geoPos + 1, pipePos);
-                                            lngVal = test.substring(pipePos + 1, headPos);
-                                            temp = latVal + "," + lngVal;
-                                            currPosVal.setText(temp);
-                                        }
-
-                                        if( headPos!=-1 && speedPos!=-1) {
-
-                                            //Printing heading val here
-                                            headingVal.setText(String.format("%s", speedPos));
-                                        }
-
-                                        if (speedPos!=-1 && bearingPos!=-1) {
-                                            //Printing speed
-                                            speedVal = test.substring(speedPos + 1, bearingPos);
-                                            actualSpeed.setText(String.format("%s %s",speedVal, "m/s"));
-                                        }
-
-                                        if (bearingPos!=-1 && deflectionPos!=-1) {
-                                            //printing bearing value
-                                            bearing.setText(String.format("%s", deflectionPos));
-                                        }
-
-                                        if (deflectionPos!=-1 && distancePos!=-1 && endPos!=-1) {
-                                            //deflection or correction needed in current direction
-                                            deflection.setText(String.format("%s", distancePos));
-                                            //distance of car to next checkpoint
-                                            distance.setText(String.format("%s", endPos));
-                                        }
-
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
+                                        //Printing Location data here.
+                                        latVal = test.substring(geoPos + 1, pipePos);
+                                        lngVal = test.substring(pipePos + 1, headPos);
+                                        temp = latVal + "," + lngVal;
+                                        currPosVal.setText(temp);
                                     }
+
+                                    if( headPos!=-1 && speedPos!=-1) {
+
+                                        //Printing heading val here
+                                        headingVal.setText(String.format("%s", speedPos));
+                                    }
+
+                                    if (speedPos!=-1 && bearingPos!=-1) {
+                                        //Printing speed
+                                        speedVal = test.substring(speedPos + 1, bearingPos);
+                                        actualSpeed.setText(String.format("%s %s",speedVal, "m/s"));
+                                    }
+
+                                    if (bearingPos!=-1 && deflectionPos!=-1) {
+                                        //printing bearing value
+                                        bearing.setText(String.format("%s", deflectionPos));
+                                    }
+
+                                    if (deflectionPos!=-1 && distancePos!=-1 && endPos!=-1) {
+                                        //deflection or correction needed in current direction
+                                        deflection.setText(String.format("%s", distancePos));
+                                        //distance of car to next checkpoint
+                                        distance.setText(String.format("%s", endPos));
+                                    }
+
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
                             }
                         });
                     }
@@ -376,11 +376,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         me.setPosition(myLatLng);
                         me.setRotation(location.getBearing());
 
-                        CameraPosition cameraPosition = CameraPosition.builder()
+                        /*CameraPosition cameraPosition = CameraPosition.builder()
                                 .target(myLatLng)
                                 .zoom(mMap.getCameraPosition().zoom)
                                 .bearing(location.getBearing())
-                                .build();
+                                .build();*/
 
                         //mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition),500, null);
 

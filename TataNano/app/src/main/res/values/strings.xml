@@ -12,4 +12,16 @@
         will be ignored and default speed will be 3 km/h."</string>
     <string name="max_speed">10</string>
     <string name="min_speed">1</string>
+    <string name="carspeed">SpeedVal</string>
+    <string name="carLocation">LocationVal</string>
+    <string name="carHeadingval">HeadingVal</string>
+    <string name="CarBearingval">BearingVal</string>
+    <string name="carDeflectionval">DeflectionVal</string>
+    <string name="carDistanceval">DistanceVal</string>
+    <string name="speedlable">Speed:</string>
+    <string name="CurrPosLable">Pos:</string>
+    <string name="HeadingLable">Heading:</string>
+    <string name="bearingVal">Bearing:</string>
+    <string name="deflectionVal">Deflection:</string>
+    <string name="distanceVal">Distance:</string>
 </resources>
