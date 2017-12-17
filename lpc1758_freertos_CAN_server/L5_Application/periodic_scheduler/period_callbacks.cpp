@@ -88,6 +88,7 @@ bool flag_fix = false;
 bool flag_next = false;
 bool flag_free_run = false;
 uint8_t direction = CENTER;
+bool flag_cp = false;
 
 const SENSOR_DATA_t SENSOR_DATA__MIA_MSG = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,15};
 const uint32_t SENSOR_DATA__MIA_MS = 500;
@@ -316,24 +317,42 @@ bool reached_destination(COMPASS_t x)
     }
     else
     {
-        static uint32_t wait_count = 10;
-        if(flag_next && wait_count > 15)
+//        static uint32_t wait_count = 11;
+//        if(flag_next && wait_count > 10)
+//        {
+//            request_msg.MASTER_REQUEST_cmd = 0xf;
+//            dbc_encode_and_send_MASTER_REQUEST(&request_msg);
+//            wait_count = 0;
+//        }
+//        if(!(flag_next) && (wait_count > 15))
+//        {
+//            //stop
+//            flag_navigation = false;
+//            flag_free_run = false;
+//            heartbeat_msg.HEARTBEAT_cmd = HEARTBEAT_cmd_NOOP;
+//            LD.clear();
+//            LD.setRightDigit('H');
+//            LD.setLeftDigit('H');
+//        }
+//        wait_count++;
+        if(flag_cp)
         {
-            request_msg.MASTER_REQUEST_cmd = 0xf;
-            dbc_encode_and_send_MASTER_REQUEST(&request_msg);
-            wait_count = 0;
+            if(flag_next)
+            {
+                request_msg.MASTER_REQUEST_cmd = 0xf;
+                dbc_encode_and_send_MASTER_REQUEST(&request_msg);
+            }
+            if(!flag_next)
+            {
+                flag_navigation = false;
+                flag_free_run = false;
+                heartbeat_msg.HEARTBEAT_cmd = HEARTBEAT_cmd_NOOP;
+                LD.clear();
+                LD.setRightDigit('H');
+                LD.setLeftDigit('H');
+            }
+            flag_cp = false;
         }
-        if(!(flag_next) && (wait_count > 20))
-        {
-            //stop
-            flag_navigation = false;
-            flag_free_run = false;
-            heartbeat_msg.HEARTBEAT_cmd = HEARTBEAT_cmd_NOOP;
-            LD.clear();
-            LD.setRightDigit('H');
-            LD.setLeftDigit('H');
-        }
-        wait_count++;
         return true;
     }
 }
@@ -614,6 +633,7 @@ void period_10Hz(uint32_t count)
                             //master_motor_msg.CAR_CONTROL_steer = son.first;
                             //master_motor_msg.CAR_CONTROL_speed = son.second;
                             //dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
+                            flag_cp = true;
                             correct_guidance(compass_msg);
                         }else
                         {
