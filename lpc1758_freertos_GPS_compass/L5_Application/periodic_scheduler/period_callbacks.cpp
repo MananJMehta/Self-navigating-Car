@@ -127,6 +127,7 @@ void period_1Hz(uint32_t count)
         LE.on(2);
     }*/
 
+//    gps.receive();
 
     if(CAN_is_bus_off(can1))
     {
@@ -150,6 +151,14 @@ void period_1Hz(uint32_t count)
         compass.Original_Firmware_Calibration();
         //original_firmware();
     }
+
+    //sending GPS, Heading, Bearing, deflection, distance
+/*    gps.parse_data();
+    if(heartbeat_flag)
+    {
+        CAN_GPS_Trasmit();
+        CAN_COMPASS_Transmit();
+    }*/
 
     printf("Lat: %f\n", gps.getLatitude());
     printf("Lon: %f\n", gps.getLongitude());
@@ -185,7 +194,7 @@ void period_10Hz(uint32_t count)
                 else if(hrt_buffer.HEARTBEAT_cmd == HEARTBEAT_cmd_NOOP)
                 {
                     heartbeat_flag = false;
-                    LE.on(1);
+                    LE.off(1);
                 }
                 break;
 
@@ -198,8 +207,9 @@ void period_10Hz(uint32_t count)
                 break;
         }
 
-        //sending GPS, Heading, Bearing, deflection, distance
         gps.parse_data();
+
+        //sending GPS, Heading, Bearing, deflection, distance
         if(heartbeat_flag)
         {
             CAN_GPS_Trasmit();
@@ -226,26 +236,21 @@ void CAN_GPS_Trasmit()
     gps_buffer_transmit.GPS_LONGITUDE = gps.getLongitude();
     gps_buffer_transmit.GPS_FIX = gps.fixFlag;
 
-    printf("CAN Lat: %f\n",  gps_buffer_transmit.GPS_LATITUDE);
-    printf("CAN Lon: %f\n", gps_buffer_transmit.GPS_LONGITUDE);
+//    printf("CAN Lat: %f\n",  gps_buffer_transmit.GPS_LATITUDE);
+//    printf("CAN Lon: %f\n", gps_buffer_transmit.GPS_LONGITUDE);
 
     can_msg_t can_gps_transmit = {0};
     dbc_msg_hdr_t msg_hdr_transmit = dbc_encode_GPS_DATA(can_gps_transmit.data.bytes, &gps_buffer_transmit);
     can_gps_transmit.msg_id = msg_hdr_transmit.mid;
     can_gps_transmit.frame_fields.data_len = msg_hdr_transmit.dlc;
 
-    if(CAN_tx(can1, &can_gps_transmit, 0))
-    {
-        LE.toggle(3);
-    }
-    else
-    {
-        LE.off(3);
-    }
+    CAN_tx(can1, &can_gps_transmit, 0);
 }
 
 void CAN_COMPASS_Transmit()
 {
+    static int ld_count = 0;
+
     float compass_heading_value = compass.Get_Compass_Heading();
 //    printf("Compass heading = %f\n", compass_heading_value);
     compass_msg.CMP_HEADING = compass_heading_value;
@@ -266,6 +271,18 @@ void CAN_COMPASS_Transmit()
     float distance_to_checkpoint = gps.distanceCheckpoint(checkpoint_lat, checkpoint_long);
 //    printf("Distance to checkpoint = %f\n", distance_to_checkpoint);
     compass_msg.DISTANCE_CHECKPOINT = distance_to_checkpoint;
+
+    ld_count++;
+    if((ld_count % 5) == 0)
+    {
+        ld_count = 0;
+        LD.clear();
+        uint8_t checkpoint = (uint8_t)distance_to_checkpoint;
+        if(checkpoint < 100)
+            LD.setNumber(checkpoint);
+        else
+            LD.setNumber(99);
+    }
 
     dbc_encode_and_send_COMPASS(&compass_msg);
 }

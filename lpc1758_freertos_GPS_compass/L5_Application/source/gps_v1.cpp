@@ -26,6 +26,8 @@ GPIO gpio2_0(P2_0);
 
 bool Uart2_GPS::init()
 {
+    LD.clear();
+    LD.setNumber(0);
     gpio2_0.setAsInput();
     fixFlag = false;
 //    Uart2::getInstance().init(9600, UART_RECEIVE_BUFFER_SIZE, UART_TRANSMIT_BUFFER_SIZE);   // Initial GPS baud rate should be 9600
@@ -51,11 +53,11 @@ void Uart2_GPS::receive()
 
     if(Uart2::getInstance().gets(getBuffer(), UART_RECEIVE_BUFFER_SIZE, 50))
     {
-        LE.on(4);
+        LE.on(3);
     }
     else
     {
-        LE.off(4);
+        LE.off(3);
     }
 }
 
