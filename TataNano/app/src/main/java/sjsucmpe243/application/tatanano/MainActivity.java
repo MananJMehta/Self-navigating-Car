@@ -154,7 +154,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private BluetoothDevice findCarInPairedDevices(){
+    private boolean findCarInPairedDevices(){
 
         Set<BluetoothDevice> pairedDevicesList = BTadpt.getBondedDevices();
 
@@ -162,25 +162,27 @@ public class MainActivity extends AppCompatActivity {
             if (tempDevice.getAddress().equals("98:D3:33:80:67:F9")){
 
                 Log.e("TataNano : Bluetooth","Found device " +tempDevice.getName() + " in paired devices list");
-                return tempDevice;
+                return true;
             }
         }
-        return null;
+        return false;
     }
 
     private boolean attempt2Connect(BluetoothDevice bt) {
 
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
-            for (ParcelUuid allUUIDS : bt.getUuids()){
-                Log.e("TataNano : Bluetooth",allUUIDS.toString());
-            }
-        }
+        if (bt != null && findCarInPairedDevices()) {
 
-        ParcelUuid[] selectedOne = new ParcelUuid[0];
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
-            selectedOne = bt.getUuids();
-        }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
+                for (ParcelUuid allUUIDS : bt.getUuids()) {
+                    Log.e("TataNano : Bluetooth", allUUIDS.toString());
+                }
+            }
+
+            ParcelUuid[] selectedOne = new ParcelUuid[0];
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
+                selectedOne = bt.getUuids();
+            }
 
             Log.e("TataNano : Bluetooth", "Trying this. " + selectedOne[0].getUuid().toString());
             try {
@@ -215,6 +217,13 @@ public class MainActivity extends AppCompatActivity {
                 }
 
             }
+        }
+        else {
+
+            Toast.makeText(MainActivity.this,"Forgot to tell you. You need to pair with this device normally " +
+                    "with default bluetooth, then try again with this app.",Toast.LENGTH_LONG).show();
+            return false;
+        }
     }
 
     private void setMainpage_4_On() {
@@ -309,7 +318,7 @@ public class MainActivity extends AppCompatActivity {
                         Log.e("TataNano : Bluetooth", "Stopped discovery.");
                     }
 
-                    Log.e("TataNano : Bluetooth",device.getBondState()+"");
+                   //Log.e("TataNano : Bluetooth",device.getBondState()+"");
                     tatanano = device;
                     attempt2Connect(device);
                 }
@@ -350,8 +359,22 @@ public class MainActivity extends AppCompatActivity {
         unregisterReceiver(mReceiver);
         unregisterReceiver(mReceiver1);
         unregisterReceiver(mReceiver2);
-        BTadpt.disable();
+        if (gotSocket!= null && gotSocket.isConnected())
+            try {
+                gotSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         this.finish();
     }
 
+    @Override
+    public void onResume(){
+        if (!BTadpt.isDiscovering())
+            BTadpt.startDiscovery();
+        if (gotSocket!=null && gotSocket.isConnected())
+            setMainpage_4_Connected();
+
+        super.onResume();
+    }
 }

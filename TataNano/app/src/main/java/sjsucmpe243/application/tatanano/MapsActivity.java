@@ -63,7 +63,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     boolean Toggle_start_stop = false;
     Thread t;
 
-    String speedVal="0",latVal="0.000000", lngVal="0.000000";
+    String speedVal="0",latVal="0.000000", lngVal="0.000000",temp="";
 
     AlertDialog.Builder alertDialogBuilder;
     AlertDialog alertDialog;
@@ -138,31 +138,32 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                             //Printing Location data here.
                                             latVal = test.substring(geoPos + 1, pipePos);
                                             lngVal = test.substring(pipePos + 1, headPos);
-                                            currPosVal.setText(String.format("%s: %s,%s", "Location", latVal, lngVal));
+                                            temp = latVal + "," + lngVal;
+                                            currPosVal.setText(temp);
                                         }
 
                                         if( headPos!=-1 && speedPos!=-1) {
 
                                             //Printing heading val here
-                                            headingVal.setText(String.format("Heading: %s", test.substring(headPos + 1, speedPos)));
+                                            headingVal.setText(String.format("%s", speedPos));
                                         }
 
                                         if (speedPos!=-1 && bearingPos!=-1) {
                                             //Printing speed
                                             speedVal = test.substring(speedPos + 1, bearingPos);
-                                            actualSpeed.setText(String.format("Speed: %s %s", speedVal, "m/s"));
+                                            actualSpeed.setText(String.format("%s %s",speedVal, "m/s"));
                                         }
 
                                         if (bearingPos!=-1 && deflectionPos!=-1) {
                                             //printing bearing value
-                                            bearing.setText(String.format("Bearing: %s", test.substring(bearingPos + 1, deflectionPos)));
+                                            bearing.setText(String.format("%s", deflectionPos));
                                         }
 
                                         if (deflectionPos!=-1 && distancePos!=-1 && endPos!=-1) {
                                             //deflection or correction needed in current direction
-                                            deflection.setText(String.format("Deflection: %s", test.substring(deflectionPos + 1, distancePos)));
+                                            deflection.setText(String.format("%s", distancePos));
                                             //distance of car to next checkpoint
-                                            distance.setText(String.format("Distance: %s", test.substring(distancePos + 1, endPos)));
+                                            distance.setText(String.format("%s", endPos));
                                         }
 
                                     } catch (IOException e) {
@@ -274,6 +275,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onClick(View v) {
                 SendStart.setVisibility(View.VISIBLE);
                 SendStop.setVisibility(View.INVISIBLE);
+                Toggle_start_stop = false;
                 BTdata = "@Stop\n";
                 try {
                     tx_data.write(BTdata.getBytes());
@@ -380,7 +382,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 .bearing(location.getBearing())
                                 .build();
 
-                        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition),500, null);
+                        //mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition),500, null);
 
                         prevLatLng = myLatLng;
                     }
@@ -470,9 +472,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onBackPressed() {
-        locMan.removeUpdates(locLis);
-        //t.destroy();
-        this.finish();
+        if (!Toggle_start_stop) {
+            locMan.removeUpdates(locLis);
+            //t.destroy();
+            this.finish();
+        }
+        else {
+            Toast.makeText(MapsActivity.this,"Can't go back without stop command",Toast.LENGTH_SHORT).show();
+        }
     }
 
     private final BroadcastReceiver BTstate_broadcast = new BroadcastReceiver() {
