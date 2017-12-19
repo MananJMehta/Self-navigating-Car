@@ -27,7 +27,7 @@ public:
     bool flushBuffer();
     bool sendStartSpeed(ANDROID_CMD_t android_cmd, can_msg_t can_msg); //Send Speed entered with Start on CAN Bus
     bool sendLocation(ANDROID_LOCATION_t android_loc, can_msg_t can_msg); //Send checkpoints on CAN
-    bool sendCurrentData(int txType); //Send data to App based on type
+    bool sendCurrentData(); //Send data to App based on type
     void getDesiredSpeed(char *rx);
     //int getSpeed(char* rx);
 
@@ -41,9 +41,9 @@ public:
     double currentBearing;
     double defAngle;
     double cpDistance;
-    float currentSpeed; //Send current speed to App
+    double currentSpeed; //Send current speed to App
     //int checkpointCounter;
-    int desiredSpeed;
+    //int desiredSpeed;
     //int cpNo;
 
     Bluetooth() {
@@ -57,7 +57,7 @@ public:
         cpDistance = 0;
         currentSpeed = 0;
         //checkpointCounter = sizeof(latitude) / sizeof(double);
-        desiredSpeed = 0;
+        //desiredSpeed = 0;
         //cpNo = 0;
     };
     //friend class SingletonTemplate<Bluetooth>;  ///< Friend class used for Singleton Template

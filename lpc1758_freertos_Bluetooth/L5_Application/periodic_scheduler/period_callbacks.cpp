@@ -100,14 +100,15 @@ bool period_reg_tlm(void)
 
 void period_1Hz(uint32_t count)
 {
+    bluetooth.getCanData();
     //char rx[bufferLength]={0}; //Receive Buffer
     canResetBus();
 
-    char* rx = new char[500];
+    //char* rx = new char[500];
+
+    char rx[500];
 
     //can_msg_t can_msg_loc = {0};
-
-    bluetooth.getCanData();
 
 
     if(bluetooth.getBluetoothData(rx, bufferLength, 1)) {
@@ -140,7 +141,7 @@ void period_1Hz(uint32_t count)
     //canResetBus();
     //LE.toggle(1);
     //bluetooth.sendSpeed();
-    delete [] rx;
+    //delete [] rx;
 }
 
 void period_10Hz(uint32_t count)

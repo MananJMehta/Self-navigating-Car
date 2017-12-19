@@ -298,7 +298,7 @@
         <ID>Data Byte(s)</ID>
         <Order>9</Order>
         <IsVisible>1</IsVisible>
-        <Width>711</Width>
+        <Width>704</Width>
       </COLUMN>
       <IsHex>1</IsHex>
       <IsAppend>0</IsAppend>
@@ -315,8 +315,8 @@
       <Interpretation_Window_Position>
         <Visibility>SHOWNORMAL</Visibility>
         <WindowPlacement>RESTORETOMAXIMIZED</WindowPlacement>
-        <Top>186</Top>
-        <Left>1022</Left>
+        <Top>146</Top>
+        <Left>630</Left>
         <Bottom>786</Bottom>
         <Right>1484</Right>
       </Interpretation_Window_Position>

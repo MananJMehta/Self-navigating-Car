@@ -3,6 +3,7 @@
 #include "stdlib.h"
 #include "io.hpp"
 #include "math.h"
+#include "gpio.hpp"
 
 Uart2& u2 = Uart2::getInstance();
 //Bluetooth b;
@@ -11,9 +12,13 @@ extern int mode;
 extern int cpNo;
 int request = 0;
 int cpCount = 0;
+int desiredSpeed = 0;
 
 double latitude[20] = {0};
 double longitude[20] = {0};
+
+GPIO statusPin(P2_7);
+//int status = 0;
 
 extern ANDROID_CMD_t android_cmd;
 extern ANDROID_LOCATION_t android_loc;
@@ -78,18 +83,28 @@ int Bluetooth::getSignalType(char* rx) {
 
 bool Bluetooth::sendCanData(ANDROID_CMD_t android_cmd, ANDROID_LOCATION_t android_loc, can_msg_t can_msg_cmd, int signalType){//, int cpNo) {
     //int cpCount = 0;
+    /*int status = 0;
+    statusPin.setAsInput();
+    if(statusPin.read())
+        status = 1;
+    else
+        status = 0;*/
 
     if(signalType == 1) {
         android_cmd.ANDROID_CMD_start = 1;
         android_cmd.ANDROID_CMD_speed = desiredSpeed;
         android_cmd.ANDROID_CMD_mode = mode;
+        //android_cmd.ANDROID_CMD_checkpoints = cpNo;
+
         sendStartSpeed(android_cmd, can_msg_cmd);
     }
     else if(signalType == 2) {
+         printf("STOP RX");
         android_cmd.ANDROID_CMD_start = 0;
         android_cmd.ANDROID_CMD_speed = 0;
         sendStartSpeed(android_cmd, can_msg_cmd);
     }
+    //sendStartSpeed(android_cmd, can_msg_cmd);
 
     /*if(request == 1){
 
@@ -138,6 +153,7 @@ bool Bluetooth::getCanData() {
                         LE.toggle(3);
                         android_loc.ANDROID_CMD_lat = latitude[cpCount];
                         android_loc.ANDROID_CMD_long = longitude[cpCount];
+                        //android_loc.ANDROID_CMD_currentcheckpoint = cpCount;
                         //printf("LAT_125: %f\n",latitude[cpCount]);
                         //printf("LNG_125: %f\n",longitude[cpCount]);
                         if(cpCount == cpNo - 1)
@@ -175,16 +191,17 @@ bool Bluetooth::getCanData() {
                 currentBearing = (double)(compass_can_msg.CMP_BEARING);
                 cpDistance = (double)(compass_can_msg.DISTANCE_CHECKPOINT);
                 defAngle = (double)(compass_can_msg.DEFLECTION_ANGLE);
-                sendCurrentData(2);
+                sendCurrentData();
                 LE.toggle(2);
                 //printf("HEADING: %f",compass_can_msg.CMP_HEADING); AL
                 break;
 
-            case 190:
+            case 200:
                 dbc_decode_MOTOR_TELEMETRY(&motel_can_msg, can_msg.data.bytes, &can_msg_h);
                 if(motel_can_msg.MOTOR_TELEMETRY_kph != 0) {
                     currentSpeed = motel_can_msg.MOTOR_TELEMETRY_kph;
-                    //sendCurrentData(3);
+                    printf("Speed: %lf",currentSpeed);
+                    sendCurrentData();
                     LE.toggle(2);
                 }
                 //printf("LAT: %f",gps_can_msg.GPS_LATITUDE); AL
@@ -296,11 +313,14 @@ bool Bluetooth::sendLocation(ANDROID_LOCATION_t android_loc, can_msg_t can_msg) 
     return true;
 }
 
-bool Bluetooth::sendCurrentData(int txType) {
-    char* txData = new char[75];
+bool Bluetooth::sendCurrentData() {
+    char* txData = new char[100];
+    //char txData = 'a';
+    //char txData[75];
     //char txData[100] = "G37.334709|-121.892403H0.000000S0.000000B169.899994A169.899994D68.949997&";
     //sprintf(txData,"G%f|%fC%fS%f&",currentLat, currentLong, currentHeading, currentSpeed);
-    sprintf(txData,"G%f|%fH%fS%fB%fA%fD%f&",currentLat, currentLong, currentHeading, currentSpeed, currentBearing, defAngle, cpDistance);
+    //sprintf(txData,"G%f|%fH%fS%fB%fA%fD%f&",currentLat, currentLong, currentHeading, currentSpeed, currentBearing, defAngle, cpDistance);
+    sprintf(txData,"G%f|%fH%dS%dB%dA%dD%d&",currentLat, currentLong, (int)currentHeading, (int)currentSpeed, (int)currentBearing, (int)defAngle, (int)cpDistance);
     /*switch(txType) {
         case 1:
             char lat[50];
@@ -328,7 +348,7 @@ void Bluetooth::getDesiredSpeed(char* rx) {
     if(mode == 1) {
         char* startPos;
         char* endPos;
-        char speedChar[10];
+        char speedChar[20] = "";
 
         startPos = strchr(rx, '$');
         startPos += 1;
