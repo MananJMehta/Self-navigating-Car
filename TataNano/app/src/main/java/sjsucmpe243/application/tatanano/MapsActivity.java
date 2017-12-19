@@ -175,7 +175,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                                         if (Integer.parseInt(dist) < 7 && temp < Checkpoint_num) {
                                             temp++;
-                                            chkpnt_option.position(checkpoints.get(temp)).icon(BitmapDescriptorFactory.fromResource(R.drawable.checkpoint));
+                                            dist = "0";
+                                            try {
+                                                chkpnt_option.position(checkpoints.get(temp)).icon(BitmapDescriptorFactory.fromResource(R.drawable.checkpoint));
+                                            } catch (IndexOutOfBoundsException e) {
+                                                Log.e("Checkpoints","updated. Now next checkpoint");
+                                            }
                                             mMap.addMarker(chkpnt_option);
                                         }
                                     }
