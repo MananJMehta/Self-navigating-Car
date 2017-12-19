@@ -49,21 +49,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     FloatingActionButton SendLocation,SendStart,SendStop;//,bluetooth;
     LocationManager locMan;
     LocationListener locLis;
+
     LatLng myLatLng;
     static LatLng prevLatLng = new LatLng(0, 0);
     Marker me;
-    MarkerOptions me_Option;
+    MarkerOptions me_Option,chkpnt_option;
+
     ArrayList<LatLng> checkpoints = new ArrayList<>();
-    static int Checkpoint_num = 0;
+    static int Checkpoint_num = 0,temp = 0;
     boolean flag = true;
-    String BTdata;
-    TextView actualSpeed, currPosVal, headingVal, bearing, deflection, distance;
+
+    Thread t;
     InputStream rx_data;
     OutputStream tx_data;
+    String speedVal="0",latVal="0.000000", lngVal="0.000000",headingVal="0";
+    String BTdata;
     boolean Toggle_start_stop = false;
-    Thread t;
-
-    String speedVal="0",latVal="0.000000", lngVal="0.000000",temp="";
+    TextView actualSpeed, currPosVal, heading, bearing, deflection, distance;
 
     AlertDialog.Builder alertDialogBuilder;
     AlertDialog alertDialog;
@@ -77,10 +79,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         actualSpeed = findViewById(R.id.speedText);
         currPosVal = findViewById(R.id.CurrPosText);
-        headingVal = findViewById(R.id.HeadingText);
+        heading = findViewById(R.id.HeadingText);
         bearing = findViewById(R.id.bearingText);
         deflection = findViewById(R.id.deflectionAngle);
         distance = findViewById(R.id.distance2Checkpoint);
+
+        chkpnt_option = new MarkerOptions();
 
         try {
             rx_data = MainActivity.gotSocket.getInputStream();
@@ -95,6 +99,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         t = new Thread() {
             StringBuilder test;
+            String dist="0";
             int geoPos,pipePos, headPos, speedPos, bearingPos,deflectionPos, distancePos, endPos;
             @Override
             public void run() {
@@ -146,7 +151,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     if( headPos!=-1 && speedPos!=-1) {
 
                                         //Printing heading val here
-                                        headingVal.setText(String.format("%s", test.substring(headPos + 1, speedPos)));
+                                        headingVal = test.substring(headPos + 1, speedPos);
+                                        heading.setText(String.format("%s", headingVal));
                                     }
 
                                     if (speedPos!=-1 && bearingPos!=-1) {
@@ -164,7 +170,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                         //deflection or correction needed in current direction
                                         deflection.setText(String.format("%s", test.substring(deflectionPos + 1, distancePos)));
                                         //distance of car to next checkpoint
-                                        distance.setText(String.format("%s", test.substring(distancePos + 1, endPos)));
+                                        dist = test.substring(distancePos + 1, endPos);
+                                        distance.setText(String.format("%s", dist));
+
+                                        if (Integer.parseInt(dist) < 7 && temp < Checkpoint_num) {
+                                            temp++;
+                                            chkpnt_option.position(checkpoints.get(temp)).icon(BitmapDescriptorFactory.fromResource(R.drawable.checkpoint));
+                                            mMap.addMarker(chkpnt_option);
+                                        }
                                     }
 
 
@@ -203,6 +216,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+
+                MarkerOptions destination = new MarkerOptions()
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.destination))
+                        .position(checkpoints.get(Checkpoint_num-1));
+                mMap.addMarker(destination);
+
+                chkpnt_option.position(checkpoints.get(temp)).icon(BitmapDescriptorFactory.fromResource(R.drawable.checkpoint));
+                mMap.addMarker(chkpnt_option);
             }
         });
 
@@ -352,7 +373,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         if (temp != null) {
                             cameraPosition = CameraPosition.builder()
                                     .target(myLatLng)
-                                    .zoom(20)
+                                    .zoom(18)
                                     .bearing(temp.getLastKnownLocation(LocationManager.GPS_PROVIDER).getBearing())
                                     .build();
                         }
@@ -376,7 +397,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         mMap.addPolyline(new PolylineOptions().add(prevLatLng, myLatLng).width(5).color(Color.BLUE).geodesic(true));
 
                         me.setPosition(myLatLng);
-                        me.setRotation(location.getBearing());
+                        me.setRotation(Float.parseFloat(headingVal));
 
                         /*CameraPosition cameraPosition = CameraPosition.builder()
                                 .target(myLatLng)
@@ -421,8 +442,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         locMan.requestLocationUpdates(LocationManager.GPS_PROVIDER, 500, 0, locLis);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
     }
 
@@ -445,11 +465,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onMapClick(LatLng point) {
 
-                MarkerOptions marker = new MarkerOptions().position(new LatLng(point.latitude, point.longitude));
+                MarkerOptions marker = new MarkerOptions().position(new LatLng(point.latitude, point.longitude)).icon(BitmapDescriptorFactory.fromResource(R.drawable.tap));
                 mMap.addMarker(marker);
-                //checkpoints[Checkpoint_num] = point;
+
                 checkpoints.add(Checkpoint_num,point);
                 Checkpoint_num ++;
+
                 //Toast.makeText(MapsActivity.this, "Next stop at " + point.latitude + "," + point.longitude, Toast.LENGTH_SHORT).show();
                 Log.e("TataNano : Bluetooth", "onMapClick: point number= "+ Checkpoint_num + " (" + point.latitude + "," + point.longitude+")");
             }

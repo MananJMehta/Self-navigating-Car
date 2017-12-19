@@ -9,7 +9,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
-//import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.ParcelUuid;
 import android.support.v7.app.AlertDialog;
@@ -32,7 +31,6 @@ public class MainActivity extends AppCompatActivity {
     static BluetoothSocket gotSocket;
     TextView heading,tag;
     ImageView gifImg;
-    //MediaPlayer mp = MediaPlayer.create(getApplicationContext(), R.raw.startcar);
     static BluetoothDevice tatanano;
 
     @Override
@@ -92,13 +90,11 @@ public class MainActivity extends AppCompatActivity {
 
         if (!BTadpt.isEnabled()){
             setMainpage_4_Off();
-            //stopSound();
             dialog4BT.show();
         }
         else
         {
             setMainpage_4_On();
-            //playSound();
         }
 
         gifImg.setOnClickListener(new View.OnClickListener() {
@@ -114,20 +110,6 @@ public class MainActivity extends AppCompatActivity {
         connectivityThread.setDaemon(true);
         connectivityThread.start();
     }
-
-
-    /*private void stopSound() {
-        if (mp.isPlaying() && mp!=null)
-            mp.stop();
-    }
-
-    private void playSound() {
-        if (mp != null)
-        {
-            mp.release();
-            mp.start();
-        }
-    }*/
 
     Thread connectivityThread = new Thread() {
 
@@ -212,7 +194,6 @@ public class MainActivity extends AppCompatActivity {
                     gotSocket.close();
                     return false;
                 } catch (IOException e1) {
-                    //Log.e("TataNano : Bluetooth", "unable to close socket.");
                     return false;
                 }
 
@@ -270,7 +251,6 @@ public class MainActivity extends AppCompatActivity {
 
                     case BluetoothAdapter.STATE_OFF:
                         setMainpage_4_Off();
-                        //stopSound();
                         dialog4BT.show();
                         break;
 
@@ -283,7 +263,6 @@ public class MainActivity extends AppCompatActivity {
                         else
                             connectivityThread.start();
                         setMainpage_4_On();
-                        //playSound();
 
                         if (dialog4BT.isShowing())
                             dialog4BT.hide();
@@ -318,7 +297,6 @@ public class MainActivity extends AppCompatActivity {
                         Log.e("TataNano : Bluetooth", "Stopped discovery.");
                     }
 
-                   //Log.e("TataNano : Bluetooth",device.getBondState()+"");
                     tatanano = device;
                     attempt2Connect(device);
                 }
