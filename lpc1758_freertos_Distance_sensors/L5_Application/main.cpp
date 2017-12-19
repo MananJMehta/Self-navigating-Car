@@ -67,20 +67,13 @@ bool lidar_data_acquisition::run(void* p)
     {
             if(!rplidar.check_start)
             {
-//                LE.on(1);
-//                LE.on(2);
-//                LE.on(3);
-//                LE.on(4);
                 rplidar.check_start_scan();
                 return true;
             }
 
             else
             {
-//                LE.off(1);
-//                LE.off(2);
-//                LE.off(3);
-//                LE.off(4);
+
             }
 
             rplidar.update_lane_lut();

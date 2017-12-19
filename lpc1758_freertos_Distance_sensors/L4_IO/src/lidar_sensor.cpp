@@ -21,12 +21,13 @@ bool dbc_app_send_can_msg(uint32_t mid, uint8_t dlc, uint8_t bytes[8])
 }
 
 
-void Lidar_Sensor::send_lidar_command(lidar_cmd_t lidar_cmd)
-{
+    void Lidar_Sensor::send_lidar_command(lidar_cmd_t lidar_cmd)
+    {
+        u2.printf("%c", lidar_header);
+        u2.printf("%c",lidar_cmd);
+    }
 
-    u2.printf("%c", lidar_header);
-    u2.printf("%c",lidar_cmd);
-}
+
 
 bool Lidar_Sensor::uart_active()
 {
@@ -75,10 +76,12 @@ bool Lidar_Sensor::reset_core()
  *
  */
 
-void Lidar_Sensor::start_scan()
-{
-    send_lidar_command(lidar_start_scan);
-}
+    //Send the start scan lidar command to the lidar sensor
+    void Lidar_Sensor::start_scan()
+    {
+        send_lidar_command(lidar_start_scan);
+    }
+
 
 bool Lidar_Sensor::start_express_scan()
 {
@@ -116,7 +119,7 @@ void Lidar_Sensor::set_motor_speed(uint8_t RPM)
     get_sample_rate(&sample_rate);
 }
 
-//put received thingies in a queue maybe??
+//empty UART 2 queue
 char Lidar_Sensor::receive_lidar_data()
 {
     char str[1];
@@ -152,12 +155,15 @@ uint16_t Lidar_Sensor::get_angle_value()
     uint16_t angle;
     float angle_deg;
     uint16_t temp;
-    angle = (uint16_t)(rplidar.receive_lidar_data()); //get da angle_1
-    temp = (uint16_t)(rplidar.receive_lidar_data()); //get da angle_2
-    angle = angle>>1;
-    angle |= temp<<7;
-    angle_deg = (float)(angle)/64.0;
-    return (uint16_t)angle_deg;
+
+    angle = (uint16_t)(rplidar.receive_lidar_data()); //store bottom byte of angle value
+    temp = (uint16_t)(rplidar.receive_lidar_data()); //store top byte of angle value
+    angle = angle>>1;//shift out check bit
+    angle |= temp<<7;//concatenate top and bottom angle value
+
+    angle_deg = (float)(angle)/64.0;//divide by 64 to get actual angle
+
+    return (uint16_t)angle_deg;//return as integer
 }
 
 uint16_t Lidar_Sensor::get_distance_value()
@@ -178,7 +184,7 @@ uint16_t Lidar_Sensor::get_distance_value()
 bool Lidar_Sensor::update_lane_lut()
 {
 
-    quality_value = get_quality_value();
+    quality_value = get_quality_value();//return quality value
     angle_value_deg = get_angle_value();//return angle in degrees
     distance_value_cm = get_distance_value();//return distance in cm
 
@@ -186,6 +192,9 @@ bool Lidar_Sensor::update_lane_lut()
 
     else return false;
 }
+
+
+
 
 bool Lidar_Sensor::angle_is_in_range_of_current_lane(uint8_t current_lane)
 {

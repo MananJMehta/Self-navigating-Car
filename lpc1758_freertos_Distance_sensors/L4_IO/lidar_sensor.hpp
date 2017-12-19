@@ -24,14 +24,16 @@ class Lidar_Sensor : public SingletonTemplate<Lidar_Sensor>
     public:
 
 
-        bool stop_scan();//this is a unidriectional command we wil return true for success
-        bool reset_core();//unidirectional, send true for succesful reset
-        void start_scan();//pass a data structure to this function, return true for succces
-        bool start_express_scan();//pass data structure, return true
-        bool start_force_scan();
-        void get_info(info_data_packet_t *lidar_info);
-        void get_health(health_data_packet_t *health_data);
-        void get_sample_rate(sample_rate_packet_t *sample_rate);
+        bool stop_scan();//no response, lidar enters idle state
+        bool reset_core();//no response, resets lidar core
+        void start_scan();//continuous response, starts scan
+        bool start_express_scan();//continuous response, scans at highest speed
+        bool start_force_scan();//continuous response, start scan without checking speed
+        void get_info(info_data_packet_t *lidar_info);//single response, returns device info
+        void get_health(health_data_packet_t *health_data);//single response, returns device health info
+        void get_sample_rate(sample_rate_packet_t *sample_rate);//single response, returns sampling time
+
+
         void set_motor_speed(uint8_t RPM);
         void check_start_scan();
         bool update_lane_lut();
