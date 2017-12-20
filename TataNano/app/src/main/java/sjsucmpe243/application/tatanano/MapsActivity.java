@@ -123,14 +123,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                         test = new StringBuilder("0");
                                     }
 
-                                        /*pipePos = test.indexOf("|");
-                                        if (pipePos != -1) {
-                                            dataType = test.substring(0, 1);
-                                            Log.e("DATA TYPE", dataType);
-                                        } else {
-                                            Log.e("NO PIPE", dataType);
-                                        }
-*/
                                     geoPos = test.indexOf("G");
                                     pipePos = test.indexOf("|");
                                     headPos = test.indexOf("H");
@@ -158,7 +150,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     if (speedPos!=-1 && bearingPos!=-1) {
                                         //Printing speed
                                         speedVal = test.substring(speedPos + 1, bearingPos);
-                                        actualSpeed.setText(String.format("%s %s", speedVal, "m/s"));
+                                        actualSpeed.setText(String.format("%s %s", speedVal, "kmph"));
                                     }
 
                                     if (bearingPos!=-1 && deflectionPos!=-1) {
@@ -348,7 +340,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onLocationChanged(Location location) {
 
-                if (flag) {
+                if (!Toggle_start_stop) {
                     LocationManager temp = (LocationManager) MapsActivity.this.getSystemService(Context.LOCATION_SERVICE);
                     if (ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                             && ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
@@ -366,13 +358,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         myLatLng = new LatLng(temp.getLastKnownLocation(LocationManager.GPS_PROVIDER).getLatitude()
                                 , temp.getLastKnownLocation(LocationManager.GPS_PROVIDER).getLongitude());
 
-                    if (myLatLng != null) {
+                    if (myLatLng != null && flag) {
                         me_Option = new MarkerOptions()
                                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker))
                                 .position(myLatLng)
                                 .rotation(0);
 
                         me = mMap.addMarker(me_Option);
+                        flag = false;
 
                         CameraPosition cameraPosition = null;
                         if (temp != null) {
@@ -387,9 +380,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 500, null);
                         prevLatLng = myLatLng;
                     }
+                    else if (myLatLng != null)
+                    {
+                        me.setPosition(myLatLng);
+                    }
 
-                    flag = false;
-                    Toast.makeText(MapsActivity.this, "Let the marker get stable.\nThen tap on map to select destination.", Toast.LENGTH_LONG).show();
+
+                    //Toast.makeText(MapsActivity.this, "Let the marker get stable.\nThen tap on map to select destination.", Toast.LENGTH_LONG).show();
 
                 } else {
 
