@@ -80,11 +80,11 @@ bool period_reg_tlm(void)
 void period_1Hz(uint32_t count)
 {
     //
-    check_heartbeat();
+
 
     if(CAN_is_bus_off(can1))
         CAN_reset_bus(can1);
-    send_distance_values();
+//    send_distance_values();
 
         static bool start_flag = false;
         //if uart is not active send stop scan folowed by start scan
@@ -105,7 +105,12 @@ void period_10Hz(uint32_t count)
     static uint32_t prev_count = count;
     rplidar.flag = true;
 
+    check_heartbeat();
+
+//    Turn this on if you wanna see lane distance values
+    #if 0
     send_lane_distance_values();
+    #endif
 
 
 
@@ -117,7 +122,6 @@ void period_10Hz(uint32_t count)
 
     if ((count-prev_count) == 1)
     {
-        send_lidar_lane_data();
         send_lidar_sonar_data();
         prev_count = count;
     }
@@ -133,18 +137,18 @@ void period_100Hz(uint32_t count)
 // scheduler_add_task(new periodicSchedulerTask(run_1Khz = true));
 void period_1000Hz(uint32_t count)
 {
-    static uint32_t prev_count = count;
-    static LIDAR_DATA_VALUES_t Data;
-
-    if ((count-prev_count)%3 == 0)
-    {
-        add_some_data_to_msg(&Data);
-    }
-    if ((count-prev_count) == 9)
-    {
-        send_three_values(&Data);
-        prev_count = count;
-    }
+//    static uint32_t prev_count = count;
+////    static LIDAR_DATA_VALUES_t Data;
+//
+//    if ((count-prev_count)%3 == 0)
+//    {
+////        add_some_data_to_msg(&Data);
+//    }
+//    if ((count-prev_count) == 9)
+//    {
+////        send_three_values(&Data);
+//        prev_count = count;
+//    }
 
 }
 
