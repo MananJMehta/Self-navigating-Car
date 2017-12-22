@@ -26,12 +26,7 @@
 #include "tasks.hpp"
 #include "examples/examples.hpp"
 #include "stdio.h"
-
-extern "C"
-{
-    #include "sensor_functions.h"
-}
-
+#include "sensor_functions.hpp"
 #include "lidar_sensor.hpp"
 #include "io.hpp"
 #include "printf_lib.h"
@@ -68,34 +63,21 @@ bool lidar_data_acquisition::init()
 
 bool lidar_data_acquisition::run(void* p)
 {
-    rplidar.Lane_LUT = 0;
     while(1)
     {
-            if(!rplidar.uart_sucks())
-            {
-                rplidar.stop_scan();
-                vTaskDelay(1000);
-                rplidar.start_scan();
-            }
             if(!rplidar.check_start)
             {
-                LE.on(1);
-                LE.on(2);
-                LE.on(3);
-                LE.on(4);
                 rplidar.check_start_scan();
                 return true;
             }
 
             else
             {
-                LE.off(1);
-                LE.off(2);
-                LE.off(3);
-                LE.off(4);
+
             }
 
             rplidar.update_lane_lut();
+
     }
     return true;
 }
