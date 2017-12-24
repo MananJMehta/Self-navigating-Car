@@ -22,6 +22,12 @@ void convert16_to_hex(uint16_t number, uint8_t *lsb_val, uint8_t *msb_val)
     *msb_val = ((uint8_t)((number>>8) & 0xFF));
 }
 
+void convert16_to_hex(int16_t number, int8_t *lsb_val, int8_t *msb_val)
+{
+    *lsb_val = ((uint8_t)(number & 0xFF)) ;
+    *msb_val = ((uint8_t)((number>>8) & 0xFF));
+}
+
 void convert_geo(uint32_t geo, uint16_t *geo_left, uint16_t *geo_right)
 {
     *geo_left = geo / 10000;
@@ -140,6 +146,21 @@ char check_form()
     return form_value;
 }
 
+void display_lcd_angle(char display_num, int16_t value)
+{
+    int8_t lsb, msb;
+    convert16_to_hex(value, &lsb, &msb);
+    Uart2& u2 = Uart2::getInstance();
+    u2.putChar(0x01, portMAX_DELAY);   //Write Object
+    u2.putChar(0x07, portMAX_DELAY);   //Object ID
+    u2.putChar(display_num, portMAX_DELAY);
+    u2.putChar(msb, portMAX_DELAY);
+    u2.putChar(lsb, portMAX_DELAY);    //LSB
+    char checkSum = 0x01^0x07^display_num^msb^lsb;
+    u2.putChar(checkSum, portMAX_DELAY);
+    ack();
+}
+
 
 bool ack()
 {
@@ -221,5 +242,45 @@ void update_LCD_main_page(float value, uint32_t status)
     display_speedometer((char)value); //TODO - Set this to speed
     display_LCD_large_led(Battery, status);
     display_LCD_large_led(System, !status);
+}
+
+
+/**
+ * Send readings of LCD's GPS Page
+ */
+void update_LCD_GPS_page(GPS_DATA_t gps, ANDROID_LOCATION_t androidDist)
+{
+    //TODO - Set this to dest_lat_val and other coordinate variables
+    display_lcd_geo(Dest_lat, androidDist.ANDROID_CMD_lat*1000000); //Scaled by 1 million (1000000)
+    display_lcd_geo(Dest_long,androidDist.ANDROID_CMD_long*1000000 );
+    display_lcd_geo(Current_lat, abs(gps.GPS_LATITUDE*1000000));
+    display_lcd_geo(Current_long,abs(gps.GPS_LONGITUDE)*1000000);
+}
+/**
+ * Send readings of LCD's Main Page
+ */
+void update_LCD_sensor_page(SENSOR_DATA_t sen)
+{
+    //Display Ultrasound Sensor readings
+    display_lcd_bar(Ultrasound_left, 0); //Scaling up by 15 to display in LED
+    display_lcd_bar(Ultrasound_front, (249-sen.SONAR_front)/5);
+    display_lcd_bar(Ultrasound_right, 0);
+
+    display_LCD_large_led(Degree0, sen.LIDAR_0);
+    display_LCD_large_led(Degree20, sen.LIDAR_20);
+    display_LCD_large_led(Degree40, sen.LIDAR_40);
+    display_LCD_large_led(Degree60, sen.LIDAR_60);
+    display_LCD_large_led(Degree80, sen.LIDAR_80);
+    display_LCD_large_led(Degree_neg20, sen.LIDAR_neg20);
+    display_LCD_large_led(Degree_neg40, sen.LIDAR_neg40);
+    display_LCD_large_led(Degree_neg60, sen.LIDAR_neg60);
+    display_LCD_large_led(Degree_neg80, sen.LIDAR_neg80);
+}
+
+void update_Compass_page(float CMP_HEADING, float CMP_BEARING, float DEFLECTION_ANGLE)
+{
+    display_lcd_numbers(Heading_angle, CMP_HEADING*10);
+    display_lcd_numbers(Bearing_angle, CMP_BEARING*10);
+    display_lcd_angle(Deflection_angle, DEFLECTION_ANGLE+180);
 }
 

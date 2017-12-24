@@ -3,7 +3,7 @@
 typedef struct{
 const uint16_t ref_count_slow = 0; //2.63kmph
 const uint16_t ref_count_low = 0;  //5kmph
- uint16_t ref_count_medium=2; //
+ uint16_t ref_count_medium=3; //
 const uint16_t ref_count_high = 0; //left for future
 }ReferenceCounts;
 

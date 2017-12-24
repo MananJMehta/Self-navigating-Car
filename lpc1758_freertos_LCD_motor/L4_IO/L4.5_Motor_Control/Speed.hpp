@@ -15,7 +15,7 @@
 #define VERYFAST    18.0  //Avoid Using.
 #define FAST        17.0
 #define MEDIUM      16.0
-#define SLOW        15.6
+#define SLOW        15.1
 #define VERYSLOW    15
 #define STOP        14
 #define SLOWREVERSE 12.6
