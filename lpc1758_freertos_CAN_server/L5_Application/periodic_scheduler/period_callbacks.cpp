@@ -87,6 +87,7 @@ bool flag_navigation = false;
 bool flag_fix = false;
 bool flag_next = false;
 bool flag_free_run = false;
+bool flag_toggle = false;
 uint8_t direction = CENTER;
 bool flag_cp = false;
 
@@ -240,21 +241,24 @@ uint8_t takeReverse()
         //turn HARDright
         return HARDRIGHT;
     }else
-        if(!sensor_msg.LIDAR_neg160 && !sensor_msg.LIDAR_neg140)
-        {
-            //turn hardleft
-            return HARDLEFT;
-        }else
-        {
-            if(!sensor_msg.LIDAR_160)
-            {
-                return SOFTRIGHT;
-            }else
-                if(!sensor_msg.LIDAR_neg160)
-                {
-                    return SOFTLEFT;
-                }
-        }
+    if(!sensor_msg.LIDAR_neg160 && !sensor_msg.LIDAR_neg140)
+    {
+        //turn hardleft
+        return HARDLEFT;
+    }else
+    if(!sensor_msg.LIDAR_160)
+    {
+        return SOFTRIGHT;
+    }else
+    if(!sensor_msg.LIDAR_neg160)
+    {
+        return SOFTLEFT;
+    }else
+    if(!sensor_msg.LIDAR_180)
+    {
+        return CENTER;
+    }
+
     return 99;
 }
 
@@ -350,6 +354,11 @@ bool reached_destination(COMPASS_t x)
                 LD.clear();
                 LD.setRightDigit('H');
                 LD.setLeftDigit('H');
+                redLED.setLow();
+                whiteLED.setLow();
+                rightLED.setLow();
+                leftLED.setLow();
+                flag_toggle = true;
             }
             flag_cp = false;
         }
@@ -446,6 +455,18 @@ bool period_reg_tlm(void)
  * Below are your periodic functions.
  * The argument 'count' is the number of times each periodic task is called.
  */
+
+void toggleLED()
+{
+    if(flag_toggle)
+    {
+        redLED.toggle();
+        whiteLED.toggle();
+        leftLED.toggle();
+        rightLED.toggle();
+    }
+}
+
 void period_1Hz(uint32_t count)
 {
     //heartbeat_msg.HEARTBEAT_cmd = HEARTBEAT_cmd_SYNC;
@@ -476,6 +497,7 @@ void period_1Hz(uint32_t count)
     {
         whiteLED.setHigh();
     }
+    toggleLED();
 }
 
 void period_10Hz(uint32_t count)
@@ -508,180 +530,183 @@ void period_10Hz(uint32_t count)
 //    }
 
 
-    can_msg_t can_msg;
-    while(CAN_rx(canTest,&can_msg,0))
-    {
-        dbc_msg_hdr_t can_header;
-        can_header.dlc = can_msg.frame_fields.data_len;
-        can_header.mid = can_msg.msg_id;
-        switch(can_header.mid)
-        {
-            case 130:
-                if (dbc_decode_ANDROID_CMD(&and_msg, can_msg.data.bytes, &can_header))
-                {
-                    if(and_msg.ANDROID_CMD_start == 0)
-                    {
-//                        LD.clear();
-//                        LD.setNumber(99);
-                        flag_speed = 0;
-                        flag_navigation = false;
-                        flag_free_run = false;
-                        redLED.setLow();
-                        whiteLED.setHigh();
-                        leftLED.setLow();
-                        rightLED.setLow();
-                        heartbeat_msg.HEARTBEAT_cmd = HEARTBEAT_cmd_NOOP;
-                    }
-                    else
-                    {
-                        if(and_msg.ANDROID_CMD_mode)
-                        {
-//                            LD.clear();
-//                            LD.setNumber(22);
-                            redLED.setHigh();
-                            leftLED.setHigh();
-                            rightLED.setHigh();
-                            flag_navigation = true;
-                            request_msg.MASTER_REQUEST_cmd = 0xf;
-                            dbc_encode_and_send_MASTER_REQUEST(&request_msg);
-                        }else
-                        {
-//                            LD.clear();
-//                            LD.setNumber(11);
-                            redLED.setHigh();
-                            leftLED.setHigh();
-                            rightLED.setHigh();
-                            flag_navigation = false;
-                            flag_free_run = true;
-                            flag_speed = 1;
-                        }
 
-                        heartbeat_msg.HEARTBEAT_cmd = HEARTBEAT_cmd_SYNC;
-                    }
-                }
-                break;
-            case 135:
-                if (dbc_decode_ANDROID_LOCATION(&locate_msg,can_msg.data.bytes, &can_header))
-                {
-                    if(locate_msg.ANDROID_CMD_isLast)
-                    {
-                        //printf("got isLast\n");
-                        LD.clear();
-                        LD.setRightDigit('C');
-                        LD.setLeftDigit('L');
-                        flag_next = false;
-                    }else
-                    {
-                        //printf("next data\n");
-                        LD.clear();
-                        static uint8_t cnt = 1;
-                        LD.setRightDigit(cnt);
-                        LD.setLeftDigit('E');
-                        cnt++;
-                        flag_next = true;
-                    }
-                }
-                break;
-            case 150:
-                    /*Sonar Priorities are higher than LIDAR as LIDAR's range will be larger*/
-                    if (dbc_decode_SENSOR_DATA(&sensor_msg, can_msg.data.bytes, &can_header))
-                    {
-//                        if(sensor_msg.SONAR_front < 100)
-//                        {
-//                            LD.clear();
-//                            LD.setNumber(sensor_msg.SONAR_front);
-//                        }else
-//                        {
-//                            LD.clear();
-//                            LD.setNumber(99);
-//                        }
-                        if(sensor_msg.SONAR_front > 14 && sensor_msg.SONAR_front <= sonar_critical)
-                        {
-                            redLED.setLow();
-                            leftLED.setHigh();
-                            rightLED.setHigh();
-                            stop_lidar(sensor_msg);
-                        }
-                        if(sensor_msg.SONAR_front > 14 && sensor_msg.SONAR_front <= sonar_warning)
-                        {
-                            sensor_msg.LIDAR_0 = 1;
-                        }else
-                        {
-                            redLED.setHigh();
-                        }
-                        pair<uint8_t , uint8_t> son;
-                        son.first = CENTER;
-                        if (flag_fix || flag_free_run)
-                        {
-                            son = update_lanes(sensor_msg);
-                        }
-                        master_motor_msg.CAR_CONTROL_steer = son.first;
-                        master_motor_msg.CAR_CONTROL_speed = son.second;
-                        turnIndicator(master_motor_msg.CAR_CONTROL_steer);
-                        dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
-                    }
-                break;
-            case 170:
-                if(flag_navigation)
-                {
-                    if (dbc_decode_COMPASS(&compass_msg, can_msg.data.bytes,&can_header))
-                    {
-                        if(!reached_destination(compass_msg))
-                        {
-                            //pair<uint8_t, uint8_t> son;
-                            //son = correct_guidance(compass_msg);
-                            //master_motor_msg.CAR_CONTROL_steer = son.first;
-                            //master_motor_msg.CAR_CONTROL_speed = son.second;
-                            //dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
-                            flag_cp = true;
-                            correct_guidance(compass_msg);
-                        }else
-                        {
-//                            if(!flag_next)
-//                            {
-////                                flag_navigation = false;
-////                                flag_free_run = false;
-////                                heartbeat_msg.HEARTBEAT_cmd = HEARTBEAT_cmd_NOOP;
-////                                LD.clear();
-////                                LD.setRightDigit('H');
-////                                LD.setLeftDigit('H');
-//                                //printf("Final destination reached");
-//                            }else
-//                            {
-//                                //printf("Checkpoint reached");
-//                            }
 
-                            flag_speed = 0;
-                        }
-                    }
-                }
-                break;
-            case 160:
-                if(flag_navigation)
-                {
-                    if(dbc_decode_GPS_DATA(&gps_msg, can_msg.data.bytes, &can_header))
-                    {
-                        if(gps_msg.GPS_FIX)
-                        {
-                            flag_fix = true;
-                            flag_speed = 1;
-                        }else
-                        {
-                            flag_fix = false;
-                            flag_speed = 0;
-                        }
-                    }
-                }
-                break;
 
-        }
-    }
-
-    dbc_handle_mia_SENSOR_DATA(&sensor_msg, 100);
+    //dbc_handle_mia_SENSOR_DATA(&sensor_msg, 100);
 }
 
 void period_100Hz(uint32_t count)
 {
+
+    can_msg_t can_msg;
+               while(CAN_rx(canTest,&can_msg,0))
+               {
+                   dbc_msg_hdr_t can_header;
+                   can_header.dlc = can_msg.frame_fields.data_len;
+                   can_header.mid = can_msg.msg_id;
+                   switch(can_header.mid)
+                   {
+                       case 130:
+                           if (dbc_decode_ANDROID_CMD(&and_msg, can_msg.data.bytes, &can_header))
+                           {
+                               if(and_msg.ANDROID_CMD_start == 0)
+                               {
+           //                        LD.clear();
+           //                        LD.setNumber(99);
+                                   flag_speed = 0;
+                                   flag_navigation = false;
+                                   flag_free_run = false;
+                                   redLED.setLow();
+                                   whiteLED.setHigh();
+                                   leftLED.setLow();
+                                   rightLED.setLow();
+                                   heartbeat_msg.HEARTBEAT_cmd = HEARTBEAT_cmd_NOOP;
+                               }
+                               else
+                               {
+                                   if(and_msg.ANDROID_CMD_mode)
+                                   {
+           //                            LD.clear();
+           //                            LD.setNumber(22);
+                                       redLED.setHigh();
+                                       leftLED.setHigh();
+                                       rightLED.setHigh();
+                                       flag_navigation = true;
+                                       request_msg.MASTER_REQUEST_cmd = 0xf;
+                                       dbc_encode_and_send_MASTER_REQUEST(&request_msg);
+                                   }else
+                                   {
+           //                            LD.clear();
+           //                            LD.setNumber(11);
+                                       redLED.setHigh();
+                                       leftLED.setHigh();
+                                       rightLED.setHigh();
+                                       flag_navigation = false;
+                                       flag_free_run = true;
+                                       flag_speed = 1;
+                                   }
+
+                                   heartbeat_msg.HEARTBEAT_cmd = HEARTBEAT_cmd_SYNC;
+                               }
+                           }
+                           break;
+                       case 135:
+                           if (dbc_decode_ANDROID_LOCATION(&locate_msg,can_msg.data.bytes, &can_header))
+                           {
+                               if(locate_msg.ANDROID_CMD_isLast)
+                               {
+                                   //printf("got isLast\n");
+                                   LD.clear();
+                                   LD.setRightDigit('C');
+                                   LD.setLeftDigit('L');
+                                   flag_next = false;
+                               }else
+                               {
+                                   //printf("next data\n");
+                                   LD.clear();
+           //                        static uint8_t cnt = 1;
+                                   LD.setRightDigit('E');
+                                   LD.setLeftDigit('E');
+           //                        cnt++;
+                                   flag_next = true;
+                               }
+                           }
+                           break;
+                       case 150:
+                               /*Sonar Priorities are higher than LIDAR as LIDAR's range will be larger*/
+                               if (dbc_decode_SENSOR_DATA(&sensor_msg, can_msg.data.bytes, &can_header))
+                               {
+           //                        if(sensor_msg.SONAR_front < 100)
+           //                        {
+           //                            LD.clear();
+           //                            LD.setNumber(sensor_msg.SONAR_front);
+           //                        }else
+           //                        {
+           //                            LD.clear();
+           //                            LD.setNumber(99);
+           //                        }
+                                   if(sensor_msg.SONAR_front > 14 && sensor_msg.SONAR_front <= sonar_critical)
+                                   {
+                                       redLED.setLow();
+                                       leftLED.setHigh();
+                                       rightLED.setHigh();
+                                       stop_lidar(sensor_msg);
+                                   }
+                                   if(sensor_msg.SONAR_front > 14 && sensor_msg.SONAR_front <= sonar_warning)
+                                   {
+                                       sensor_msg.LIDAR_0 = 1;
+                                   }else
+                                   {
+                                       redLED.setHigh();
+                                   }
+                                   pair<uint8_t , uint8_t> son;
+                                   son.first = CENTER;
+                                   if (flag_fix || flag_free_run)
+                                   {
+                                       son = update_lanes(sensor_msg);
+                                   }
+                                   master_motor_msg.CAR_CONTROL_steer = son.first;
+                                   master_motor_msg.CAR_CONTROL_speed = son.second;
+                                   turnIndicator(master_motor_msg.CAR_CONTROL_steer);
+                                   dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
+                               }
+                           break;
+                       case 170:
+                           if(flag_navigation)
+                           {
+                               if (dbc_decode_COMPASS(&compass_msg, can_msg.data.bytes,&can_header))
+                               {
+                                   if(!reached_destination(compass_msg))
+                                   {
+                                       //pair<uint8_t, uint8_t> son;
+                                       //son = correct_guidance(compass_msg);
+                                       //master_motor_msg.CAR_CONTROL_steer = son.first;
+                                       //master_motor_msg.CAR_CONTROL_speed = son.second;
+                                       //dbc_encode_and_send_CAR_CONTROL(&master_motor_msg);
+                                       flag_cp = true;
+                                       correct_guidance(compass_msg);
+                                   }else
+                                   {
+           //                            if(!flag_next)
+           //                            {
+           ////                                flag_navigation = false;
+           ////                                flag_free_run = false;
+           ////                                heartbeat_msg.HEARTBEAT_cmd = HEARTBEAT_cmd_NOOP;
+           ////                                LD.clear();
+           ////                                LD.setRightDigit('H');
+           ////                                LD.setLeftDigit('H');
+           //                                //printf("Final destination reached");
+           //                            }else
+           //                            {
+           //                                //printf("Checkpoint reached");
+           //                            }
+
+                                       flag_speed = 0;
+                                   }
+                               }
+                           }
+                           break;
+                       case 160:
+                           if(flag_navigation)
+                           {
+                               if(dbc_decode_GPS_DATA(&gps_msg, can_msg.data.bytes, &can_header))
+                               {
+                                   if(gps_msg.GPS_FIX)
+                                   {
+                                       flag_fix = true;
+                                       flag_speed = 1;
+                                   }else
+                                   {
+                                       flag_fix = false;
+                                       flag_speed = 0;
+                                   }
+                               }
+                           }
+                           break;
+
+                   }
+               }
     //LE.toggle(3);
 }
 

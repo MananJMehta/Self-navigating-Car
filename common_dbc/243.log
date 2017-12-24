@@ -1,0 +1,26 @@
+Conversion Warnings Log
+
+
+MSG_ID: 120 	MSG_TYPE: S 	MSG_NAME: HEARTBEAT
+	SIG_NAME: HEARTBEAT_cmd, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+
+MSG_ID: 125 	MSG_TYPE: S 	MSG_NAME: MASTER_REQUEST
+	SIG_NAME: MASTER_REQUEST_cmd, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+
+MSG_ID: 130 	MSG_TYPE: S 	MSG_NAME: ANDROID_CMD
+	SIG_NAME: ANDROID_CMD_start, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: ANDROID_CMD_speed, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: ANDROID_CMD_mode, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+
+MSG_ID: 135 	MSG_TYPE: S 	MSG_NAME: ANDROID_LOCATION
+	SIG_NAME: ANDROID_CMD_isLast, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+
+MSG_ID: 140 	MSG_TYPE: S 	MSG_NAME: CAR_CONTROL
+	SIG_NAME: CAR_CONTROL_speed, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: CAR_CONTROL_steer, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+
+MSG_ID: 170 	MSG_TYPE: S 	MSG_NAME: COMPASS
+	SIG_NAME: DISTANCE_CHECKPOINT, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+
+MSG_ID: 200 	MSG_TYPE: S 	MSG_NAME: MOTOR_TELEMETRY
+	SIG_NAME: MOTOR_TELEMETRY_kph, STATUS: Invalid Max or Min value., ACTION: Value Set to default
