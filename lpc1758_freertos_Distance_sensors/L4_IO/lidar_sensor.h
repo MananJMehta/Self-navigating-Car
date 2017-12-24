@@ -8,20 +8,18 @@
 #ifndef LIDAR_SENSOR_H_
 #define LIDAR_SENSOR_H_
 
-
-
-
-typedef enum {
-    lidar_header = 0xA5,
-    lidar_stop_scan = 0x25,
-    lidar_reset_core = 0x40,
-    lidar_start_scan = 0x20,
-    lidar_start_exp_scan = 0x82,
-    lidar_start_force_scan = 0x21,
-    lidar_get_info = 0x50,
-    lidar_get_health = 0x52,
-    lidar_get_sample_rate = 0x59,
-} lidar_cmd_t;
+    //Enumerations for Lidar Commands
+    typedef enum {
+        lidar_header = 0xA5,
+        lidar_stop_scan = 0x25,
+        lidar_reset_core = 0x40,
+        lidar_start_scan = 0x20,
+        lidar_start_exp_scan = 0x82,
+        lidar_start_force_scan = 0x21,
+        lidar_get_info = 0x50,
+        lidar_get_health = 0x52,
+        lidar_get_sample_rate = 0x59,
+    } lidar_cmd_t;
 
 //Struct that contains the 5 bytes of data coming from lidar scan command
 typedef struct {
