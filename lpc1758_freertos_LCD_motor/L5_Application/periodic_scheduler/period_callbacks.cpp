@@ -94,7 +94,6 @@ bool period_init(void)
     LD.init();
     //error code 1 to signal incorrect initialization of speed PWM
     if(!spd.init())
-        LD.setNumber(1);
     //error code 2 to signal incorrect initialization of steering PWM
     if(!str.init())
         LD.setNumber(2);
@@ -304,6 +303,8 @@ void period_10Hz(uint32_t count)
     }
     telemetry.MOTOR_TELEMETRY_pwm=val;
     dbc_encode_and_send_MOTOR_TELEMETRY(&telemetry);
+}
+
 }
 
 void period_100Hz(uint32_t count)
