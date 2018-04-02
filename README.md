@@ -1,5 +1,7 @@
 ﻿# Autonomous-car
 
+Please checkout to Embedded Branch for all FreeRTOS and driver codes. Checkout to Android for the Android app code.
+
 This is the master repository for the autonomous car project of CMPE 243 under Prof. Preetpal Kang.
 
 To start working on this project follow the steps mentioned below:
